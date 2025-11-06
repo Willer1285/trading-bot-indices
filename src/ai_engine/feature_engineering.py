@@ -60,7 +60,7 @@ class FeatureEngineer:
             # Store feature column names (excluding OHLCV)
             self.feature_columns = [
                 col for col in df_features.columns
-                if col not in ['open', 'high', 'low', 'close', 'volume', 'symbol', 'timeframe']
+                if col not in ['open', 'high', 'low', 'close', 'volume', 'symbol', 'timeframe', 'DATE', 'TIME']
             ]
 
             logger.debug(f"Extracted {len(self.feature_columns)} features")
@@ -219,7 +219,16 @@ class FeatureEngineer:
 
         # Se eliminan las filas que todavía contengan algún NaN después del relleno.
         # Esto es crucial para asegurar que no haya datos inválidos.
+        
+        # Guardamos una copia antes de eliminar las filas con NaN
+        df_before_dropna = df_clean.copy()
         df_clean.dropna(inplace=True)
+
+        # Si después de eliminar los NaN nos quedamos sin datos, revertimos la operación
+        # y registramos una advertencia. Esto es útil para conjuntos de datos pequeños.
+        if df_clean.empty and not df_before_dropna.empty:
+            logger.warning("Se perdieron todos los datos al eliminar los NaN. Se conservarán los datos rellenados.")
+            df_clean = df_before_dropna
 
         # Replace infinite values
         df_clean = df_clean.replace([np.inf, -np.inf], 0)

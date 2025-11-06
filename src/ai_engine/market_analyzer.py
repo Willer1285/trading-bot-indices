@@ -2,7 +2,7 @@
 Market Analyzer
 Motor principal de IA para el análisis y la predicción del mercado.
 """
-
+import os
 import pandas as pd
 import numpy as np
 from typing import Dict, List, Optional, Tuple
@@ -70,15 +70,16 @@ class MarketAnalysis:
 
 
 class MarketAnalyzer:
-    """Analizador de mercado avanzado impulsado por IA."""
+    """Analizador de mercado avanzado impulsado por IA que gestiona modelos especializados."""
 
     def __init__(self, enable_training: bool = False):
         self.feature_engineer = FeatureEngineer()
         self.technical_indicators = TechnicalIndicators()
-        self.model = EnsembleModel()
+        # Almacenará los modelos en un diccionario anidado: {symbol: {timeframe: model}}
+        self.models: Dict[str, Dict[str, EnsembleModel]] = {}
         self.enable_training = enable_training
         self.is_trained = False
-        logger.info("Market Analyzer inicializado con sistema de puntuación híbrido mejorado.")
+        logger.info("Market Analyzer inicializado para gestionar modelos especializados por símbolo/timeframe.")
 
     def analyze(
         self,
@@ -86,37 +87,50 @@ class MarketAnalyzer:
         symbol: str,
         timeframe: str
     ) -> Optional[MarketAnalysis]:
-        """Realiza un análisis de mercado completo."""
+        """Realiza un análisis de mercado completo utilizando el modelo especializado correcto."""
         try:
+            # Seleccionar el modelo correcto para el símbolo y timeframe
+            model = self.models.get(symbol, {}).get(timeframe)
+            if not model or not model.is_fitted:
+                logger.warning(f"No se encontró o no está entrenado un modelo para {symbol} {timeframe}. Saltando análisis.")
+                return None
+
             if df.empty or len(df) < 100:
-                logger.warning(f"Datos insuficientes para el análisis: {len(df)} velas")
+                logger.warning(f"Datos insuficientes para el análisis de {symbol} {timeframe}: {len(df)} velas")
                 return None
 
             df_features = self.feature_engineer.extract_features(df)
-            df_clean = self.feature_engineer.prepare_for_model(df_features)
+            df_prepared = self.feature_engineer.prepare_for_model(df_features)
+
+            # Seleccionar solo las columnas de características en las que el modelo fue entrenado
+            feature_cols = self.feature_engineer.get_feature_importance_names()
+            # Asegurarse de que todas las columnas de características existan en el dataframe
+            feature_cols_exist = [col for col in feature_cols if col in df_prepared.columns]
+            df_clean = df_prepared[feature_cols_exist]
 
             if df_clean.empty:
-                logger.warning("No hay características válidas después de la preparación")
+                logger.warning(f"No hay características válidas después de la preparación para {symbol} {timeframe}")
                 return None
 
-            latest_features = df_clean.tail(1)
-
             # --- Lógica de Predicción Híbrida ---
-            # 1. Obtener la dirección del modelo primario (basado en reglas)
-            primary_prediction = self.model.base_models['pattern_based'].predict(latest_features)[0]
+            # El modelo primario ahora solo necesita la última fila para su lógica de patrones.
+            latest_features_for_pattern = df_clean.tail(1)
+            primary_prediction = model.base_models['pattern_based'].predict(latest_features_for_pattern)[0]
 
             if primary_prediction == 1:  # HOLD
                 prediction = 1
-                confidence = 0.6  # Confianza moderada para mantener
-                probabilities = np.array([0.2, 0.6, 0.2]) # SELL, HOLD, BUY
+                confidence = 0.6
+                probabilities = np.array([0.2, 0.6, 0.2])
             else:
-                # 2. Si hay una señal de COMPRA/VENTA, usar el meta-modelo para obtener la confianza
-                meta_confidence = self.model.predict_proba(latest_features)[0][1] # Probabilidad de que la señal sea buena
+                # El meta-modelo (y el LSTM dentro de él) necesita el historial completo.
+                # Pasamos `df_clean` que contiene el historial de 200 velas.
+                # La predicción del meta-modelo es un array, tomamos la última que corresponde a la vela actual.
+                all_probas = model.predict_proba(df_clean)
+                latest_proba = all_probas[-1]
                 
+                meta_confidence = latest_proba[1]
                 prediction = primary_prediction
                 confidence = meta_confidence
-
-                # 3. Construir el array de probabilidades final
                 if prediction == 2: # BUY
                     probabilities = np.array([(1 - confidence) / 2, (1 - confidence) / 2, confidence])
                 else: # SELL
@@ -145,7 +159,7 @@ class MarketAnalyzer:
         data_dict: Dict[str, pd.DataFrame],
         symbol: str
     ) -> Dict[str, Optional[MarketAnalysis]]:
-        """Analiza múltiples timeframes."""
+        """Analiza múltiples timeframes para un símbolo, usando el modelo correcto para cada uno."""
         results = {}
         for timeframe, df in data_dict.items():
             analysis = self.analyze(df, symbol, timeframe)
@@ -167,11 +181,32 @@ class MarketAnalyzer:
                     summary[indicator] = float(value)
         return summary
 
-    def save_models(self, directory: str = "models"):
-        self.model.save_all(directory)
-        logger.info(f"Modelos guardados en {directory}")
+    def load_models(self, base_directory: str = "models"):
+        """Escanea, carga y organiza todos los modelos entrenados por símbolo y timeframe."""
+        logger.info(f"Buscando y cargando modelos especializados desde '{base_directory}'...")
+        self.models = {}
+        model_count = 0
 
-    def load_models(self, directory: str = "models"):
-        self.model.load_all(directory)
-        self.is_trained = True
-        logger.info(f"Modelos cargados desde {directory}")
+        for symbol_dir in os.listdir(base_directory):
+            symbol_path = os.path.join(base_directory, symbol_dir)
+            if os.path.isdir(symbol_path):
+                symbol = symbol_dir.replace("_", " ")
+                self.models[symbol] = {}
+                for timeframe_dir in os.listdir(symbol_path):
+                    timeframe_path = os.path.join(symbol_path, timeframe_dir)
+                    if os.path.isdir(timeframe_path):
+                        try:
+                            model = EnsembleModel()
+                            model.load_all(timeframe_path)
+                            self.models[symbol][timeframe_dir] = model
+                            logger.success(f"Modelo para {symbol} [{timeframe_dir}] cargado exitosamente.")
+                            model_count += 1
+                        except Exception as e:
+                            logger.error(f"Fallo al cargar el modelo para {symbol} [{timeframe_dir}]: {e}")
+
+        if model_count > 0:
+            self.is_trained = True
+            logger.info(f"Carga completa. Se cargaron un total de {model_count} modelos especializados.")
+        else:
+            logger.error("No se encontraron modelos entrenados. El bot no puede funcionar.")
+            raise FileNotFoundError("No se encontraron modelos de IA entrenados.")

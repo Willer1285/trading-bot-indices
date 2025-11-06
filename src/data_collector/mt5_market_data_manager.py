@@ -4,6 +4,7 @@ Manages real-time market data collection from MT5
 """
 
 import asyncio
+import io
 import os
 from typing import Dict, List, Optional, Set
 from datetime import datetime, timedelta
@@ -91,44 +92,59 @@ class MT5MarketDataManager:
         logger.info("MT5 Market Data Manager stopped")
 
     async def _fetch_initial_data(self):
-        """Load initial historical data from local CSV files."""
-        logger.info("Loading initial historical data from local CSV files...")
+        """Load initial historical data from local files (.csv or .txt)."""
+        logger.info("Loading initial historical data from local files...")
         
         for symbol in self.symbols:
             for timeframe in self.timeframes:
-                file_path = f"historical_data/{symbol}/{timeframe}.csv"
-                try:
-                    if os.path.exists(file_path):
-                        # Se lee el archivo CSV.
-                        df = pd.read_csv(file_path)
+                # Check for both .txt and .csv extensions
+                txt_path = f"historical_data/{symbol}/{timeframe}.txt"
+                csv_path = f"historical_data/{symbol}/{timeframe}.csv"
+                file_path = None
+
+                if os.path.exists(txt_path):
+                    file_path = txt_path
+                elif os.path.exists(csv_path):
+                    file_path = csv_path
+
+                if file_path:
+                    try:
+                        # Using the robust loading logic from train_models.py
+                        with open(file_path, 'r', encoding='utf-8') as f:
+                            content = f.read().replace('"', '')
                         
-                        # Se asegura de que la columna de timestamp se interprete correctamente.
-                        # El formato de fecha en los archivos exportados es 'YYYY.MM.DD HH:MI'.
-                        df['timestamp'] = pd.to_datetime(df['Fecha'], format='%Y.%m.%d %H:%M')
-                        df.set_index('timestamp', inplace=True)
+                        df = pd.read_csv(io.StringIO(content), sep='\t')
                         
-                        # Se renombran las columnas para que coincidan con el formato interno del bot.
+                        df.columns = df.columns.str.replace(r'[<>]', '', regex=True).str.strip()
+                        
+                        if 'TIME' in df.columns and 'DATE' in df.columns:
+                            df['timestamp'] = pd.to_datetime(df['DATE'] + ' ' + df['TIME'], errors='coerce')
+                        elif 'DATE' in df.columns:
+                            df['timestamp'] = pd.to_datetime(df['DATE'], format='%Y.%m.%d', errors='coerce')
+                        else:
+                            raise ValueError("Missing 'DATE' or 'TIME' columns.")
+
                         df.rename(columns={
-                            'Apertura': 'open',
-                            'Máximo': 'high',
-                            'Mínimo': 'low',
-                            'Cierre': 'close',
-                            'Volumen': 'volume'
+                            'OPEN': 'open', 'HIGH': 'high', 'LOW': 'low',
+                            'CLOSE': 'close', 'VOL': 'volume'
                         }, inplace=True)
                         
-                        # Se seleccionan solo las columnas necesarias.
-                        df = df[['open', 'high', 'low', 'close', 'volume']]
+                        df.set_index('timestamp', inplace=True)
+                        df.sort_index(inplace=True)
+                        
+                        # Select necessary columns and drop rows with invalid data
+                        required_cols = ['open', 'high', 'low', 'close', 'volume']
+                        df = df[required_cols]
+                        df.dropna(inplace=True)
                         
                         self.market_data[symbol][timeframe] = df
                         logger.success(f"Loaded {len(df)} records for {symbol} [{timeframe}] from {file_path}")
-                    else:
-                        logger.warning(f"No local data file found for {symbol} [{timeframe}] at {file_path}. Will fetch from MT5.")
-                        # Si no hay archivo local, se intenta obtener de MT5 como fallback.
-                        await self._fetch_and_store(symbol, timeframe, limit=500)
 
-                except Exception as e:
-                    logger.error(f"Error loading local data for {symbol} [{timeframe}]: {e}")
-                    # Si hay un error al leer el archivo, se intenta obtener de MT5.
+                    except Exception as e:
+                        logger.error(f"Error loading local data for {symbol} [{timeframe}] from {file_path}: {e}")
+                        await self._fetch_and_store(symbol, timeframe, limit=500)
+                else:
+                    logger.warning(f"No local data file found for {symbol} [{timeframe}]. Will fetch from MT5.")
                     await self._fetch_and_store(symbol, timeframe, limit=500)
 
         logger.info("Initial data loading process completed.")

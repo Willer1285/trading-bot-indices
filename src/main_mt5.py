@@ -282,7 +282,7 @@ class MT5TradingBot:
             start_time = datetime.utcnow()
 
             # Get multi-timeframe data
-            mtf_data = self.market_data_manager.get_multi_timeframe_data(symbol, limit=5000)
+            mtf_data = self.market_data_manager.get_multi_timeframe_data(symbol, limit=200)
 
             if not mtf_data or all(df.empty for df in mtf_data.values()):
                 logger.debug(f"{symbol}: No data available yet")
