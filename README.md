@@ -1,344 +1,407 @@
-# 🤖 AI Trading Signal Bot
+# Trading Bot para Índices Sintéticos (MT5)
 
-Sistema avanzado de trading impulsado por IA que analiza mercados en tiempo real y envía señales de alta probabilidad a Telegram.
+Bot de trading automatizado con inteligencia artificial para operar índices sintéticos (GainX/PainX) en MetaTrader 5.
 
-## 🌟 Características
+## Características Principales
 
-### Análisis de Mercado
-- ✅ **Recopilación de datos en tiempo real** de múltiples exchanges (Binance, Bybit)
-- ✅ **Análisis multi-timeframe** (M1, M5, M15, H1, H4, D)
-- ✅ **+50 indicadores técnicos** (RSI, MACD, Bollinger Bands, ATR, EMA, etc.)
-- ✅ **Detección de patrones** de velas japonesas
-- ✅ **Análisis de soporte y resistencia**
+- **Sistema de IA Avanzado**: Ensemble de modelos ML (Random Forest, Gradient Boosting, LSTM)
+- **Meta-Learning**: Utiliza meta-labeling para filtrar señales de alta probabilidad
+- **50+ Indicadores Técnicos**: RSI, MACD, Bollinger Bands, ATR, Ichimoku, etc.
+- **Análisis Multi-Timeframe**: Confirma señales en múltiples marcos temporales
+- **Gestión de Riesgo Profesional**: Stop Loss, Take Profit, Break Even y Trailing Stop dinámicos basados en ATR
+- **Notificaciones en Telegram**: Alertas en tiempo real con gráficos
+- **Trading Automático**: Ejecución automática de operaciones en MT5
 
-### Inteligencia Artificial
-- 🧠 **Modelo ensemble** combinando Random Forest, Gradient Boosting y análisis de patrones
-- 📊 **Ingeniería de características** avanzada con +100 features
-- 🎯 **Consenso multi-timeframe** para señales de alta probabilidad
-- 🔍 **Análisis de régimen de mercado** (trending vs ranging)
+## Arquitectura del Sistema
 
-### Gestión de Riesgo
-- 💰 **Stop Loss automático** basado en ATR y niveles de soporte/resistencia
-- 🎯 **Múltiples niveles de Take Profit** (TP1, TP2, TP3)
-- 📈 **Ratio Risk/Reward** mínimo configurable
-- 🔒 **Filtros de señales** para evitar operaciones de baja calidad
-- ⚖️ **Límites diarios** de señales por par y total
+### Modelos de IA
 
-### Telegram
-- 📱 **Señales formateadas** con toda la información necesaria
-- 📊 **Gráficos automáticos** con indicadores y niveles
-- 📈 **Resúmenes diarios** de rendimiento
-- ⚠️ **Alertas de errores** en tiempo real
-- 💬 **Mensajes personalizables**
+1. **SimplePatternModel** (Modelo Primario)
+   - Modelo basado en reglas técnicas
+   - Genera señales iniciales (BUY/SELL/HOLD)
+   - Utiliza RSI, MACD y tendencia
 
-### Operación 24/7
-- 🐳 **Docker & Docker Compose** para deployment fácil
-- 🔄 **Auto-restart** en caso de errores
-- 📝 **Logging completo** con rotación automática
-- 📊 **Monitoreo de rendimiento** y health checks
-- 💾 **Backups automáticos** de datos y logs
+2. **Random Forest & Gradient Boosting** (Meta-modelos)
+   - Filtran señales del modelo primario
+   - Predicen probabilidad de éxito de cada señal
+   - Calibrados con CalibratedClassifierCV
 
-## 🚀 Instalación Rápida
+3. **LSTM** (Red Neuronal Recurrente)
+   - Analiza secuencias temporales de 50 períodos
+   - Captura patrones complejos en el precio
+   - Entrenado con class weights para balancear datos
 
-### Requisitos Previos
-- VPS con Ubuntu/Debian (Hostinger u otro)
-- Docker y Docker Compose
-- Cuenta en Binance (API keys)
-- Bot de Telegram (BotFather)
+4. **Ensemble Stacking**
+   - Combina predicciones de todos los modelos
+   - Meta-modelo de Logistic Regression para decisión final
+   - Genera confianza ponderada de la señal
 
-### Instalación en VPS
+### Proceso de Predicción
 
-```bash
-# 1. Clonar el repositorio
-git clone <your-repo-url>
-cd trading-bot-IA
-
-# 2. Ejecutar script de instalación
-chmod +x scripts/install_vps.sh
-./scripts/install_vps.sh
-
-# 3. Configurar variables de entorno
-cp .env.example .env
-nano .env  # Editar con tus credenciales
-
-# 4. Iniciar el bot
-./scripts/start.sh
+```
+Datos OHLCV → Extracción de Features (116) → Modelo Primario → Señal (BUY/SELL/HOLD)
+                                                                          ↓
+                                                                   Meta-modelos
+                                                                          ↓
+                                                              Confianza (0.0 - 1.0)
+                                                                          ↓
+                                                                 Filtros de Calidad
+                                                                          ↓
+                                                             Ejecución en MT5 (si > 75%)
 ```
 
-## ⚙️ Configuración
+## Requisitos del Sistema
 
-### 1. Variables de Entorno (.env)
+### Software
+- Python 3.11+
+- MetaTrader 5 (Windows o Wine en Linux)
+- Cuenta de trading MT5 (demo o real)
+- Bot de Telegram (opcional pero recomendado)
+
+### Hardware
+- CPU: 4+ cores (para entrenamiento de modelos)
+- RAM: 8GB+ (16GB recomendado para entrenamiento)
+- Almacenamiento: 5GB+ para datos y modelos
+
+## Instalación
+
+### 1. Clonar el Repositorio
+
+```bash
+git clone https://github.com/tu-usuario/trading-bot-indices.git
+cd trading-bot-indices
+```
+
+### 2. Crear Entorno Virtual
+
+```bash
+python -m venv venv
+
+# Windows
+venv\Scripts\activate
+
+# Linux/Mac
+source venv/bin/activate
+```
+
+### 3. Instalar Dependencias
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Configurar Variables de Entorno
+
+Copia el archivo `.env.example` a `.env` y completa los valores:
+
+```bash
+cp .env.example .env
+```
+
+Edita `.env` con tus credenciales:
 
 ```bash
 # Telegram
-TELEGRAM_BOT_TOKEN=tu_token_de_bot
+TELEGRAM_BOT_TOKEN=tu_token_de_botfather
 TELEGRAM_CHANNEL_ID=tu_channel_id
 
-# Binance API
-BINANCE_API_KEY=tu_api_key
-BINANCE_API_SECRET=tu_api_secret
+# MT5
+MT5_LOGIN=12345678
+MT5_PASSWORD=tu_contraseña
+MT5_SERVER=Weltrade-Demo
 
-# Configuración de IA
-CONFIDENCE_THRESHOLD=0.75  # 75% mínimo
-MIN_SIGNAL_SCORE=80  # 0-100
-
-# Pares a monitorear
-TRADING_PAIRS=BTC/USDT,ETH/USDT,BNB/USDT,SOL/USDT
-
-# Timeframes
+# Trading
+TRADING_SYMBOLS=GainX 400,GainX 600,PainX 400
 TIMEFRAMES=1m,5m,15m,1h,4h,1d
+CONFIDENCE_THRESHOLD=0.75
+
+# Auto-trading (IMPORTANTE: false = solo notificaciones)
+MT5_AUTO_TRADING=false
 ```
 
-### 2. Configuración Avanzada (config.yaml)
-
-El archivo `config.yaml` permite configuración detallada:
-
-```yaml
-ai_model:
-  confidence_threshold: 0.75
-  min_signal_score: 80
-
-signals:
-  risk_management:
-    max_signals_per_day: 10
-    max_signals_per_pair: 3
-    min_risk_reward: 2.0
-    stop_loss_atr_multiplier: 1.5
-```
-
-## 🎯 Uso
-
-### Iniciar el Bot
+### 5. Crear Directorios Necesarios
 
 ```bash
-./scripts/start.sh
+mkdir -p logs models
 ```
 
-### Ver Logs
+## Uso
+
+### Entrenar Modelos de IA
+
+Antes de usar el bot, debes entrenar los modelos con datos históricos:
 
 ```bash
-docker-compose logs -f trading-bot
+python train_models.py
 ```
 
-### Detener el Bot
+Este proceso:
+- Escanea `historical_data/` buscando archivos CSV
+- Extrae 116 características técnicas por símbolo/timeframe
+- Entrena 4 modelos por cada combinación
+- Guarda los modelos en `models/{símbolo}/{timeframe}/`
+
+**Tiempo estimado**: 30-60 minutos para 10 símbolos × 6 timeframes
+
+### Ejecutar el Bot
 
 ```bash
-./scripts/stop.sh
+python run_mt5.py
 ```
 
-### Actualizar
+El bot:
+1. Se conecta a MT5
+2. Carga modelos entrenados
+3. Analiza mercados cada 60 segundos
+4. Genera señales de trading
+5. Ejecuta operaciones (si `MT5_AUTO_TRADING=true`)
+6. Envía notificaciones a Telegram
+7. Gestiona posiciones abiertas (Break Even, Trailing Stop)
+
+### Modo Solo Notificaciones
+
+Para usar el bot sin ejecutar operaciones reales:
 
 ```bash
-./scripts/update.sh
+# En .env
+MT5_AUTO_TRADING=false
 ```
 
-### Crear Backup
+Recibirás alertas en Telegram pero el bot NO abrirá operaciones.
 
-```bash
-./scripts/backup.sh
-```
-
-## 📊 Señales de Trading
-
-Las señales incluyen:
-
-- 🎯 **Tipo de señal**: BUY o SELL
-- 💵 **Precio de entrada**
-- 🛑 **Stop Loss** (automático basado en ATR)
-- 🎯 **Take Profit** (3 niveles: TP1, TP2, TP3)
-- 📊 **Confianza** (0-100%)
-- 💪 **Fuerza de señal** (0-100)
-- 📈 **Ratio Risk/Reward**
-- 💡 **Razón** de la señal (indicadores alineados)
-- 📊 **Gráfico** con niveles marcados
-
-### Ejemplo de Señal
+## Estructura del Proyecto
 
 ```
-🟢 BUY SIGNAL 🟢
-
-Symbol: BTC/USDT
-Timeframe: 4h
-
-📈 ENTRY
-💵 Price: $42,500.00
-
-🛑 STOP LOSS
-💵 Price: $41,800.00
-
-🎯 TAKE PROFIT LEVELS
-   TP1: $43,900.00 (+3.29%)
-   TP2: $44,600.00 (+4.94%)
-   TP3: $45,800.00 (+7.76%)
-
-Confidence: 85%
-Signal Strength: 87/100
-Risk/Reward: 1:2.5
-
-💡 Reason: 5/6 timeframes aligned, RSI oversold, MACD bullish
-```
-
-## 🏗️ Arquitectura
-
-```
-trading-bot-IA/
+trading-bot-indices/
 ├── src/
-│   ├── main.py                    # Aplicación principal
-│   ├── config.py                  # Gestión de configuración
-│   ├── data_collector/            # Recopilación de datos
-│   │   ├── exchange_connector.py
-│   │   ├── market_data_manager.py
-│   │   └── timeframe_aggregator.py
-│   ├── ai_engine/                 # Motor de IA
-│   │   ├── feature_engineering.py
-│   │   ├── technical_indicators.py
-│   │   ├── ai_models.py
-│   │   └── market_analyzer.py
-│   ├── signal_generator/          # Generación de señales
+│   ├── ai_engine/              # Motor de IA
+│   │   ├── ai_models.py        # Modelos ML (RF, GB, LSTM, Ensemble)
+│   │   ├── feature_engineering.py  # Extracción de features
+│   │   ├── technical_indicators.py  # 50+ indicadores
+│   │   └── market_analyzer.py  # Análisis de mercado
+│   ├── data_collector/         # Recolección de datos
+│   │   └── mt5_connector.py    # Conexión con MT5
+│   ├── signal_generator/       # Generación de señales
 │   │   ├── signal_generator.py
-│   │   ├── signal_filter.py
-│   │   └── risk_manager.py
-│   ├── telegram_bot/              # Bot de Telegram
+│   │   ├── signal_filter.py    # Filtros de calidad
+│   │   └── risk_manager.py     # Gestión de riesgo
+│   ├── telegram_bot/           # Bot de Telegram
 │   │   ├── telegram_bot.py
-│   │   ├── message_formatter.py
 │   │   └── chart_generator.py
-│   └── utils/                     # Utilidades
-│       ├── logger.py
-│       └── performance_tracker.py
-├── scripts/                       # Scripts de deployment
-├── models/                        # Modelos entrenados
-├── logs/                          # Logs
-├── data/                          # Datos temporales
-├── Dockerfile
-├── docker-compose.yml
-├── requirements.txt
-└── config.yaml
+│   ├── config.py               # Configuración centralizada
+│   └── main_mt5.py             # Loop principal
+├── historical_data/            # Datos históricos CSV
+├── models/                     # Modelos entrenados
+├── logs/                       # Logs del bot
+├── train_models.py             # Script de entrenamiento
+├── run_mt5.py                  # Launcher del bot
+├── requirements.txt            # Dependencias Python
+├── .env.example                # Plantilla de configuración
+└── README.md                   # Este archivo
 ```
 
-## 🔧 Características Técnicas
+## Datos Históricos
 
-### Indicadores Técnicos (50+)
-- **Tendencia**: SMA, EMA, MACD, ADX, Ichimoku
-- **Momentum**: RSI, Stochastic, Williams %R, ROC, TSI
-- **Volatilidad**: Bollinger Bands, ATR, Keltner Channel
-- **Volumen**: OBV, CMF, VWAP, Force Index
+### Formato CSV Esperado
 
-### Modelos de IA
-- **Random Forest**: Clasificación basada en árboles de decisión
-- **Gradient Boosting**: Boosting para patrones complejos
-- **Pattern Recognition**: Análisis de patrones de velas
-- **Ensemble**: Combinación ponderada de todos los modelos
+Los archivos deben estar en `historical_data/{Símbolo}/` con formato:
+
+```
+<DATE>  <TIME>  <OPEN>  <HIGH>  <LOW>  <CLOSE>  <TICKVOL>  <VOL>  <SPREAD>
+2024.01.01  00:00:00  100000.00  100050.00  99950.00  100020.00  1234  0  5
+```
+
+**Importante**: El bot usa `<TICKVOL>` como volumen, no `<VOL>` (que suele estar en 0 para índices sintéticos).
+
+### Obtener Datos Históricos
+
+1. **Desde MT5**: Exportar datos históricos a CSV
+2. **Script personalizado**: Usar `mt5_connector.py` para descargar datos
+3. **Formato**: Tab-separated, columnas con `<>`, fechas `YYYY.MM.DD`
+
+## Configuración Avanzada
 
 ### Gestión de Riesgo
-- Stop Loss basado en ATR con multiplicador configurable
-- Consideración de niveles de soporte/resistencia
-- Múltiples niveles de Take Profit
-- Filtrado de señales de baja calidad
-- Límites de exposición diaria
 
-## 📈 Rendimiento
-
-El sistema está diseñado para generar señales de **alta probabilidad** con:
-- ✅ Confianza mínima: 75%
-- ✅ Fuerza de señal mínima: 80/100
-- ✅ Risk/Reward mínimo: 2:1
-- ✅ Máximo 10 señales por día
-- ✅ Máximo 3 señales por par
-
-## 🔒 Seguridad
-
-- 🔐 Variables de entorno para credenciales
-- 🚫 No almacena claves privadas
-- 📝 Logging completo de operaciones
-- 🔄 Auto-restart en caso de errores
-- 💾 Backups automáticos
-
-## 🛠️ Solución de Problemas
-
-### El bot no inicia
 ```bash
-# Verificar logs
-docker-compose logs trading-bot
+# Stop Loss y Take Profit dinámicos basados en ATR
+STOP_LOSS_ATR_MULTIPLIER=1.5    # SL a 1.5 × ATR
+TAKE_PROFIT_1_ATR_MULTIPLIER=2.0  # TP1 a 2.0 × ATR
+TAKE_PROFIT_2_ATR_MULTIPLIER=4.0  # TP2 a 4.0 × ATR
 
-# Verificar configuración
-cat .env
+# Break Even (mover SL a punto de equilibrio)
+ENABLE_BREAK_EVEN=true
+BREAK_EVEN_TRIGGER_ATR_MULTIPLIER=1.0  # Activar cuando profit > 1.0 × ATR
+BREAK_EVEN_PROFIT_LOCK_ATR_MULTIPLIER=0.2  # Asegurar 0.2 × ATR de ganancia
 
-# Reiniciar servicios
-docker-compose restart
+# Trailing Stop (SL dinámico que sigue el precio)
+ENABLE_TRAILING_STOP=true
+TRAILING_STOP_TRIGGER_ATR_MULTIPLIER=2.0  # Activar cuando profit > 2.0 × ATR
+TRAILING_STOP_DISTANCE_ATR_MULTIPLIER=1.5  # Distancia del SL: 1.5 × ATR
 ```
 
-### No se envían señales a Telegram
+### Lotaje Dinámico
+
 ```bash
-# Verificar token de Telegram
-# Verificar que el bot sea administrador del canal
-# Verificar logs para errores
-docker-compose logs trading-bot | grep -i telegram
+ENABLE_DYNAMIC_LOT_SIZE=true
+MIN_LOT_SIZE=0.10
+MAX_LOT_SIZE=1.00
 ```
 
-### Errores de API del exchange
+El tamaño del lote se ajusta según la confianza de la señal:
+- 75% confianza → 0.10 lotes
+- 85% confianza → 0.55 lotes
+- 95%+ confianza → 1.00 lotes
+
+### Reglas de Índices Sintéticos
+
 ```bash
-# Verificar API keys en .env
-# Verificar límites de rate
-# Verificar conectividad
-docker-compose logs trading-bot | grep -i error
+# GainX solo señales BUY, PainX solo señales SELL
+ENFORCE_GAINX_BUY_ONLY=true
+ENFORCE_PAINX_SELL_ONLY=true
 ```
 
-## 📚 Recursos
+## Filtros de Calidad de Señales
 
-### Crear Bot de Telegram
-1. Buscar @BotFather en Telegram
-2. Enviar `/newbot`
-3. Seguir instrucciones
-4. Copiar el token
+El bot aplica múltiples filtros antes de ejecutar una señal:
 
-### Obtener Channel ID
-1. Crear un canal
-2. Añadir el bot como administrador
-3. Enviar mensaje al canal
-4. Visitar: `https://api.telegram.org/bot<TOKEN>/getUpdates`
-5. Buscar `"chat":{"id":-XXXXXXXXX`
+1. **Umbral de Confianza**: ≥ 75% (configurable)
+2. **Confluencia Multi-Timeframe**: ≥ 50% de timeframes de acuerdo
+3. **Alineación de Tendencia**: Precio alineado con SMA50 del timeframe superior
+4. **Volatilidad Aceptable**: ATR < 5% del precio
+5. **Sin Señales Conflictivas**: No señales opuestas en la última hora
+6. **Límites Diarios**: Max 10 señales/día, max 3 por par
 
-### API de Binance
-1. Ir a Binance.com
-2. Account > API Management
-3. Crear nueva API Key
-4. Habilitar "Enable Spot & Margin Trading"
-5. Guardar API Key y Secret
+## Monitoreo y Logs
 
-## 🤝 Contribuir
+### Logs del Bot
 
-Las contribuciones son bienvenidas! Por favor:
-1. Fork el proyecto
-2. Crea una rama para tu feature
-3. Commit tus cambios
-4. Push a la rama
-5. Abre un Pull Request
+Los logs se guardan en `logs/trading_bot.log` con rotación automática:
 
-## ⚠️ Disclaimer
+```bash
+tail -f logs/trading_bot.log
+```
 
-Este bot es para fines educativos. El trading conlleva riesgos significativos. Usa este bot bajo tu propia responsabilidad. No nos hacemos responsables de pérdidas financieras.
+### Métricas de Modelos
 
-**IMPORTANTE**: Siempre haz backtesting y paper trading antes de usar con dinero real.
+Durante el entrenamiento, el bot registra:
+- Distribución de clases (balanceo)
+- Class weights aplicados
+- Métricas por epoch (Loss, Accuracy, AUC, Precision, Recall)
+- Métricas finales de validación
 
-## 📄 Licencia
+### Performance Tracking
 
-MIT License - Ver LICENSE file para detalles
+El bot registra cada señal generada con:
+- Timestamp
+- Símbolo y timeframe
+- Dirección (BUY/SELL)
+- Confianza
+- Parámetros de riesgo (SL, TP)
+- Resultado (si se ejecutó)
 
-## 💬 Soporte
+## Solución de Problemas
 
-Para problemas o preguntas:
-- Abre un Issue en GitHub
-- Contacta al desarrollador
+### El bot no se conecta a MT5
 
-## 🙏 Agradecimientos
+- Verifica que MT5 esté ejecutándose
+- Confirma credenciales en `.env`
+- En Windows: Asegúrate de que MT5 permita conexiones de API
+- En Linux: Verifica que Wine esté configurado correctamente
 
-- CCXT por la conectividad con exchanges
-- TA-Lib por indicadores técnicos
-- python-telegram-bot por la integración con Telegram
-- Scikit-learn por los modelos de ML
+### Modelos no se cargan
+
+- Verifica que existan archivos en `models/{símbolo}/{timeframe}/`
+- Ejecuta `python train_models.py` para reentrenar
+- Revisa logs en `logs/trading_bot.log`
+
+### No se generan señales
+
+- Verifica que `CONFIDENCE_THRESHOLD` no sea muy alto (recomendado: 0.75)
+- Comprueba que haya suficientes datos históricos (200+ velas por timeframe)
+- Revisa filtros de calidad en `signal_filter.py`
+
+### Accuracy constante en LSTM
+
+- Esto indica datos desbalanceados
+- El bot ahora aplica class_weights automáticamente
+- Verifica distribución de clases en logs de entrenamiento
+
+## Mejores Prácticas
+
+### 1. Comienza en Demo
+
+Siempre prueba el bot en una cuenta demo antes de usar dinero real.
+
+```bash
+MT5_AUTO_TRADING=false
+```
+
+### 2. Reentrenamiento Periódico
+
+Reentrena modelos cada 1-3 meses para adaptarse al mercado:
+
+```bash
+python train_models.py
+```
+
+### 3. Monitoreo Constante
+
+- Revisa logs diariamente
+- Analiza señales generadas vs ejecutadas
+- Ajusta `CONFIDENCE_THRESHOLD` según resultados
+
+### 4. Gestión de Capital
+
+- No uses más del 1-2% del capital por operación
+- Ajusta `MAX_LOT_SIZE` según tu balance
+- Mantén `MAX_SIGNALS_PER_DAY` conservador (≤10)
+
+### 5. Backtesting
+
+Antes de trading en vivo:
+- Analiza historial de señales
+- Calcula win rate y risk/reward
+- Ajusta parámetros según resultados
+
+## Seguridad
+
+- **Nunca** compartas tu archivo `.env`
+- **Nunca** subas credenciales a Git (`.env` está en `.gitignore`)
+- Usa cuentas demo para pruebas
+- Revisa operaciones manualmente antes de activar auto-trading
+
+## Soporte y Contribuciones
+
+- **Issues**: https://github.com/Willer1285/trading-bot-indices/issues
+- **Documentación**: Consulta este README y comentarios en el código
+- **Contribuciones**: Pull requests bienvenidos
+
+## Licencia
+
+Este proyecto es para uso educativo y personal. Usa bajo tu propio riesgo.
+
+**ADVERTENCIA**: Trading involucra riesgo significativo de pérdida de capital. Este bot no garantiza ganancias. Siempre prueba en demo primero.
+
+## Changelog
+
+### v1.1.0 (2024-11-06) - Análisis Exhaustivo y Mejoras
+- ✅ Corrección de problema de volumen (usar TICKVOL en lugar de VOL)
+- ✅ Mejora de entrenamiento LSTM con class weights automáticos
+- ✅ Métricas adicionales en LSTM (AUC, Precision, Recall)
+- ✅ Validación de features en carga de modelos
+- ✅ Corrección de versión de tensorflow en requirements
+- ✅ Documentación completa en README
+- ✅ Archivo .env.example con todas las variables
+- ✅ Análisis exhaustivo del proyecto documentado
+
+### v1.0.0 (2024-01-01)
+- Lanzamiento inicial
+- Sistema de ensemble con meta-learning
+- 50+ indicadores técnicos
+- Gestión de riesgo dinámica
+- Integración con Telegram y MT5
 
 ---
 
-**Hecho con ❤️ para la comunidad de trading**
-
-_Powered by AI & Python_ 🐍
+**Desarrollado con ❤️ para traders algorítmicos**

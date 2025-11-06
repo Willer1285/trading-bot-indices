@@ -107,9 +107,10 @@ def load_single_historical_data(file_path: str) -> pd.DataFrame:
             logger.warning(f"Skipping {file_path} due to missing 'DATE' or 'TIME' columns.")
             return pd.DataFrame()
 
+        # Usar TICKVOL en lugar de VOL (que siempre está en 0)
         df.rename(columns={
             'OPEN': 'open', 'HIGH': 'high', 'LOW': 'low',
-            'CLOSE': 'close', 'VOL': 'volume'
+            'CLOSE': 'close', 'TICKVOL': 'volume'
         }, inplace=True)
         
         df.set_index('timestamp', inplace=True)

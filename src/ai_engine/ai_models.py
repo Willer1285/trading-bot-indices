@@ -17,6 +17,7 @@ from pathlib import Path
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import LSTM, Dense, Dropout
 from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.metrics import AUC, Precision, Recall
 
 
 class BaseModel:
@@ -362,7 +363,21 @@ class EnsembleModel:
         for name, model in self.base_models.items():
             if name != 'pattern_based' and model is not None:
                 model.save(path / f"{name}.pkl")
-        
+
+        # Guardar lista de features esperadas para validación posterior
+        feature_info = {}
+        for name, model in self.base_models.items():
+            if name != 'pattern_based' and model is not None and hasattr(model, 'scaler'):
+                if hasattr(model.scaler, 'feature_names_in_'):
+                    feature_info[name] = list(model.scaler.feature_names_in_)
+                elif hasattr(model.scaler, 'n_features_in_'):
+                    feature_info[name] = {'n_features': model.scaler.n_features_in_}
+
+        if feature_info:
+            with open(path / "feature_info.pkl", 'wb') as f:
+                pickle.dump(feature_info, f)
+            logger.info(f"Feature information saved to {path / 'feature_info.pkl'}")
+
         if self.is_fitted:
             with open(path / "meta_model.pkl", 'wb') as f:
                 pickle.dump(self.meta_model, f)
@@ -370,7 +385,18 @@ class EnsembleModel:
 
     def load_all(self, directory: str):
         path = Path(directory)
-        
+
+        # Cargar información de features esperadas
+        feature_info_path = path / "feature_info.pkl"
+        expected_features = {}
+        if feature_info_path.exists():
+            try:
+                with open(feature_info_path, 'rb') as f:
+                    expected_features = pickle.load(f)
+                logger.info(f"Loaded feature information from {feature_info_path}")
+            except Exception as e:
+                logger.warning(f"Failed to load feature info: {e}")
+
         if self.base_models['lstm'] is None:
             self.base_models['lstm'] = LSTMModel()
 
@@ -380,6 +406,15 @@ class EnsembleModel:
                 if model_path.exists():
                     try:
                         model.load(str(model_path))
+
+                        # Validar features si están disponibles
+                        if name in expected_features:
+                            expected = expected_features[name]
+                            if isinstance(expected, list):
+                                logger.info(f"Model {name} expects {len(expected)} features")
+                            elif isinstance(expected, dict) and 'n_features' in expected:
+                                logger.info(f"Model {name} expects {expected['n_features']} features")
+
                     except Exception as e:
                         logger.error(f"Failed to load {name}: {e}")
                 elif name == 'lstm':
@@ -391,6 +426,7 @@ class EnsembleModel:
                 with open(meta_model_path, 'rb') as f:
                     self.meta_model = pickle.load(f)
                 self.is_fitted = True
+                logger.info("Ensemble model loaded successfully")
             except Exception as e:
                 logger.error(f"Failed to load meta-model: {e}")
                 self.is_fitted = False
@@ -418,30 +454,55 @@ class LSTMModel(BaseModel):
             Dense(25, activation='relu'),
             Dense(1, activation='sigmoid')
         ])
-        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+        model.compile(
+            optimizer='adam',
+            loss='binary_crossentropy',
+            metrics=['accuracy', AUC(name='auc'), Precision(name='precision'), Recall(name='recall')]
+        )
         self.model = model
 
     def fit(self, X: np.ndarray, y: np.ndarray):
         """Train the LSTM model."""
         if self.model is None:
             self._build_model()
-            
+
+        # Calcular class weights para balancear clases desbalanceadas
+        unique_classes, class_counts = np.unique(y, return_counts=True)
+        total_samples = len(y)
+        class_weights = {int(cls): total_samples / (len(unique_classes) * count)
+                        for cls, count in zip(unique_classes, class_counts)}
+
+        logger.info(f"Class distribution: {dict(zip(unique_classes, class_counts))}")
+        logger.info(f"Class weights: {class_weights}")
+
         early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
-        
+
         n_samples, n_timesteps, n_features = X.shape
         X_reshaped = X.reshape((n_samples * n_timesteps, n_features))
         self.scaler.fit(X_reshaped)
         X_scaled_reshaped = self.scaler.transform(X_reshaped)
         X_scaled = X_scaled_reshaped.reshape((n_samples, n_timesteps, n_features))
 
-        self.model.fit(
+        history = self.model.fit(
             X_scaled, y,
             epochs=50,
             batch_size=32,
             validation_split=0.1,
             callbacks=[early_stopping],
+            class_weight=class_weights,
             verbose=1
         )
+
+        # Log de métricas finales
+        final_epoch = len(history.history['loss'])
+        logger.info(f"Training stopped at epoch {final_epoch}")
+        logger.info(f"Final metrics - Loss: {history.history['loss'][-1]:.4f}, "
+                   f"Accuracy: {history.history['accuracy'][-1]:.4f}, "
+                   f"AUC: {history.history['auc'][-1]:.4f}")
+        logger.info(f"Validation metrics - Loss: {history.history['val_loss'][-1]:.4f}, "
+                   f"Accuracy: {history.history['val_accuracy'][-1]:.4f}, "
+                   f"AUC: {history.history['val_auc'][-1]:.4f}")
+
         self.is_fitted = True
         logger.info(f"{self.name} trained successfully.")
 
