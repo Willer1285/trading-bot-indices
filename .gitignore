@@ -47,6 +47,8 @@ logs/
 *.sqlite
 
 # AI Models
+models/*/
+models_backup*/
 models/*.h5
 models/*.pkl
 models/*.pth
