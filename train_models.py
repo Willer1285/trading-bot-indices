@@ -49,7 +49,8 @@ def prepare_training_data(df: pd.DataFrame) -> (pd.DataFrame, pd.Series):
 
     # 3. Create meta-labels based on primary model signals
     meta_labels = create_meta_labels(df.loc[temp_X.index], primary_predictions)
-    
+    meta_labels.name = 'meta_label'
+
     # 4. Combine features and labels
     df_combined = df_features_aligned.join(meta_labels)
 
