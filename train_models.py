@@ -49,7 +49,8 @@ def prepare_training_data(df: pd.DataFrame) -> (pd.DataFrame, pd.Series):
 
     # 3. Create meta-labels based on primary model signals
     meta_labels = create_meta_labels(df.loc[temp_X.index], primary_predictions)
-    
+    meta_labels.name = 'meta_label'
+
     # 4. Combine features and labels
     df_combined = df_features_aligned.join(meta_labels)
 
@@ -107,9 +108,10 @@ def load_single_historical_data(file_path: str) -> pd.DataFrame:
             logger.warning(f"Skipping {file_path} due to missing 'DATE' or 'TIME' columns.")
             return pd.DataFrame()
 
+        # Usar TICKVOL en lugar de VOL (que siempre está en 0)
         df.rename(columns={
             'OPEN': 'open', 'HIGH': 'high', 'LOW': 'low',
-            'CLOSE': 'close', 'VOL': 'volume'
+            'CLOSE': 'close', 'TICKVOL': 'volume'
         }, inplace=True)
         
         df.set_index('timestamp', inplace=True)

@@ -17,6 +17,7 @@ from pathlib import Path
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import LSTM, Dense, Dropout
 from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.metrics import AUC, Precision, Recall
 
 
 class BaseModel:
@@ -205,39 +206,111 @@ class GradientBoostingModel(BaseModel):
 
 
 class SimplePatternModel(BaseModel):
-    """Rule-based model on technical indicators."""
+    """
+    Optimized rule-based model on technical indicators.
 
-    def __init__(self):
+    Generates more signals by using multiple technical indicators with
+    weighted scoring system. Less conservative than original version.
+    """
+
+    def __init__(self, signal_threshold: float = 0.3):
         super().__init__("PatternBased")
         self.is_fitted = True
+        self.signal_threshold = signal_threshold  # Lower threshold = more signals
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         pass
 
     def predict(self, X: pd.DataFrame) -> np.ndarray:
-        X_with_memory = X.copy()
-        
-        window = 20
-        if 'rsi_14' in X.columns:
-            X_with_memory['rsi_recently_oversold'] = X['rsi_14'].rolling(window=window).apply(lambda x: (x < 30).any(), raw=True).fillna(0).astype(bool)
-            X_with_memory['rsi_recently_overbought'] = X['rsi_14'].rolling(window=window).apply(lambda x: (x > 70).any(), raw=True).fillna(0).astype(bool)
-        else:
-            X_with_memory['rsi_recently_oversold'] = False
-            X_with_memory['rsi_recently_overbought'] = False
+        """
+        Generate trading signals based on technical indicators.
 
+        Scoring system:
+        - RSI: Strong weight (current value, not historical)
+        - MACD: Medium weight (trend confirmation)
+        - Moving Averages: Medium weight (trend direction)
+        - Stochastic: Light weight (momentum confirmation)
+        - Bollinger Bands: Light weight (volatility signals)
+
+        Lower threshold means more signals will be generated.
+        """
         predictions = []
-        for _, row in X_with_memory.iterrows():
-            score = 0
-            if row.get('rsi_recently_oversold', False): score += 2
-            if row.get('rsi_recently_overbought', False): score -= 2
-            if 'macd_diff' in row:
-                if row['macd_diff'] > 0: score += 1
-                else: score -= 1
-            if 'trend_20' in row: score += row['trend_20']
 
-            if score >= 1: predictions.append(2)
-            elif score <= -1: predictions.append(0)
-            else: predictions.append(1)
+        for _, row in X.iterrows():
+            score = 0.0
+
+            # === RSI Signals (Weight: 2.0) ===
+            if 'rsi_14' in row and not pd.isna(row['rsi_14']):
+                rsi = row['rsi_14']
+                if rsi < 30:  # Oversold
+                    score += 2.0
+                elif rsi < 40:  # Approaching oversold
+                    score += 1.0
+                elif rsi > 70:  # Overbought
+                    score -= 2.0
+                elif rsi > 60:  # Approaching overbought
+                    score -= 1.0
+
+            # === MACD Signals (Weight: 1.5) ===
+            if 'macd_diff' in row and not pd.isna(row['macd_diff']):
+                macd_diff = row['macd_diff']
+                if macd_diff > 0:
+                    score += 1.5
+                else:
+                    score -= 1.5
+
+            # === Moving Average Trend (Weight: 1.0) ===
+            # Check if price is above/below moving averages
+            if all(k in row for k in ['close', 'sma_50']) and not any(pd.isna(row[k]) for k in ['close', 'sma_50']):
+                if row['close'] > row['sma_50']:
+                    score += 1.0
+                else:
+                    score -= 1.0
+
+            # === EMA Crossover (Weight: 1.0) ===
+            if all(k in row for k in ['ema_9', 'ema_21']) and not any(pd.isna(row[k]) for k in ['ema_9', 'ema_21']):
+                if row['ema_9'] > row['ema_21']:  # Bullish
+                    score += 1.0
+                else:  # Bearish
+                    score -= 1.0
+
+            # === Stochastic Oscillator (Weight: 0.8) ===
+            if 'stoch_k' in row and not pd.isna(row['stoch_k']):
+                stoch = row['stoch_k']
+                if stoch < 20:  # Oversold
+                    score += 0.8
+                elif stoch > 80:  # Overbought
+                    score -= 0.8
+
+            # === Bollinger Bands (Weight: 0.7) ===
+            if all(k in row for k in ['close', 'bb_low', 'bb_high']) and not any(pd.isna(row[k]) for k in ['close', 'bb_low', 'bb_high']):
+                if row['close'] <= row['bb_low']:  # Price at lower band
+                    score += 0.7
+                elif row['close'] >= row['bb_high']:  # Price at upper band
+                    score -= 0.7
+
+            # === ADX Trend Strength (Weight: 0.5) ===
+            # Only consider signals if trend is strong enough
+            if 'adx' in row and not pd.isna(row['adx']):
+                if row['adx'] < 25:  # Weak trend, reduce signal strength
+                    score *= 0.7
+
+            # === Momentum Indicators (Weight: 0.5) ===
+            if 'momentum_5' in row and not pd.isna(row['momentum_5']):
+                if row['momentum_5'] > 0:
+                    score += 0.5
+                else:
+                    score -= 0.5
+
+            # === Generate Prediction ===
+            # Use lower threshold to generate more signals
+            # The meta-model will learn to filter out bad signals
+            if score >= self.signal_threshold:
+                predictions.append(2)  # BUY
+            elif score <= -self.signal_threshold:
+                predictions.append(0)  # SELL
+            else:
+                predictions.append(1)  # HOLD
 
         return np.array(predictions)
 
@@ -362,7 +435,21 @@ class EnsembleModel:
         for name, model in self.base_models.items():
             if name != 'pattern_based' and model is not None:
                 model.save(path / f"{name}.pkl")
-        
+
+        # Guardar lista de features esperadas para validación posterior
+        feature_info = {}
+        for name, model in self.base_models.items():
+            if name != 'pattern_based' and model is not None and hasattr(model, 'scaler'):
+                if hasattr(model.scaler, 'feature_names_in_'):
+                    feature_info[name] = list(model.scaler.feature_names_in_)
+                elif hasattr(model.scaler, 'n_features_in_'):
+                    feature_info[name] = {'n_features': model.scaler.n_features_in_}
+
+        if feature_info:
+            with open(path / "feature_info.pkl", 'wb') as f:
+                pickle.dump(feature_info, f)
+            logger.info(f"Feature information saved to {path / 'feature_info.pkl'}")
+
         if self.is_fitted:
             with open(path / "meta_model.pkl", 'wb') as f:
                 pickle.dump(self.meta_model, f)
@@ -370,7 +457,18 @@ class EnsembleModel:
 
     def load_all(self, directory: str):
         path = Path(directory)
-        
+
+        # Cargar información de features esperadas
+        feature_info_path = path / "feature_info.pkl"
+        expected_features = {}
+        if feature_info_path.exists():
+            try:
+                with open(feature_info_path, 'rb') as f:
+                    expected_features = pickle.load(f)
+                logger.info(f"Loaded feature information from {feature_info_path}")
+            except Exception as e:
+                logger.warning(f"Failed to load feature info: {e}")
+
         if self.base_models['lstm'] is None:
             self.base_models['lstm'] = LSTMModel()
 
@@ -380,6 +478,15 @@ class EnsembleModel:
                 if model_path.exists():
                     try:
                         model.load(str(model_path))
+
+                        # Validar features si están disponibles
+                        if name in expected_features:
+                            expected = expected_features[name]
+                            if isinstance(expected, list):
+                                logger.info(f"Model {name} expects {len(expected)} features")
+                            elif isinstance(expected, dict) and 'n_features' in expected:
+                                logger.info(f"Model {name} expects {expected['n_features']} features")
+
                     except Exception as e:
                         logger.error(f"Failed to load {name}: {e}")
                 elif name == 'lstm':
@@ -391,6 +498,7 @@ class EnsembleModel:
                 with open(meta_model_path, 'rb') as f:
                     self.meta_model = pickle.load(f)
                 self.is_fitted = True
+                logger.info("Ensemble model loaded successfully")
             except Exception as e:
                 logger.error(f"Failed to load meta-model: {e}")
                 self.is_fitted = False
@@ -418,30 +526,55 @@ class LSTMModel(BaseModel):
             Dense(25, activation='relu'),
             Dense(1, activation='sigmoid')
         ])
-        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+        model.compile(
+            optimizer='adam',
+            loss='binary_crossentropy',
+            metrics=['accuracy', AUC(name='auc'), Precision(name='precision'), Recall(name='recall')]
+        )
         self.model = model
 
     def fit(self, X: np.ndarray, y: np.ndarray):
         """Train the LSTM model."""
         if self.model is None:
             self._build_model()
-            
+
+        # Calcular class weights para balancear clases desbalanceadas
+        unique_classes, class_counts = np.unique(y, return_counts=True)
+        total_samples = len(y)
+        class_weights = {int(cls): total_samples / (len(unique_classes) * count)
+                        for cls, count in zip(unique_classes, class_counts)}
+
+        logger.info(f"Class distribution: {dict(zip(unique_classes, class_counts))}")
+        logger.info(f"Class weights: {class_weights}")
+
         early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
-        
+
         n_samples, n_timesteps, n_features = X.shape
         X_reshaped = X.reshape((n_samples * n_timesteps, n_features))
         self.scaler.fit(X_reshaped)
         X_scaled_reshaped = self.scaler.transform(X_reshaped)
         X_scaled = X_scaled_reshaped.reshape((n_samples, n_timesteps, n_features))
 
-        self.model.fit(
+        history = self.model.fit(
             X_scaled, y,
             epochs=50,
             batch_size=32,
             validation_split=0.1,
             callbacks=[early_stopping],
+            class_weight=class_weights,
             verbose=1
         )
+
+        # Log de métricas finales
+        final_epoch = len(history.history['loss'])
+        logger.info(f"Training stopped at epoch {final_epoch}")
+        logger.info(f"Final metrics - Loss: {history.history['loss'][-1]:.4f}, "
+                   f"Accuracy: {history.history['accuracy'][-1]:.4f}, "
+                   f"AUC: {history.history['auc'][-1]:.4f}")
+        logger.info(f"Validation metrics - Loss: {history.history['val_loss'][-1]:.4f}, "
+                   f"Accuracy: {history.history['val_accuracy'][-1]:.4f}, "
+                   f"AUC: {history.history['val_auc'][-1]:.4f}")
+
         self.is_fitted = True
         logger.info(f"{self.name} trained successfully.")
 
@@ -505,5 +638,142 @@ class LSTMModel(BaseModel):
         
         self.scaler = scaler_data['scaler']
         self.is_fitted = scaler_data['is_fitted']
-        
+
         logger.info(f"LSTM model loaded from {model_path} and {scaler_path}")
+
+
+# ============================================================================
+# META-LABELING FUNCTIONS
+# ============================================================================
+
+def create_meta_labels(df: pd.DataFrame, primary_predictions: pd.Series,
+                      lookforward_periods: int = 20,
+                      profit_target_atr_mult: float = 1.5,
+                      loss_limit_atr_mult: float = 1.0) -> pd.Series:
+    """
+    Create meta-labels for filtering primary model signals.
+
+    Meta-labeling: Instead of predicting direction (BUY/SELL), we predict
+    whether a signal from the primary model will be profitable or not.
+
+    This allows the meta-model to learn which signals to take and which to skip.
+
+    Args:
+        df: DataFrame with OHLC data and ATR indicator
+        primary_predictions: Series with primary model predictions (0=SELL, 1=HOLD, 2=BUY)
+        lookforward_periods: How many periods to look ahead to evaluate profitability
+        profit_target_atr_mult: Profit target as multiple of ATR
+        loss_limit_atr_mult: Maximum acceptable loss as multiple of ATR
+
+    Returns:
+        Series with meta-labels:
+        - 1: Signal was profitable (good signal)
+        - 0: Signal was not profitable (bad signal)
+        - NaN: No signal (HOLD), will be dropped later
+    """
+    meta_labels = pd.Series(index=primary_predictions.index, dtype=float)
+
+    # Ensure we have ATR in the dataframe
+    if 'atr' not in df.columns:
+        # Calculate ATR if not present
+        from ta.volatility import average_true_range
+        df['atr'] = average_true_range(df['high'], df['low'], df['close'], window=14)
+
+    for i, (idx, pred) in enumerate(primary_predictions.items()):
+        # Only create labels for actual signals (not HOLD)
+        if pred == 1:  # HOLD - skip
+            meta_labels[idx] = np.nan
+            continue
+
+        # Get current price and ATR
+        try:
+            current_price = df.loc[idx, 'close']
+            atr = df.loc[idx, 'atr']
+
+            # Handle missing ATR
+            if pd.isna(atr) or atr == 0:
+                meta_labels[idx] = np.nan
+                continue
+
+        except (KeyError, IndexError):
+            meta_labels[idx] = np.nan
+            continue
+
+        # Calculate profit target and stop loss
+        profit_target = atr * profit_target_atr_mult
+        loss_limit = atr * loss_limit_atr_mult
+
+        # Get future prices (lookforward window)
+        future_start_idx = i + 1
+        future_end_idx = min(i + 1 + lookforward_periods, len(df))
+
+        if future_start_idx >= len(df):
+            # Not enough future data
+            meta_labels[idx] = np.nan
+            continue
+
+        future_prices = df['close'].iloc[future_start_idx:future_end_idx]
+        future_highs = df['high'].iloc[future_start_idx:future_end_idx]
+        future_lows = df['low'].iloc[future_start_idx:future_end_idx]
+
+        if len(future_prices) == 0:
+            meta_labels[idx] = np.nan
+            continue
+
+        # Determine if signal was profitable
+        is_profitable = False
+
+        if pred == 2:  # BUY signal
+            # Check if price reached profit target before hitting stop loss
+            max_profit = (future_highs - current_price).max()
+            max_loss = (current_price - future_lows).min()
+
+            # Signal is profitable if:
+            # 1. Profit target was reached, OR
+            # 2. Max profit > loss and final price is positive
+            if max_profit >= profit_target:
+                is_profitable = True
+            elif max_profit > max_loss and future_prices.iloc[-1] > current_price:
+                is_profitable = True
+            elif max_loss > loss_limit:
+                is_profitable = False
+            else:
+                # Check final outcome
+                final_profit = future_prices.iloc[-1] - current_price
+                is_profitable = final_profit > 0
+
+        elif pred == 0:  # SELL signal
+            # Check if price reached profit target before hitting stop loss
+            max_profit = (current_price - future_lows).max()
+            max_loss = (future_highs - current_price).min()
+
+            # Signal is profitable if:
+            # 1. Profit target was reached, OR
+            # 2. Max profit > loss and final price is negative
+            if max_profit >= profit_target:
+                is_profitable = True
+            elif max_profit > max_loss and future_prices.iloc[-1] < current_price:
+                is_profitable = True
+            elif max_loss > loss_limit:
+                is_profitable = False
+            else:
+                # Check final outcome
+                final_profit = current_price - future_prices.iloc[-1]
+                is_profitable = final_profit > 0
+
+        meta_labels[idx] = 1 if is_profitable else 0
+
+    # Log statistics
+    total_signals = (~meta_labels.isna()).sum()
+    profitable_signals = (meta_labels == 1).sum()
+    unprofitable_signals = (meta_labels == 0).sum()
+
+    if total_signals > 0:
+        win_rate = (profitable_signals / total_signals) * 100
+        logger.info(f"Meta-labeling stats: {total_signals} signals total, "
+                   f"{profitable_signals} profitable ({win_rate:.1f}% win rate), "
+                   f"{unprofitable_signals} unprofitable")
+    else:
+        logger.warning("No signals generated by primary model for meta-labeling")
+
+    return meta_labels
