@@ -1,22 +1,37 @@
 """
+============================================================================
 Script de diagnóstico para identificar problemas con el entorno
+Trading Bot - MT5 AI - Python 3.13+
+============================================================================
 Ejecuta este script para verificar tu configuración antes de ejecutar el bot
 """
 
 import sys
 import platform
 
-print("=" * 60)
-print("DIAGNÓSTICO DEL ENTORNO - Trading Bot")
-print("=" * 60)
+print("=" * 70)
+print("DIAGNÓSTICO DEL ENTORNO - Trading Bot MT5 AI")
+print("Versión requerida: Python 3.13.9+")
+print("=" * 70)
 print()
 
 # 1. Información del sistema
 print("1. INFORMACIÓN DEL SISTEMA")
-print("-" * 60)
+print("-" * 70)
 print(f"   Sistema Operativo: {platform.system()} {platform.release()}")
+print(f"   Arquitectura: {platform.machine()}")
 print(f"   Versión de Python: {sys.version}")
 print(f"   Ejecutable Python: {sys.executable}")
+
+# Verificar versión de Python
+if sys.version_info >= (3, 13):
+    print(f"   ✅ Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} - Versión compatible")
+elif sys.version_info >= (3, 12):
+    print(f"   ⚠️  Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} - Se recomienda actualizar a 3.13.9+")
+else:
+    print(f"   ❌ Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} - VERSIÓN NO COMPATIBLE")
+    print(f"   SOLUCIÓN: Instalar Python 3.13.9 desde https://www.python.org/")
+
 print()
 
 # 2. Verificar módulos instalados
@@ -91,48 +106,73 @@ print()
 
 # 3. Verificación especial de TensorFlow
 print("3. VERIFICACIÓN DETALLADA DE TENSORFLOW")
-print("-" * 60)
+print("-" * 70)
 
+tensorflow_ok = False
 try:
     import tensorflow as tf
+    tf_version = tuple(map(int, tf.__version__.split('.')[:2]))
+
     print(f"   ✅ TensorFlow instalado: v{tf.__version__}")
-    print(f"   ✅ Keras disponible: {tf.keras.__version__}")
 
-    # Verificar módulos internos problemáticos
-    try:
-        from tensorflow.keras.models import Sequential, load_model
-        print(f"   ✅ tensorflow.keras.models - OK")
-    except ImportError as e:
-        print(f"   ❌ tensorflow.keras.models - ERROR: {e}")
+    # Verificar versión mínima para Python 3.13
+    if tf_version >= (2, 20):
+        print(f"   ✅ Versión compatible con Python 3.13 (2.20+)")
+        tensorflow_ok = True
+    elif tf_version >= (2, 16):
+        print(f"   ⚠️  Versión antigua. Actualizar a 2.20+ para Python 3.13")
+        print(f"   SOLUCIÓN: pip install --upgrade tensorflow")
+    else:
+        print(f"   ❌ Versión demasiado antigua ({tf.__version__})")
+        print(f"   SOLUCIÓN: pip install tensorflow>=2.20.0")
 
+    # Verificar Keras
     try:
-        from tensorflow.keras.layers import LSTM, Dense, Dropout
-        print(f"   ✅ tensorflow.keras.layers - OK")
-    except ImportError as e:
-        print(f"   ❌ tensorflow.keras.layers - ERROR: {e}")
+        print(f"   ✅ Keras disponible: {tf.keras.__version__}")
+    except Exception as e:
+        print(f"   ⚠️  Keras: {e}")
 
-    try:
-        from tensorflow.keras.callbacks import EarlyStopping
-        print(f"   ✅ tensorflow.keras.callbacks - OK")
-    except ImportError as e:
-        print(f"   ❌ tensorflow.keras.callbacks - ERROR: {e}")
+    # Verificar módulos internos críticos
+    print()
+    print("   Verificando módulos internos:")
 
-    try:
-        from tensorflow.keras.metrics import AUC, Precision, Recall
-        print(f"   ✅ tensorflow.keras.metrics - OK")
-    except ImportError as e:
-        print(f"   ❌ tensorflow.keras.metrics - ERROR: {e}")
+    modules_to_check = {
+        'tensorflow.keras.models': ['Sequential', 'load_model'],
+        'tensorflow.keras.layers': ['LSTM', 'Dense', 'Dropout'],
+        'tensorflow.keras.callbacks': ['EarlyStopping'],
+        'tensorflow.keras.metrics': ['AUC', 'Precision', 'Recall']
+    }
 
-    # Test básico
+    all_modules_ok = True
+    for module_name, classes in modules_to_check.items():
+        try:
+            module = __import__(module_name, fromlist=classes)
+            for cls in classes:
+                getattr(module, cls)
+            print(f"   ✅ {module_name:35} - OK")
+        except ImportError as e:
+            print(f"   ❌ {module_name:35} - ERROR: {e}")
+            all_modules_ok = False
+
+    # Test de creación de modelo
+    print()
+    print("   Test de funcionalidad:")
     try:
-        model = Sequential([tf.keras.layers.Dense(1)])
+        from tensorflow.keras.models import Sequential
+        from tensorflow.keras.layers import Dense
+        model = Sequential([Dense(1, input_shape=(10,))])
         print(f"   ✅ Creación de modelo de prueba - OK")
+        tensorflow_ok = tensorflow_ok and all_modules_ok
     except Exception as e:
         print(f"   ❌ Creación de modelo de prueba - ERROR: {e}")
+        tensorflow_ok = False
 
 except ImportError as e:
     print(f"   ❌ TensorFlow NO instalado o corrupto")
     print(f"   Error: {e}")
+    print()
+    print(f"   SOLUCIÓN:")
+    print(f"   pip install tensorflow>=2.20.0")
 
 print()
 
@@ -201,18 +241,56 @@ else:
 print()
 
 # Conclusión final
-print("=" * 60)
-if missing_modules:
-    print("❌ RESULTADO: HAY PROBLEMAS CON EL ENTORNO")
+print("=" * 70)
+has_issues = missing_modules or not tensorflow_ok or sys.version_info < (3, 13)
+
+if has_issues:
+    print("⚠️  RESULTADO: SE ENCONTRARON PROBLEMAS CON EL ENTORNO")
     print()
     print("ACCIONES REQUERIDAS:")
-    print("1. Instalar módulos faltantes: pip install -r requirements.txt")
-    if 'tensorflow' in [m[0] for m in missing_modules]:
-        print("2. Reinstalar TensorFlow: pip uninstall tensorflow -y && pip install tensorflow==2.16.1")
+    print()
+
+    if sys.version_info < (3, 13):
+        print("1. ACTUALIZAR PYTHON:")
+        print("   - Descargar Python 3.13.9 desde: https://www.python.org/")
+        print("   - Instalar marcando 'Add Python to PATH'")
+        print("   - Crear nuevo entorno virtual con Python 3.13")
+        print()
+
+    if missing_modules:
+        print("2. INSTALAR MÓDULOS FALTANTES:")
+        print("   pip install -r requirements.txt")
+        print()
+        print("   Módulos faltantes:")
+        for package, _ in missing_modules:
+            print(f"   - {package}")
+        print()
+
+    if not tensorflow_ok:
+        print("3. REINSTALAR/ACTUALIZAR TENSORFLOW:")
+        print("   pip uninstall tensorflow tensorflow-intel keras -y")
+        print("   pip install tensorflow>=2.20.0")
+        print()
+
+    print("4. VERIFICAR NUEVAMENTE:")
+    print("   python diagnose_environment.py")
+
 else:
     print("✅ RESULTADO: ENTORNO CONFIGURADO CORRECTAMENTE")
     print()
-    print("El bot debería poder ejecutarse.")
-    print("Si aún tienes problemas, verifica los modelos entrenados.")
+    print("Configuración verificada:")
+    print(f"   ✅ Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
+    print(f"   ✅ Todos los módulos instalados")
+    print(f"   ✅ TensorFlow funcionando correctamente")
+    print()
+    print("El bot está listo para ejecutarse.")
+    print()
+    print("PRÓXIMOS PASOS:")
+    print("   1. Configurar .env con credenciales de MT5")
+    print("   2. Entrenar modelos: python train_models.py")
+    print("   3. Ejecutar bot: python run_mt5.py")
 
-print("=" * 60)
+print("=" * 70)
+print()
+print(f"Diagnóstico completado - {platform.system()} - Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
+print("=" * 70)

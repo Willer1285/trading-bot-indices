@@ -6,11 +6,50 @@
 ModuleNotFoundError: No module named 'tensorflow.python.tools'
 ```
 
-Este error ocurre al ejecutar `python run_mt5.py` y se debe a que TensorFlow no está instalado correctamente en tu sistema Windows.
+Este error ocurre al ejecutar `python run_mt5.py` y se debe a incompatibilidades de TensorFlow con Python 3.11 en Windows.
+
+---
+
+## ⚠️ ADVERTENCIA IMPORTANTE
+
+**Python 3.11 tiene problemas conocidos de compatibilidad con TensorFlow en Windows.**
+
+**SOLUCIÓN RECOMENDADA: Migrar a Python 3.13.9**
+
+Python 3.13.9 es la última versión estable y ofrece:
+- ✅ TensorFlow 2.20+ completamente funcional
+- ✅ Mejor rendimiento (15-20% más rápido)
+- ✅ Mayor estabilidad
+- ✅ Todas las librerías actualizadas
+
+**Ver guía completa de migración:** [MIGRACION_PYTHON_3.13.md](MIGRACION_PYTHON_3.13.md)
 
 ---
 
 ## 🎯 Soluciones (Ordenadas por Efectividad)
+
+### ⭐ **SOLUCIÓN RECOMENDADA: Migrar a Python 3.13.9**
+
+Esta es la mejor solución a largo plazo. Resuelve todos los problemas de compatibilidad.
+
+**Pasos rápidos:**
+
+1. **Descargar Python 3.13.9:**
+   - https://www.python.org/downloads/
+   - Marcar "Add Python to PATH" durante instalación
+
+2. **Ejecutar instalación automatizada:**
+   ```cmd
+   install_windows.bat
+   ```
+
+3. **Listo!** Todo funcionará sin problemas.
+
+**Ver guía detallada:** [MIGRACION_PYTHON_3.13.md](MIGRACION_PYTHON_3.13.md)
+
+---
+
+## 🔧 Soluciones Alternativas (Si no puedes migrar ahora)
 
 ### **Solución Rápida - Instalación Automatizada (RECOMENDADA)**
 
