@@ -35,7 +35,7 @@ aiofiles>=24.0.0           # I/O asíncrono de archivos
 # Data Visualization
 plotly>=5.24.0             # Gráficos interactivos
 matplotlib>=3.10.0         # Gráficos estáticos - Python 3.13 compatible
-mplfinance>=0.12.10        # Gráficos financieros
+mplfinance==0.12.10b0      # Gráficos financieros (última versión disponible para Python 3.13)
 
 # Utilities
 python-dotenv>=1.0.1       # Variables de entorno
