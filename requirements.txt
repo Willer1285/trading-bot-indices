@@ -10,7 +10,7 @@ ta==0.11.0
 # ta-lib==0.4.28  # Opcional: requiere compilación
 
 # Technical Analysis
-pandas-ta==0.3.14b0
+# pandas-ta
 
 # Telegram Bot
 python-telegram-bot==20.7

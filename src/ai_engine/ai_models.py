@@ -434,7 +434,7 @@ class EnsembleModel:
 
         for name, model in self.base_models.items():
             if name != 'pattern_based' and model is not None:
-                model.save(path / f"{name}.pkl")
+                model.save(str(path / f"{name}.pkl"))
 
         # Guardar lista de features esperadas para validación posterior
         feature_info = {}
