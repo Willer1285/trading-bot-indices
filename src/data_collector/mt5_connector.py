@@ -143,15 +143,23 @@ class MT5Connector:
             # Rename columns
             df.rename(columns={
                 'time': 'timestamp',
-                'tick_volume': 'volume'
+                'tick_volume': 'volume',
+                'real_volume': 'VOL',
+                'spread': 'SPREAD'
             }, inplace=True)
 
             # Convert timestamp
             df['timestamp'] = pd.to_datetime(df['timestamp'], unit='s')
             df.set_index('timestamp', inplace=True)
 
-            # Se seleccionan las columnas relevantes.
-            df = df[['open', 'high', 'low', 'close', 'volume']]
+            # Asegurar que VOL y SPREAD existan (requeridas por los modelos)
+            if 'VOL' not in df.columns:
+                df['VOL'] = 0
+            if 'SPREAD' not in df.columns:
+                df['SPREAD'] = 0
+
+            # Se seleccionan las columnas relevantes (incluyendo VOL y SPREAD)
+            df = df[['open', 'high', 'low', 'close', 'volume', 'VOL', 'SPREAD']]
 
             # Después de obtener un rango, nos aseguramos de usar solo los últimos `limit` registros
             # para mantener la consistencia con la lógica anterior.
@@ -191,10 +199,22 @@ class MT5Connector:
                 return None
 
             df = pd.DataFrame(rates)
-            df.rename(columns={'time': 'timestamp', 'tick_volume': 'volume'}, inplace=True)
+            df.rename(columns={
+                'time': 'timestamp',
+                'tick_volume': 'volume',
+                'real_volume': 'VOL',
+                'spread': 'SPREAD'
+            }, inplace=True)
             df['timestamp'] = pd.to_datetime(df['timestamp'], unit='s')
             df.set_index('timestamp', inplace=True)
-            df = df[['open', 'high', 'low', 'close', 'volume']]
+
+            # Asegurar que VOL y SPREAD existan (requeridas por los modelos)
+            if 'VOL' not in df.columns:
+                df['VOL'] = 0
+            if 'SPREAD' not in df.columns:
+                df['SPREAD'] = 0
+
+            df = df[['open', 'high', 'low', 'close', 'volume', 'VOL', 'SPREAD']]
             return df
         except Exception as e:
             logger.error(f"Error getting historical data for {symbol} {timeframe}: {e}")

@@ -108,15 +108,22 @@ def load_single_historical_data(file_path: str) -> pd.DataFrame:
             logger.warning(f"Skipping {file_path} due to missing 'DATE' or 'TIME' columns.")
             return pd.DataFrame()
 
-        # Usar TICKVOL en lugar de VOL (que siempre está en 0)
+        # Renombrar columnas principales
+        # Nota: Mantenemos VOL y SPREAD como features adicionales (esperadas por los modelos entrenados)
         df.rename(columns={
             'OPEN': 'open', 'HIGH': 'high', 'LOW': 'low',
             'CLOSE': 'close', 'TICKVOL': 'volume'
         }, inplace=True)
-        
+
+        # Asegurar que VOL y SPREAD existan (son features requeridas por los modelos)
+        if 'VOL' not in df.columns:
+            df['VOL'] = 0  # Si no existe, rellenar con 0
+        if 'SPREAD' not in df.columns:
+            df['SPREAD'] = 0  # Si no existe, rellenar con 0
+
         df.set_index('timestamp', inplace=True)
         df.sort_index(inplace=True)
-        
+
         df.dropna(subset=['open', 'high', 'low', 'close'], inplace=True)
         
         return df

@@ -124,16 +124,24 @@ class MT5MarketDataManager:
                         else:
                             raise ValueError("Missing 'DATE' or 'TIME' columns.")
 
+                        # Renombrar columnas principales
+                        # Nota: Mantenemos VOL y SPREAD como features adicionales (esperadas por los modelos)
                         df.rename(columns={
                             'OPEN': 'open', 'HIGH': 'high', 'LOW': 'low',
-                            'CLOSE': 'close', 'VOL': 'volume'
+                            'CLOSE': 'close', 'TICKVOL': 'volume'
                         }, inplace=True)
-                        
+
+                        # Asegurar que VOL y SPREAD existan (son features requeridas por los modelos)
+                        if 'VOL' not in df.columns:
+                            df['VOL'] = 0  # Si no existe, rellenar con 0
+                        if 'SPREAD' not in df.columns:
+                            df['SPREAD'] = 0  # Si no existe, rellenar con 0
+
                         df.set_index('timestamp', inplace=True)
                         df.sort_index(inplace=True)
-                        
-                        # Select necessary columns and drop rows with invalid data
-                        required_cols = ['open', 'high', 'low', 'close', 'volume']
+
+                        # Select necessary columns including VOL and SPREAD
+                        required_cols = ['open', 'high', 'low', 'close', 'volume', 'VOL', 'SPREAD']
                         df = df[required_cols]
                         df.dropna(inplace=True)
                         
