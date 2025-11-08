@@ -94,12 +94,28 @@ class MT5MarketDataManager:
     async def _fetch_initial_data(self):
         """Load initial historical data from local files (.csv or .txt)."""
         logger.info("Loading initial historical data from local files...")
-        
+
+        # Mapeo de timeframes MT5 a nombres de archivos
+        timeframe_map = {
+            '1m': 'M1',
+            '5m': 'M5',
+            '15m': 'M15',
+            '30m': 'M30',
+            '1h': 'H1',
+            '4h': 'H4',
+            '1d': 'D1',
+            '1w': 'W1',
+            '1M': 'MN1'
+        }
+
         for symbol in self.symbols:
             for timeframe in self.timeframes:
-                # Check for both .txt and .csv extensions
-                txt_path = f"historical_data/{symbol}/{timeframe}.txt"
-                csv_path = f"historical_data/{symbol}/{timeframe}.csv"
+                # Convertir timeframe MT5 al formato de archivo (1m → M1, 1h → H1)
+                file_timeframe = timeframe_map.get(timeframe, timeframe.upper())
+
+                # Construir rutas con el formato correcto: {symbol}_{timeframe}.csv
+                txt_path = f"historical_data/{symbol}/{symbol}_{file_timeframe}.txt"
+                csv_path = f"historical_data/{symbol}/{symbol}_{file_timeframe}.csv"
                 file_path = None
 
                 if os.path.exists(txt_path):
