@@ -613,7 +613,7 @@ class LSTMModel(BaseModel):
             optimizer='adam',
             loss=SparseCategoricalFocalLoss(alpha=0.25, gamma=2.0),
             metrics=['accuracy',
-                    tf.keras.metrics.AUC(name='auc', multi_label=False, num_labels=self.n_classes),
+                    tf.keras.metrics.AUC(name='auc', num_thresholds=200),
                     Precision(name='precision'),
                     Recall(name='recall')]
         )
