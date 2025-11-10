@@ -58,13 +58,23 @@ class Config:
         self.enforce_gainx_buy_only: bool = os.getenv("ENFORCE_GAINX_BUY_ONLY", "true").lower() == "true"
         self.enforce_painx_sell_only: bool = os.getenv("ENFORCE_PAINX_SELL_ONLY", "true").lower() == "true"
 
-        # Gestión de Trades
+        # Gestión de Trades - Break Even (dinámico con ATR)
         self.enable_break_even: bool = os.getenv("ENABLE_BREAK_EVEN", "true").lower() == "true"
         self.break_even_trigger_atr_multiplier: float = float(os.getenv("BREAK_EVEN_TRIGGER_ATR_MULTIPLIER", 1.0))
         self.break_even_profit_lock_atr_multiplier: float = float(os.getenv("BREAK_EVEN_PROFIT_LOCK_ATR_MULTIPLIER", 0.2))
+
+        # Break Even Fijo (cuando ENABLE_DYNAMIC_RISK=false) - valores en PUNTOS
+        self.fixed_break_even_trigger_points: float = float(os.getenv("FIXED_BREAK_EVEN_TRIGGER_POINTS", 15.0))
+        self.fixed_break_even_profit_lock_points: float = float(os.getenv("FIXED_BREAK_EVEN_PROFIT_LOCK_POINTS", 3.0))
+
+        # Gestión de Trades - Trailing Stop (dinámico con ATR)
         self.enable_trailing_stop: bool = os.getenv("ENABLE_TRAILING_STOP", "true").lower() == "true"
         self.trailing_stop_trigger_atr_multiplier: float = float(os.getenv("TRAILING_STOP_TRIGGER_ATR_MULTIPLIER", 2.0))
         self.trailing_stop_distance_atr_multiplier: float = float(os.getenv("TRAILING_STOP_DISTANCE_ATR_MULTIPLIER", 1.5))
+
+        # Trailing Stop Fijo (cuando ENABLE_DYNAMIC_RISK=false) - valores en PUNTOS
+        self.fixed_trailing_stop_trigger_points: float = float(os.getenv("FIXED_TRAILING_STOP_TRIGGER_POINTS", 30.0))
+        self.fixed_trailing_stop_distance_points: float = float(os.getenv("FIXED_TRAILING_STOP_DISTANCE_POINTS", 22.5))
 
         # Configuración de Lotaje Dinámico (basado en confianza del modelo)
         self.enable_dynamic_lot_size: bool = os.getenv("ENABLE_DYNAMIC_LOT_SIZE", "true").lower() == "true"

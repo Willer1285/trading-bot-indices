@@ -594,57 +594,100 @@ class MT5TradingBot:
                 else: # SELL
                     profit_points = (open_price - current_price) / point_size
 
-                # Extraer ATR del comentario de la orden
-                comment = position.get('comment', '')
-                atr_at_signal = 0.0
-                if 'AI|' in comment:
-                    try:
-                        atr_at_signal = float(comment.split('|')[1])
-                    except (ValueError, IndexError):
-                        logger.warning(f"No se pudo extraer el ATR del comentario: '{comment}'")
+                # Determinar si usar modo dinámico o fijo
+                if config.enable_dynamic_risk:
+                    # --- MODO DINÁMICO: Extraer ATR del comentario ---
+                    comment = position.get('comment', '')
+                    atr_at_signal = 0.0
+                    if 'AI|' in comment:
+                        try:
+                            atr_at_signal = float(comment.split('|')[1])
+                        except (ValueError, IndexError):
+                            logger.warning(f"No se pudo extraer el ATR del comentario: '{comment}'")
 
-                if atr_at_signal <= 0:
-                    logger.warning(f"ATR inválido ({atr_at_signal}) para la operación #{ticket}. No se puede gestionar dinámicamente.")
-                    continue
+                    if atr_at_signal <= 0:
+                        logger.warning(f"ATR inválido ({atr_at_signal}) para la operación #{ticket}. No se puede gestionar dinámicamente.")
+                        continue
 
-                # --- Lógica de Break Even Dinámico ---
-                if config.enable_break_even and ticket not in self.break_even_activated:
-                    trigger_distance = atr_at_signal * config.break_even_trigger_atr_multiplier
-                    profit_lock_distance = atr_at_signal * config.break_even_profit_lock_atr_multiplier
-                    
-                    profit_in_currency = position.get('profit', 0.0)
+                    # --- Break Even Dinámico (basado en ATR) ---
+                    if config.enable_break_even and ticket not in self.break_even_activated:
+                        trigger_distance = atr_at_signal * config.break_even_trigger_atr_multiplier
+                        profit_lock_distance = atr_at_signal * config.break_even_profit_lock_atr_multiplier
 
-                    if (order_type == 'BUY' and current_price >= open_price + trigger_distance) or \
-                       (order_type == 'SELL' and current_price <= open_price - trigger_distance):
-                        
-                        new_sl = open_price + profit_lock_distance if order_type == 'BUY' else open_price - profit_lock_distance
+                        profit_in_currency = position.get('profit', 0.0)
 
-                        if (order_type == 'BUY' and new_sl > current_sl) or \
-                           (order_type == 'SELL' and new_sl < current_sl):
-                            logger.info(f"Activando Break Even para la operación #{ticket} en {symbol}. Nuevo SL: {new_sl:.5f}")
-                            modified = self.order_executor.modify_order(ticket, stop_loss=new_sl)
-                            if modified:
+                        if (order_type == 'BUY' and current_price >= open_price + trigger_distance) or \
+                           (order_type == 'SELL' and current_price <= open_price - trigger_distance):
+
+                            new_sl = open_price + profit_lock_distance if order_type == 'BUY' else open_price - profit_lock_distance
+
+                            if (order_type == 'BUY' and new_sl > current_sl) or \
+                               (order_type == 'SELL' and new_sl < current_sl):
+                                logger.info(f"Activando Break Even DINÁMICO para #{ticket} en {symbol}. Nuevo SL: {new_sl:.5f} (ATR: {atr_at_signal:.5f})")
+                                modified = self.order_executor.modify_order(ticket, stop_loss=new_sl)
+                                if modified:
+                                    self.break_even_activated[ticket] = True
+                                    await self.telegram_bot.send_break_even_notification(position, new_sl)
+                            else:
                                 self.break_even_activated[ticket] = True
-                                await self.telegram_bot.send_break_even_notification(position, new_sl)
-                        else:
-                            self.break_even_activated[ticket] = True
 
-                # --- Lógica de Trailing Stop Dinámico ---
-                if config.enable_trailing_stop:
-                    trigger_distance = atr_at_signal * config.trailing_stop_trigger_atr_multiplier
-                    trailing_distance = atr_at_signal * config.trailing_stop_distance_atr_multiplier
+                    # --- Trailing Stop Dinámico (basado en ATR) ---
+                    if config.enable_trailing_stop:
+                        trigger_distance = atr_at_signal * config.trailing_stop_trigger_atr_multiplier
+                        trailing_distance = atr_at_signal * config.trailing_stop_distance_atr_multiplier
 
-                    if (order_type == 'BUY' and current_price >= open_price + trigger_distance) or \
-                       (order_type == 'SELL' and current_price <= open_price - trigger_distance):
-                        
-                        new_sl = current_price - trailing_distance if order_type == 'BUY' else current_price + trailing_distance
+                        if (order_type == 'BUY' and current_price >= open_price + trigger_distance) or \
+                           (order_type == 'SELL' and current_price <= open_price - trigger_distance):
 
-                        if (order_type == 'BUY' and new_sl > current_sl) or \
-                           (order_type == 'SELL' and new_sl < current_sl):
-                            logger.info(f"Actualizando Trailing Stop para la operación #{ticket} en {symbol} a {new_sl:.5f}.")
-                            modified = self.order_executor.modify_order(ticket, stop_loss=new_sl)
-                            if modified:
-                                await self.telegram_bot.send_trailing_stop_notification(position, new_sl)
+                            new_sl = current_price - trailing_distance if order_type == 'BUY' else current_price + trailing_distance
+
+                            if (order_type == 'BUY' and new_sl > current_sl) or \
+                               (order_type == 'SELL' and new_sl < current_sl):
+                                logger.info(f"Actualizando Trailing Stop DINÁMICO para #{ticket} en {symbol} a {new_sl:.5f} (ATR: {atr_at_signal:.5f})")
+                                modified = self.order_executor.modify_order(ticket, stop_loss=new_sl)
+                                if modified:
+                                    await self.telegram_bot.send_trailing_stop_notification(position, new_sl)
+
+                else:
+                    # --- MODO FIJO: Usar valores en PUNTOS ---
+                    point_value = 1.0  # Para índices sintéticos: 1 punto = 1.0 en el precio
+
+                    # --- Break Even Fijo (valores en puntos) ---
+                    if config.enable_break_even and ticket not in self.break_even_activated:
+                        trigger_distance = config.fixed_break_even_trigger_points * point_value
+                        profit_lock_distance = config.fixed_break_even_profit_lock_points * point_value
+
+                        if (order_type == 'BUY' and current_price >= open_price + trigger_distance) or \
+                           (order_type == 'SELL' and current_price <= open_price - trigger_distance):
+
+                            new_sl = open_price + profit_lock_distance if order_type == 'BUY' else open_price - profit_lock_distance
+
+                            if (order_type == 'BUY' and new_sl > current_sl) or \
+                               (order_type == 'SELL' and new_sl < current_sl):
+                                logger.info(f"Activando Break Even FIJO para #{ticket} en {symbol}. Nuevo SL: {new_sl:.5f} (Trigger: {config.fixed_break_even_trigger_points} pts)")
+                                modified = self.order_executor.modify_order(ticket, stop_loss=new_sl)
+                                if modified:
+                                    self.break_even_activated[ticket] = True
+                                    await self.telegram_bot.send_break_even_notification(position, new_sl)
+                            else:
+                                self.break_even_activated[ticket] = True
+
+                    # --- Trailing Stop Fijo (valores en puntos) ---
+                    if config.enable_trailing_stop:
+                        trigger_distance = config.fixed_trailing_stop_trigger_points * point_value
+                        trailing_distance = config.fixed_trailing_stop_distance_points * point_value
+
+                        if (order_type == 'BUY' and current_price >= open_price + trigger_distance) or \
+                           (order_type == 'SELL' and current_price <= open_price - trigger_distance):
+
+                            new_sl = current_price - trailing_distance if order_type == 'BUY' else current_price + trailing_distance
+
+                            if (order_type == 'BUY' and new_sl > current_sl) or \
+                               (order_type == 'SELL' and new_sl < current_sl):
+                                logger.info(f"Actualizando Trailing Stop FIJO para #{ticket} en {symbol} a {new_sl:.5f} (Distance: {config.fixed_trailing_stop_distance_points} pts)")
+                                modified = self.order_executor.modify_order(ticket, stop_loss=new_sl)
+                                if modified:
+                                    await self.telegram_bot.send_trailing_stop_notification(position, new_sl)
 
         except Exception as e:
             logger.error(f"Error al gestionar las posiciones abiertas: {e}")
