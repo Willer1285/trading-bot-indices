@@ -51,6 +51,10 @@ class Config:
         self.fixed_take_profit_1_points: float = float(os.getenv("FIXED_TAKE_PROFIT_1_POINTS", 100.0))
         self.fixed_take_profit_2_points: float = float(os.getenv("FIXED_TAKE_PROFIT_2_POINTS", 200.0))
 
+        # Selección de Take Profit para órdenes MT5
+        # Valores válidos: "TP1" o "TP2"
+        self.use_take_profit: str = os.getenv("USE_TAKE_PROFIT", "TP2").upper()
+
         self.enforce_gainx_buy_only: bool = os.getenv("ENFORCE_GAINX_BUY_ONLY", "true").lower() == "true"
         self.enforce_painx_sell_only: bool = os.getenv("ENFORCE_PAINX_SELL_ONLY", "true").lower() == "true"
 

@@ -510,8 +510,19 @@ class MT5TradingBot:
             # Formato: AI|{atr_value}
             comment = f"AI|{signal.atr_at_signal:.5f}"
 
-            # Para la ejecución interna, siempre usaremos el TP1 como objetivo inicial.
-            initial_tp = signal.take_profit_levels[0] if signal.take_profit_levels else None
+            # Seleccionar el Take Profit según configuración (TP1 o TP2)
+            if signal.take_profit_levels:
+                if config.use_take_profit == "TP1":
+                    initial_tp = signal.take_profit_levels[0]  # TP1
+                    logger.info(f"Using TP1: {initial_tp}")
+                elif config.use_take_profit == "TP2":
+                    initial_tp = signal.take_profit_levels[1] if len(signal.take_profit_levels) > 1 else signal.take_profit_levels[0]  # TP2 o TP1 si no hay TP2
+                    logger.info(f"Using TP2: {initial_tp}")
+                else:
+                    logger.warning(f"Invalid USE_TAKE_PROFIT value: {config.use_take_profit}. Using TP1 as default.")
+                    initial_tp = signal.take_profit_levels[0]
+            else:
+                initial_tp = None
 
             result = self.order_executor.execute_market_order(
                 symbol=signal.symbol,
