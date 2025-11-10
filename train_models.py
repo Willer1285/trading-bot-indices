@@ -303,8 +303,25 @@ def get_model_age(model_dir: str) -> int:
 
 
 async def train_from_mt5():
-    """Train models using data downloaded from MT5."""
+    """
+    Train models using data downloaded from MT5.
+
+    Validación de datos mínimos por timeframe:
+    - Timeframes bajos (15m, 1h): Requieren más datos para captar patrones intraday
+    - Timeframes altos (4h, 1d): Requieren menos datos absolutos pero suficientes para LSTM
+
+    IMPORTANTE: Activos nuevos (<2 años) en timeframes altos (1d) tendrán menos datos disponibles.
+    El bot opera principalmente en timeframes bajos y usa timeframes altos como confirmación.
+    """
     logger.info("=" * 30 + " Training Models from MT5 Data " + "=" * 30)
+
+    # Definir datos mínimos recomendados por timeframe
+    MINIMUM_CANDLES_BY_TIMEFRAME = {
+        '15m': 2000,  # ~20 días - timeframe principal de operación
+        '1h': 1500,   # ~62 días - confirmación importante
+        '4h': 800,    # ~133 días - confirmación de tendencia
+        '1d': 300     # ~10 meses - confirmación de largo plazo (puede ser insuficiente en activos nuevos)
+    }
 
     # Initialize MT5
     if not initialize_mt5():
@@ -320,10 +337,12 @@ async def train_from_mt5():
             return
 
         logger.info(f"Will train models for {len(symbols)} symbols × {len(timeframes)} timeframes = {len(symbols) * len(timeframes)} models")
-        logger.info(f"Downloading {config.retrain_candles} candles per symbol/timeframe")
+        logger.info(f"Requesting {config.retrain_candles} candles per symbol/timeframe")
+        logger.info(f"Minimum data thresholds: {MINIMUM_CANDLES_BY_TIMEFRAME}")
 
         trained_count = 0
         failed_count = 0
+        skipped_count = 0
         models_since_reconnect = 0
 
         for symbol in symbols:
@@ -364,6 +383,21 @@ async def train_from_mt5():
                         logger.error(f"No data downloaded for {symbol} [{timeframe}] after 3 attempts. Skipping.")
                         failed_count += 1
                         continue
+
+                    # Validar datos mínimos por timeframe
+                    actual_candles = len(df)
+                    minimum_required = MINIMUM_CANDLES_BY_TIMEFRAME.get(timeframe, 500)
+
+                    if actual_candles < minimum_required:
+                        logger.warning(
+                            f"Insufficient data for {symbol} [{timeframe}]: "
+                            f"Downloaded {actual_candles} candles, minimum required {minimum_required}. "
+                            f"SKIPPING - Activo puede ser nuevo o timeframe muy alto para histórico disponible."
+                        )
+                        skipped_count += 1
+                        continue
+                    else:
+                        logger.info(f"✓ Data validation passed: {actual_candles} candles (minimum: {minimum_required})")
 
                     # Delay después de descarga exitosa para no sobrecargar MT5
                     import time
@@ -415,7 +449,15 @@ async def train_from_mt5():
                     continue
 
         logger.info(f"\n{'=' * 80}")
-        logger.info(f"Training complete: {trained_count} models trained, {failed_count} failed")
+        logger.info(f"Training complete:")
+        logger.info(f"  ✅ {trained_count} models trained successfully")
+        logger.info(f"  ⚠️  {skipped_count} models skipped (insufficient historical data)")
+        logger.info(f"  ❌ {failed_count} models failed")
+        logger.info(f"  📊 Total processed: {trained_count + skipped_count + failed_count}/{len(symbols) * len(timeframes)}")
+        if skipped_count > 0:
+            logger.warning(f"\nNOTA: {skipped_count} modelos fueron omitidos por datos insuficientes.")
+            logger.warning(f"Esto es NORMAL para activos nuevos en timeframes altos (4h, 1d).")
+            logger.warning(f"El bot operará en timeframes bajos (15m, 1h) donde hay más datos disponibles.")
         logger.info(f"{'=' * 80}\n")
 
     finally:

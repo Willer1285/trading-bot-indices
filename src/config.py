@@ -86,7 +86,7 @@ class Config:
         # Configuración de Reentrenamiento Automático
         self.enable_auto_retrain: bool = os.getenv("ENABLE_AUTO_RETRAIN", "true").lower() == "true"
         self.auto_retrain_days: int = int(os.getenv("AUTO_RETRAIN_DAYS", 7))
-        self.retrain_candles: int = int(os.getenv("RETRAIN_CANDLES", 5000))
+        self.retrain_candles: int = int(os.getenv("RETRAIN_CANDLES", 10000))  # Aumentado de 5000 a 10000 para mejor calidad LSTM
         self.models_directory: str = os.getenv("MODELS_DIRECTORY", "models")
 
         # Configuración de Logging
