@@ -511,9 +511,9 @@ class EnsembleModel:
 # CUSTOM LOSS FUNCTIONS
 # ============================================================================
 
-class SparseCategoricalFocalLoss(tf.keras.losses.Loss):
+class BinaryFocalLoss(tf.keras.losses.Loss):
     """
-    Focal Loss para clasificación multi-clase con labels enteros.
+    Focal Loss para clasificación binaria (meta-labeling).
 
     Focal Loss reduce la contribución de ejemplos fáciles y enfoca el
     entrenamiento en ejemplos difíciles y clases minoritarias.
@@ -524,7 +524,7 @@ class SparseCategoricalFocalLoss(tf.keras.losses.Loss):
         alpha: Factor de balanceo para clases (default 0.25)
         gamma: Factor de enfoque (default 2.0). Valores más altos reducen
                más la contribución de ejemplos fáciles.
-        from_logits: Si True, espera logits sin softmax (default False)
+        from_logits: Si True, espera logits sin sigmoid (default False)
     """
 
     def __init__(self, alpha=0.25, gamma=2.0, from_logits=False, **kwargs):
@@ -535,28 +535,28 @@ class SparseCategoricalFocalLoss(tf.keras.losses.Loss):
 
     def call(self, y_true, y_pred):
         """
-        Calcula focal loss.
+        Calcula focal loss para clasificación binaria.
 
         Args:
-            y_true: Labels enteros (batch_size,) con valores [0, 1, 2]
-            y_pred: Predicciones (batch_size, n_classes) con probabilidades
+            y_true: Labels binarios (batch_size,) o (batch_size, 1) con valores [0, 1]
+            y_pred: Predicciones (batch_size, 1) con probabilidades
 
         Returns:
             Focal loss promediado sobre el batch
         """
-        # Aplicar softmax si recibimos logits
+        # Aplicar sigmoid si recibimos logits
         if self.from_logits:
-            y_pred = tf.nn.softmax(y_pred, axis=-1)
+            y_pred = tf.nn.sigmoid(y_pred)
+
+        # Asegurar shapes consistentes
+        y_true = tf.cast(tf.reshape(y_true, [-1, 1]), tf.float32)
+        y_pred = tf.reshape(y_pred, [-1, 1])
 
         # Clip para estabilidad numérica
         y_pred = tf.clip_by_value(y_pred, 1e-7, 1.0 - 1e-7)
 
-        # Convertir y_true a one-hot si es necesario
-        y_true = tf.cast(y_true, tf.int32)
-        y_true_one_hot = tf.one_hot(y_true, depth=tf.shape(y_pred)[-1])
-
         # Calcular p_t (probabilidad de la clase correcta)
-        p_t = tf.reduce_sum(y_true_one_hot * y_pred, axis=-1)
+        p_t = tf.where(tf.equal(y_true, 1), y_pred, 1 - y_pred)
 
         # Calcular focal loss: -alpha * (1-p_t)^gamma * log(p_t)
         focal_weight = self.alpha * tf.pow(1.0 - p_t, self.gamma)
@@ -580,53 +580,58 @@ class SparseCategoricalFocalLoss(tf.keras.losses.Loss):
 # ============================================================================
 
 class LSTMModel(BaseModel):
-    """LSTM model for multi-class sequence classification with Focal Loss."""
+    """
+    LSTM model for binary sequence classification with Focal Loss.
+
+    Este modelo predice si una señal será RENTABLE (1) o NO RENTABLE (0)
+    usando meta-labeling, no predice directamente BUY/SELL/HOLD.
+    """
 
     def __init__(self, sequence_length: int = 20, input_dim: int = 50):
         super().__init__("LSTM")
         self.sequence_length = sequence_length
         self.input_dim = input_dim
         self.model = None
-        self.n_classes = 3  # SELL=0, HOLD=1, BUY=2
 
     def _build_model(self):
         """
-        Build the Keras LSTM model for multi-class classification.
+        Build the Keras LSTM model for binary classification (meta-labeling).
 
-        Arquitectura simplificada:
+        Arquitectura simplificada y optimizada:
         - LSTM con 32 unidades (vs 50 anterior) para reducir parámetros
         - Dropout 0.3 para mayor regularización
-        - Dense final con 3 salidas (SELL, HOLD, BUY)
-        - Softmax para clasificación multi-clase
-        - Focal Loss para manejar desbalance de clases
+        - Dense intermedia de 16 neuronas
+        - Salida binaria con sigmoid (RENTABLE vs NO_RENTABLE)
+        - Binary Focal Loss para manejar desbalance de clases
         """
         model = Sequential([
             LSTM(32, return_sequences=False, input_shape=(self.sequence_length, self.input_dim)),
             Dropout(0.3),
             Dense(16, activation='relu'),
             Dropout(0.3),
-            Dense(self.n_classes, activation='softmax')  # Multi-clase: 3 salidas
+            Dense(1, activation='sigmoid')  # Binario: 1 salida (probabilidad de clase 1)
         ])
 
-        # Usar Focal Loss para penalizar más errores en clases minoritarias
+        # Usar Binary Focal Loss para penalizar más errores en clase minoritaria
         model.compile(
             optimizer='adam',
-            loss=SparseCategoricalFocalLoss(alpha=0.25, gamma=2.0),
-            metrics=['accuracy',
-                    tf.keras.metrics.AUC(name='auc', num_thresholds=200),
-                    Precision(name='precision'),
-                    Recall(name='recall')]
+            loss=BinaryFocalLoss(alpha=0.25, gamma=2.0),
+            metrics=['accuracy', tf.keras.metrics.AUC(name='auc', num_thresholds=200)]
         )
         self.model = model
-        logger.info("LSTM model built with Focal Loss (alpha=0.25, gamma=2.0)")
+        logger.info("LSTM model built with Binary Focal Loss (alpha=0.25, gamma=2.0)")
 
     def fit(self, X: np.ndarray, y: np.ndarray):
         """
         Train the LSTM model with intelligent undersampling for class balancing.
 
+        Meta-labeling produce labels binarios:
+        - 0 = Señal NO rentable (clase minoritaria)
+        - 1 = Señal rentable (clase mayoritaria)
+
         Estrategia de balanceo:
-        - Mantener todas las muestras BUY y SELL (clases minoritarias)
-        - Reducir HOLD del ~95% a ~70% mediante undersampling aleatorio
+        - Mantener todas las señales NO rentables (clase 0 - minoritaria)
+        - Reducir señales rentables (clase 1) del ~66% a ~60% mediante undersampling
         - Aplicar class_weights adicionales para compensar desbalance residual
         """
         if self.model is None:
@@ -640,37 +645,33 @@ class LSTMModel(BaseModel):
         logger.info(f"Original class distribution: {class_distribution}")
         logger.info(f"Original total samples: {total_samples}")
 
-        # --- PASO 2: Undersampling inteligente de HOLD ---
-        # Calcular cuántas muestras HOLD queremos mantener
-        buy_count = class_distribution.get(2, 0)  # BUY
-        sell_count = class_distribution.get(0, 0)  # SELL
-        hold_count = class_distribution.get(1, 0)  # HOLD
+        # --- PASO 2: Undersampling inteligente de clase mayoritaria (1 = rentable) ---
+        not_profitable_count = class_distribution.get(0, 0)  # NO rentable (minoritaria)
+        profitable_count = class_distribution.get(1, 0)       # Rentable (mayoritaria)
 
-        # Mantener todas BUY/SELL, reducir HOLD a ~70% del total
-        minority_total = buy_count + sell_count
-        target_hold_count = int(minority_total * 2.3)  # HOLD será ~70% del nuevo dataset
+        # Mantener todas NO rentables, reducir rentables para balance ~60/40
+        target_profitable_count = int(not_profitable_count * 1.5)  # Ratio 60/40
 
-        if hold_count > target_hold_count and target_hold_count > 0:
-            # Undersampling: mantener todas BUY/SELL, samplear HOLD
-            indices_buy = np.where(y == 2)[0]
-            indices_sell = np.where(y == 0)[0]
-            indices_hold = np.where(y == 1)[0]
+        if profitable_count > target_profitable_count and target_profitable_count > 0:
+            # Undersampling: mantener todas NO rentables, samplear rentables
+            indices_not_profitable = np.where(y == 0)[0]
+            indices_profitable = np.where(y == 1)[0]
 
-            # Samplear aleatoriamente HOLD
+            # Samplear aleatoriamente clase mayoritaria
             np.random.seed(42)
-            indices_hold_sampled = np.random.choice(indices_hold, size=target_hold_count, replace=False)
+            indices_profitable_sampled = np.random.choice(indices_profitable, size=target_profitable_count, replace=False)
 
             # Combinar índices
-            indices_balanced = np.concatenate([indices_sell, indices_hold_sampled, indices_buy])
+            indices_balanced = np.concatenate([indices_not_profitable, indices_profitable_sampled])
             np.random.shuffle(indices_balanced)
 
             # Aplicar balanceo
             X = X[indices_balanced]
             y = y[indices_balanced]
 
-            logger.info(f"Applied undersampling: HOLD reduced from {hold_count} to {target_hold_count}")
+            logger.info(f"Applied undersampling: Profitable (class 1) reduced from {profitable_count} to {target_profitable_count}")
         else:
-            logger.info("Skipping undersampling (insufficient HOLD samples or already balanced)")
+            logger.info("Skipping undersampling (insufficient samples or already balanced)")
 
         # --- PASO 3: Recalcular class weights después del balanceo ---
         unique_classes, class_counts = np.unique(y, return_counts=True)
@@ -715,10 +716,10 @@ class LSTMModel(BaseModel):
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         """
-        Predict class labels for multi-class classification.
+        Predict class labels for binary classification (meta-labeling).
 
         Returns:
-            np.ndarray: Predicted classes (0=SELL, 1=HOLD, 2=BUY)
+            np.ndarray: Predicted classes (0=NO_RENTABLE, 1=RENTABLE)
         """
         if not self.is_fitted or self.model is None:
             raise RuntimeError("Model must be fitted before making predictions.")
@@ -728,17 +729,17 @@ class LSTMModel(BaseModel):
         X_scaled_reshaped = self.scaler.transform(X_reshaped)
         X_scaled = X_scaled_reshaped.reshape((n_samples, n_timesteps, n_features))
 
-        # Para multi-clase, usar argmax en vez de threshold
+        # Para binario, usar threshold 0.5 en sigmoid output
         probas = self.model.predict(X_scaled, verbose=0)
-        return np.argmax(probas, axis=1)
+        return (probas > 0.5).astype(int).flatten()
 
     def predict_proba(self, X: np.ndarray) -> np.ndarray:
         """
-        Predict class probabilities for multi-class classification.
+        Predict class probabilities for binary classification.
 
         Returns:
-            np.ndarray: Probability matrix (n_samples, 3) donde cada fila suma 1.0
-                       Columnas: [P(SELL), P(HOLD), P(BUY)]
+            np.ndarray: Probability matrix (n_samples, 2) donde cada fila suma 1.0
+                       Columnas: [P(NO_RENTABLE), P(RENTABLE)]
         """
         if not self.is_fitted or self.model is None:
             raise RuntimeError("Model must be fitted before making predictions.")
@@ -748,8 +749,10 @@ class LSTMModel(BaseModel):
         X_scaled_reshaped = self.scaler.transform(X_reshaped)
         X_scaled = X_scaled_reshaped.reshape((n_samples, n_timesteps, n_features))
 
-        # El modelo ya devuelve probabilidades para las 3 clases (softmax)
-        return self.model.predict(X_scaled, verbose=0)
+        # El modelo devuelve P(clase 1). Construir matriz con ambas probabilidades
+        proba_positive = self.model.predict(X_scaled, verbose=0).flatten()
+        proba_negative = 1 - proba_positive
+        return np.column_stack([proba_negative, proba_positive])
 
     def save(self, path: str):
         """Save Keras model and scaler separately."""
@@ -771,17 +774,17 @@ class LSTMModel(BaseModel):
         logger.info(f"LSTM model saved to {model_path} and {scaler_path}")
 
     def load(self, path: str):
-        """Load Keras model and scaler with custom Focal Loss."""
+        """Load Keras model and scaler with custom Binary Focal Loss."""
         model_path = path.replace('.pkl', '.keras')
         scaler_path = path.replace('.pkl', '_scaler.pkl')
 
         if not Path(model_path).exists() or not Path(scaler_path).exists():
             raise FileNotFoundError(f"Model files not found: {model_path} or {scaler_path}")
 
-        # Cargar modelo con custom objects para Focal Loss
+        # Cargar modelo con custom objects para Binary Focal Loss
         self.model = load_model(
             model_path,
-            custom_objects={'SparseCategoricalFocalLoss': SparseCategoricalFocalLoss}
+            custom_objects={'BinaryFocalLoss': BinaryFocalLoss}
         )
         
         with open(scaler_path, 'rb') as f:
