@@ -316,11 +316,13 @@ async def train_from_mt5():
     logger.info("=" * 30 + " Training Models from MT5 Data " + "=" * 30)
 
     # Definir datos mínimos recomendados por timeframe
+    # IMPORTANTE: Mínimo 2000 velas para garantizar calidad del LSTM
+    # Con menos de 2000 velas, el modelo tiende a overfitting o predicciones aleatorias
     MINIMUM_CANDLES_BY_TIMEFRAME = {
         '15m': 2000,  # ~20 días - timeframe principal de operación
-        '1h': 1500,   # ~62 días - confirmación importante
-        '4h': 800,    # ~133 días - confirmación de tendencia
-        '1d': 300     # ~10 meses - confirmación de largo plazo (puede ser insuficiente en activos nuevos)
+        '1h': 2000,   # ~83 días - confirmación importante
+        '4h': 2000,   # ~333 días (~11 meses) - confirmación de tendencia
+        '1d': 2000    # ~5.5 años - confirmación de largo plazo
     }
 
     # Initialize MT5
