@@ -46,9 +46,10 @@ class Config:
         self.take_profit_2_atr_multiplier: float = float(os.getenv("TAKE_PROFIT_2_ATR_MULTIPLIER", 4.0))
 
         # Gestión de Riesgo Fijo (cuando ENABLE_DYNAMIC_RISK=false)
-        self.fixed_stop_loss_pips: float = float(os.getenv("FIXED_STOP_LOSS_PIPS", 50.0))
-        self.fixed_take_profit_1_pips: float = float(os.getenv("FIXED_TAKE_PROFIT_1_PIPS", 100.0))
-        self.fixed_take_profit_2_pips: float = float(os.getenv("FIXED_TAKE_PROFIT_2_PIPS", 200.0))
+        # Para índices sintéticos: 1 punto = 1.0 en el precio
+        self.fixed_stop_loss_points: float = float(os.getenv("FIXED_STOP_LOSS_POINTS", 50.0))
+        self.fixed_take_profit_1_points: float = float(os.getenv("FIXED_TAKE_PROFIT_1_POINTS", 100.0))
+        self.fixed_take_profit_2_points: float = float(os.getenv("FIXED_TAKE_PROFIT_2_POINTS", 200.0))
 
         self.enforce_gainx_buy_only: bool = os.getenv("ENFORCE_GAINX_BUY_ONLY", "true").lower() == "true"
         self.enforce_painx_sell_only: bool = os.getenv("ENFORCE_PAINX_SELL_ONLY", "true").lower() == "true"

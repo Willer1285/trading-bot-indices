@@ -20,7 +20,7 @@ class RiskManager:
             logger.info(f"Multiplicadores: SL={config.stop_loss_atr_multiplier}*ATR, TP1={config.take_profit_1_atr_multiplier}*ATR, TP2={config.take_profit_2_atr_multiplier}*ATR")
         else:
             logger.info("Risk Manager inicializado con gestión de riesgo FIJA.")
-            logger.info(f"SL Fijo={config.fixed_stop_loss_pips} pips, TP1 Fijo={config.fixed_take_profit_1_pips} pips, TP2 Fijo={config.fixed_take_profit_2_pips} pips")
+            logger.info(f"SL Fijo={config.fixed_stop_loss_points} puntos, TP1 Fijo={config.fixed_take_profit_1_points} puntos, TP2 Fijo={config.fixed_take_profit_2_points} puntos")
 
         if config.enable_dynamic_lot_size:
             logger.info(f"Lotaje DINÁMICO activado: Min={config.min_lot_size}, Max={config.max_lot_size}")
@@ -58,7 +58,7 @@ class RiskManager:
         confidence: float
     ) -> Optional[Dict]:
         """
-        Calcula el stop loss y take profit usando valores fijos en pips.
+        Calcula el stop loss y take profit usando valores fijos en puntos.
 
         Args:
             symbol: Par de trading.
@@ -70,13 +70,12 @@ class RiskManager:
             Diccionario con los parámetros de riesgo fijos.
         """
         try:
-            # Convertir pips a precio (asumiendo que 1 pip = 0.01 para índices)
-            # Para índices sintéticos, normalmente 1 pip = 0.01
-            pip_value = 0.01
+            # Para índices sintéticos: 1 punto = 1.0 en el precio
+            point_value = 1.0
 
-            sl_distance = config.fixed_stop_loss_pips * pip_value
-            tp1_distance = config.fixed_take_profit_1_pips * pip_value
-            tp2_distance = config.fixed_take_profit_2_pips * pip_value
+            sl_distance = config.fixed_stop_loss_points * point_value
+            tp1_distance = config.fixed_take_profit_1_points * point_value
+            tp2_distance = config.fixed_take_profit_2_points * point_value
 
             if signal_type == 'BUY':
                 stop_loss = entry_price - sl_distance

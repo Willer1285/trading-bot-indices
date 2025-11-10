@@ -47,16 +47,16 @@ GainX 600, ATR = 15.0
 
 ---
 
-### Modo Fijo (Pips Manuales)
+### Modo Fijo (Puntos Manuales)
 
-El SL y TP se configuran con **valores fijos en pips** que nunca cambian:
+El SL y TP se configuran con **valores fijos en puntos** que nunca cambian:
 
 ```bash
 # En tu archivo .env:
 ENABLE_DYNAMIC_RISK=false
-FIXED_STOP_LOSS_PIPS=50.0
-FIXED_TAKE_PROFIT_1_PIPS=125.0
-FIXED_TAKE_PROFIT_2_PIPS=250.0
+FIXED_STOP_LOSS_POINTS=50.0
+FIXED_TAKE_PROFIT_1_POINTS=125.0
+FIXED_TAKE_PROFIT_2_POINTS=250.0
 ```
 
 **Ventajas:**
@@ -69,13 +69,17 @@ FIXED_TAKE_PROFIT_2_PIPS=250.0
 - ⚠️ Puede ser demasiado ajustado en mercados volátiles
 - ⚠️ Puede ser demasiado amplio en mercados tranquilos
 
-**Conversión Pips → Precio:**
+**Conversión Puntos → Precio:**
 ```
-Para índices sintéticos: 1 pip = 0.01
+Para índices sintéticos: 1 punto = 1.0 en el precio
 
 Ejemplo:
-FIXED_STOP_LOSS_PIPS=50.0
-→ SL Distance = 50.0 × 0.01 = 0.50 en precio
+FIXED_STOP_LOSS_POINTS=50.0
+→ SL Distance = 50.0 × 1.0 = 50.0 en precio
+
+Si el precio de entrada es 9865.00:
+- BUY: SL = 9865.00 - 50.0 = 9815.00
+- SELL: SL = 9865.00 + 50.0 = 9915.00
 ```
 
 ---
@@ -203,9 +207,9 @@ CONFIDENCE_THRESHOLD=0.70              # Menos selectivo
 ```bash
 # Riesgo fijo para backtesting
 ENABLE_DYNAMIC_RISK=false
-FIXED_STOP_LOSS_PIPS=50.0
-FIXED_TAKE_PROFIT_1_PIPS=125.0
-FIXED_TAKE_PROFIT_2_PIPS=250.0
+FIXED_STOP_LOSS_POINTS=50.0
+FIXED_TAKE_PROFIT_1_POINTS=125.0
+FIXED_TAKE_PROFIT_2_POINTS=250.0
 
 # Lotaje fijo
 ENABLE_DYNAMIC_LOT_SIZE=false
@@ -242,12 +246,12 @@ INFO | SL=9843.155, TP1=9881.575, TP2=9957.150, RR1=2.50
 ### Modo Fijo
 ```
 INFO | Risk Manager inicializado con gestión de riesgo FIJA.
-INFO | SL Fijo=50.0 pips, TP1 Fijo=125.0 pips, TP2 Fijo=250.0 pips
+INFO | SL Fijo=50.0 puntos, TP1 Fijo=125.0 puntos, TP2 Fijo=250.0 puntos
 INFO | Lotaje FIJO activado: 0.5 lotes
 
 INFO | Parámetros de riesgo FIJOS para GainX 600 (BUY):
 INFO | Lotaje: 0.5 (Fijo)
-INFO | SL=9857.50, TP1=9870.25, TP2=9895.00, RR1=2.50
+INFO | SL=9815.00, TP1=9990.00, TP2=10115.00, RR1=2.50
 ```
 
 ---
@@ -258,9 +262,9 @@ INFO | SL=9857.50, TP1=9870.25, TP2=9895.00, RR1=2.50
    - Si `ENABLE_DYNAMIC_RISK=true` pero no hay ATR, el bot fallará
    - Asegúrate de que `ATR_PERIOD=14` esté configurado
 
-2. **Pip value para índices:**
-   - El bot asume `1 pip = 0.01` para índices sintéticos
-   - Si operas forex, ajusta el cálculo en `risk_manager.py:76`
+2. **Puntos vs Pips:**
+   - El bot está configurado para **índices sintéticos** donde `1 punto = 1.0` en el precio
+   - Si operas **Forex**, necesitarás ajustar `point_value` en `risk_manager.py:74` a `0.0001` (o `0.01` para pares JPY)
 
 3. **Lotes y broker:**
    - Verifica los límites de lote de tu broker
@@ -289,9 +293,9 @@ ENABLE_DYNAMIC_RISK=true
 
 # Después (fijo):
 ENABLE_DYNAMIC_RISK=false
-FIXED_STOP_LOSS_PIPS=60.0
-FIXED_TAKE_PROFIT_1_PIPS=150.0
-FIXED_TAKE_PROFIT_2_PIPS=300.0
+FIXED_STOP_LOSS_POINTS=60.0
+FIXED_TAKE_PROFIT_1_POINTS=150.0
+FIXED_TAKE_PROFIT_2_POINTS=300.0
 ```
 
 ---
