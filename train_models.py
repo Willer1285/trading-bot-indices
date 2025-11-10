@@ -324,18 +324,50 @@ async def train_from_mt5():
 
         trained_count = 0
         failed_count = 0
+        models_since_reconnect = 0
 
         for symbol in symbols:
             for timeframe in timeframes:
                 try:
                     logger.info(f"\n--- Training {symbol} [{timeframe}] ---")
 
-                    # 1. Download data from MT5
-                    df = download_data_from_mt5(symbol, timeframe, config.retrain_candles)
-                    if df.empty:
-                        logger.error(f"No data downloaded for {symbol} [{timeframe}]. Skipping.")
+                    # Reconectar MT5 cada 5 modelos para evitar IPC errors
+                    if models_since_reconnect >= 5:
+                        logger.info("Reconnecting to MT5 to prevent IPC errors...")
+                        shutdown_mt5()
+                        import time
+                        time.sleep(3)
+                        if not initialize_mt5():
+                            logger.error("Failed to reconnect to MT5. Aborting.")
+                            return
+                        models_since_reconnect = 0
+
+                    # 1. Download data from MT5 with retry logic
+                    df = None
+                    for retry in range(3):  # Intentar hasta 3 veces
+                        df = download_data_from_mt5(symbol, timeframe, config.retrain_candles)
+                        if not df.empty:
+                            break
+
+                        if retry < 2:  # No esperar en el último intento
+                            logger.warning(f"Download failed, retrying in 5 seconds... (attempt {retry + 1}/3)")
+                            import time
+                            time.sleep(5)
+                            # Reconectar antes de reintentar
+                            shutdown_mt5()
+                            time.sleep(2)
+                            if not initialize_mt5():
+                                logger.error("Failed to reconnect to MT5 for retry.")
+                                break
+
+                    if df is None or df.empty:
+                        logger.error(f"No data downloaded for {symbol} [{timeframe}] after 3 attempts. Skipping.")
                         failed_count += 1
                         continue
+
+                    # Delay después de descarga exitosa para no sobrecargar MT5
+                    import time
+                    time.sleep(2)
 
                     # 2. Prepare training data
                     X, y = prepare_training_data(df)
@@ -374,7 +406,8 @@ async def train_from_mt5():
                     save_training_metadata(model_dir, symbol, timeframe, len(df), 'mt5')
 
                     trained_count += 1
-                    logger.success(f"✅ Finished training {symbol} [{timeframe}]")
+                    models_since_reconnect += 1
+                    logger.success(f"✅ Finished training {symbol} [{timeframe}] ({trained_count}/{len(symbols) * len(timeframes)})")
 
                 except Exception as e:
                     logger.error(f"Error training {symbol} [{timeframe}]: {e}")
