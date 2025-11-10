@@ -62,10 +62,116 @@ class MT5TradingBot:
         self.max_open_positions = config.mt5_max_open_positions
         self.break_even_activated = {} # Rastrea las operaciones con BE activado
 
-        # Initialize all components
-        self._initialize_components()
+        # Initialize all components - will be called in async initialize()
 
-    def _initialize_components(self):
+    async def _check_and_retrain_models(self):
+        """Check model age and retrain automatically if needed."""
+        import json
+        from pathlib import Path
+        from datetime import datetime
+        import subprocess
+
+        if not config.enable_auto_retrain:
+            logger.info("Automatic retraining is disabled (ENABLE_AUTO_RETRAIN=false)")
+            return
+
+        logger.info("Checking model age for automatic retraining...")
+
+        models_dir = Path(config.models_directory)
+        needs_retrain = False
+
+        if not models_dir.exists():
+            logger.warning(f"Models directory '{models_dir}' does not exist. Will trigger retraining.")
+            needs_retrain = True
+        else:
+            # Check age of all models
+            oldest_model_age = 0
+
+            for symbol in config.trading_symbols:
+                symbol_safe = symbol.replace(" ", "_")
+                symbol_dir = models_dir / symbol_safe
+
+                if not symbol_dir.exists():
+                    logger.warning(f"No models found for {symbol}. Will trigger retraining.")
+                    needs_retrain = True
+                    break
+
+                # Check each timeframe
+                for timeframe in config.timeframes:
+                    tf_map = {
+                        '1m': 'M1', '5m': 'M5', '15m': 'M15', '30m': 'M30',
+                        '1h': 'H1', '4h': 'H4', '1d': 'D1', '1w': 'W1', '1M': 'MN1'
+                    }
+                    tf_code = tf_map.get(timeframe, timeframe.upper())
+                    model_dir = symbol_dir / f"{symbol_safe}_{tf_code}"
+
+                    metadata_file = model_dir / 'training_metadata.json'
+
+                    if not metadata_file.exists():
+                        logger.warning(f"No metadata found for {symbol} [{timeframe}]. Will trigger retraining.")
+                        needs_retrain = True
+                        break
+
+                    try:
+                        with open(metadata_file, 'r') as f:
+                            metadata = json.load(f)
+
+                        trained_at = datetime.fromisoformat(metadata['trained_at'])
+                        age_days = (datetime.now() - trained_at).days
+                        oldest_model_age = max(oldest_model_age, age_days)
+
+                        logger.info(f"Model for {symbol} [{timeframe}] is {age_days} days old")
+
+                    except Exception as e:
+                        logger.warning(f"Error reading metadata for {symbol} [{timeframe}]: {e}")
+                        needs_retrain = True
+                        break
+
+                if needs_retrain:
+                    break
+
+            if not needs_retrain and oldest_model_age >= config.auto_retrain_days:
+                logger.warning(f"Oldest model is {oldest_model_age} days old (threshold: {config.auto_retrain_days} days)")
+                needs_retrain = True
+
+        if needs_retrain:
+            logger.info("=" * 80)
+            logger.info("⚠️  AUTOMATIC RETRAINING TRIGGERED")
+            logger.info(f"Will download {config.retrain_candles} candles from MT5 for each symbol/timeframe")
+            logger.info(f"Symbols: {', '.join(config.trading_symbols)}")
+            logger.info(f"Timeframes: {', '.join(config.timeframes)}")
+            logger.info("This may take 15-30 minutes...")
+            logger.info("=" * 80)
+
+            try:
+                # Call train_models.py with MT5 source
+                result = subprocess.run(
+                    ['python', 'train_models.py', '--source', 'mt5'],
+                    cwd=Path(__file__).parent.parent,  # Root directory of project
+                    capture_output=True,
+                    text=True,
+                    timeout=3600  # 1 hour timeout
+                )
+
+                if result.returncode == 0:
+                    logger.success("✅ Automatic retraining completed successfully!")
+                    logger.info("Models have been updated with fresh data from MT5")
+                else:
+                    logger.error(f"Retraining failed with exit code {result.returncode}")
+                    logger.error(f"STDERR: {result.stderr}")
+                    raise Exception("Automatic retraining failed")
+
+            except subprocess.TimeoutExpired:
+                logger.error("Retraining timed out after 1 hour")
+                raise Exception("Automatic retraining timed out")
+            except Exception as e:
+                logger.error(f"Error during automatic retraining: {e}")
+                raise
+
+        else:
+            logger.success(f"✅ Models are up to date (oldest model: {oldest_model_age} days old)")
+
+    async def _initialize_components(self):
         """Initialize all bot components"""
         try:
             # MT5 connector
@@ -111,9 +217,12 @@ class MT5TradingBot:
             logger.info("Initializing AI analyzer...")
             self.analyzer = MarketAnalyzer(enable_training=False)
 
+            # Check model age and retrain if necessary
+            await self._check_and_retrain_models()
+
             # Try to load pre-trained models
             try:
-                self.analyzer.load_models('models')
+                self.analyzer.load_models(config.models_directory)
                 logger.info("Loaded pre-trained models")
             except Exception as e:
                 logger.critical(f"Could not load models: {e}. The bot cannot function without trained models.")
@@ -156,6 +265,9 @@ class MT5TradingBot:
             self.is_running = True
 
             logger.info("Starting MT5 Trading Bot...")
+
+            # Initialize all components (async)
+            await self._initialize_components()
 
             # Test Telegram connection
             if self.telegram_bot:

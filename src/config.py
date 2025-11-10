@@ -69,6 +69,12 @@ class Config:
 
         # Lotaje Fijo (cuando ENABLE_DYNAMIC_LOT_SIZE=false, se usa MT5_LOT_SIZE)
 
+        # Configuración de Reentrenamiento Automático
+        self.enable_auto_retrain: bool = os.getenv("ENABLE_AUTO_RETRAIN", "true").lower() == "true"
+        self.auto_retrain_days: int = int(os.getenv("AUTO_RETRAIN_DAYS", 7))
+        self.retrain_candles: int = int(os.getenv("RETRAIN_CANDLES", 5000))
+        self.models_directory: str = os.getenv("MODELS_DIRECTORY", "models")
+
         # Configuración de Logging
         self.log_level: str = os.getenv("LOG_LEVEL", "INFO")
         self.log_file: str = os.getenv("LOG_FILE", "logs/trading_bot.log")
