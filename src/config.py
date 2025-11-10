@@ -38,9 +38,18 @@ class Config:
         self.atr_period: int = int(os.getenv("ATR_PERIOD", 14))
         self.max_signals_per_day: int = int(os.getenv("MAX_SIGNALS_PER_DAY", 10))
         self.max_signals_per_pair: int = int(os.getenv("MAX_SIGNALS_PER_PAIR", 3))
+
+        # Gestión de Riesgo Dinámico (basado en ATR)
+        self.enable_dynamic_risk: bool = os.getenv("ENABLE_DYNAMIC_RISK", "true").lower() == "true"
         self.stop_loss_atr_multiplier: float = float(os.getenv("STOP_LOSS_ATR_MULTIPLIER", 1.5))
         self.take_profit_1_atr_multiplier: float = float(os.getenv("TAKE_PROFIT_1_ATR_MULTIPLIER", 2.0))
         self.take_profit_2_atr_multiplier: float = float(os.getenv("TAKE_PROFIT_2_ATR_MULTIPLIER", 4.0))
+
+        # Gestión de Riesgo Fijo (cuando ENABLE_DYNAMIC_RISK=false)
+        self.fixed_stop_loss_pips: float = float(os.getenv("FIXED_STOP_LOSS_PIPS", 50.0))
+        self.fixed_take_profit_1_pips: float = float(os.getenv("FIXED_TAKE_PROFIT_1_PIPS", 100.0))
+        self.fixed_take_profit_2_pips: float = float(os.getenv("FIXED_TAKE_PROFIT_2_PIPS", 200.0))
+
         self.enforce_gainx_buy_only: bool = os.getenv("ENFORCE_GAINX_BUY_ONLY", "true").lower() == "true"
         self.enforce_painx_sell_only: bool = os.getenv("ENFORCE_PAINX_SELL_ONLY", "true").lower() == "true"
 
@@ -52,10 +61,12 @@ class Config:
         self.trailing_stop_trigger_atr_multiplier: float = float(os.getenv("TRAILING_STOP_TRIGGER_ATR_MULTIPLIER", 2.0))
         self.trailing_stop_distance_atr_multiplier: float = float(os.getenv("TRAILING_STOP_DISTANCE_ATR_MULTIPLIER", 1.5))
 
-        # Configuración de Lotaje Dinámico
+        # Configuración de Lotaje Dinámico (basado en confianza del modelo)
         self.enable_dynamic_lot_size: bool = os.getenv("ENABLE_DYNAMIC_LOT_SIZE", "true").lower() == "true"
         self.min_lot_size: float = float(os.getenv("MIN_LOT_SIZE", 0.10))
         self.max_lot_size: float = float(os.getenv("MAX_LOT_SIZE", 1.00))
+
+        # Lotaje Fijo (cuando ENABLE_DYNAMIC_LOT_SIZE=false, se usa MT5_LOT_SIZE)
 
         # Configuración de Logging
         self.log_level: str = os.getenv("LOG_LEVEL", "INFO")

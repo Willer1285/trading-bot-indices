@@ -15,8 +15,17 @@ class RiskManager:
 
     def __init__(self):
         """Inicializa el Risk Manager."""
-        logger.info("Risk Manager inicializado con gestión de riesgo dinámica basada en ATR.")
-        logger.info(f"Multiplicadores: SL={config.stop_loss_atr_multiplier}*ATR, TP1={config.take_profit_1_atr_multiplier}*ATR, TP2={config.take_profit_2_atr_multiplier}*ATR")
+        if config.enable_dynamic_risk:
+            logger.info("Risk Manager inicializado con gestión de riesgo DINÁMICA basada en ATR.")
+            logger.info(f"Multiplicadores: SL={config.stop_loss_atr_multiplier}*ATR, TP1={config.take_profit_1_atr_multiplier}*ATR, TP2={config.take_profit_2_atr_multiplier}*ATR")
+        else:
+            logger.info("Risk Manager inicializado con gestión de riesgo FIJA.")
+            logger.info(f"SL Fijo={config.fixed_stop_loss_pips} pips, TP1 Fijo={config.fixed_take_profit_1_pips} pips, TP2 Fijo={config.fixed_take_profit_2_pips} pips")
+
+        if config.enable_dynamic_lot_size:
+            logger.info(f"Lotaje DINÁMICO activado: Min={config.min_lot_size}, Max={config.max_lot_size}")
+        else:
+            logger.info(f"Lotaje FIJO activado: {config.mt5_lot_size} lotes")
 
     def calculate_dynamic_lot_size(self, confidence: float) -> float:
         """
@@ -41,6 +50,73 @@ class RiskManager:
         # Asegurarse de que el lote esté dentro de los límites y redondear a 2 decimales
         return round(max(config.min_lot_size, min(dynamic_lot, config.max_lot_size)), 2)
 
+    def _calculate_fixed_risk_parameters(
+        self,
+        symbol: str,
+        signal_type: str,
+        entry_price: float,
+        confidence: float
+    ) -> Optional[Dict]:
+        """
+        Calcula el stop loss y take profit usando valores fijos en pips.
+
+        Args:
+            symbol: Par de trading.
+            signal_type: BUY o SELL.
+            entry_price: Precio de entrada.
+            confidence: Confianza de la señal (para lotaje dinámico si está habilitado).
+
+        Returns:
+            Diccionario con los parámetros de riesgo fijos.
+        """
+        try:
+            # Convertir pips a precio (asumiendo que 1 pip = 0.01 para índices)
+            # Para índices sintéticos, normalmente 1 pip = 0.01
+            pip_value = 0.01
+
+            sl_distance = config.fixed_stop_loss_pips * pip_value
+            tp1_distance = config.fixed_take_profit_1_pips * pip_value
+            tp2_distance = config.fixed_take_profit_2_pips * pip_value
+
+            if signal_type == 'BUY':
+                stop_loss = entry_price - sl_distance
+                take_profit_1 = entry_price + tp1_distance
+                take_profit_2 = entry_price + tp2_distance
+            elif signal_type == 'SELL':
+                stop_loss = entry_price + sl_distance
+                take_profit_1 = entry_price - tp1_distance
+                take_profit_2 = entry_price - tp2_distance
+            else:
+                logger.warning(f"Tipo de señal desconocido: {signal_type}")
+                return None
+
+            if stop_loss <= 0 or take_profit_1 <= 0:
+                logger.warning(f"{symbol}: SL ({stop_loss}) o TP1 ({take_profit_1}) inválidos calculados.")
+                return None
+
+            risk_amount = abs(entry_price - stop_loss)
+            reward_amount_1 = abs(take_profit_1 - entry_price)
+            risk_reward_ratio_1 = reward_amount_1 / risk_amount if risk_amount > 0 else 0
+
+            logger.info(f"Parámetros de riesgo FIJOS para {symbol} ({signal_type}):")
+            lot_size = self.calculate_dynamic_lot_size(confidence)
+            logger.info(f"Lotaje: {lot_size} {'(Dinámico)' if config.enable_dynamic_lot_size else '(Fijo)'}")
+            logger.info(f"SL={stop_loss:.5f}, TP1={take_profit_1:.5f}, TP2={take_profit_2:.5f}, RR1={risk_reward_ratio_1:.2f}")
+
+            return {
+                'entry_price': float(entry_price),
+                'stop_loss': float(stop_loss),
+                'take_profit_levels': [float(take_profit_1), float(take_profit_2)],
+                'risk_amount': float(risk_amount),
+                'risk_reward_ratio': float(risk_reward_ratio_1),
+                'lot_size': lot_size,
+                'atr_at_signal': None  # No hay ATR en modo fijo
+            }
+
+        except Exception as e:
+            logger.error(f"Error al calcular los parámetros de riesgo fijos para {symbol}: {e}")
+            return None
+
     def calculate_risk_parameters(
         self,
         symbol: str,
@@ -51,18 +127,23 @@ class RiskManager:
         full_market_data: pd.DataFrame
     ) -> Optional[Dict]:
         """
-        Calcula la entrada, el stop loss y el take profit dinámicamente usando ATR.
+        Calcula la entrada, el stop loss y el take profit.
+        Usa modo dinámico (ATR) o fijo según configuración.
 
         Args:
             symbol: Par de trading.
             signal_type: BUY o SELL.
             entry_price: Precio de entrada.
             analysis: Análisis de mercado que contiene el valor del ATR.
+            confidence: Confianza de la señal.
             full_market_data: DataFrame completo con datos de mercado para buscar ATR válidos.
 
         Returns:
             Diccionario con los parámetros de riesgo.
         """
+        # Si el modo dinámico está desactivado, usar valores fijos
+        if not config.enable_dynamic_risk:
+            return self._calculate_fixed_risk_parameters(symbol, signal_type, entry_price, confidence)
         try:
             # Intenta obtener el ATR más reciente. Si no es válido, busca el último valor válido.
             atr = analysis.indicators.get('atr')
