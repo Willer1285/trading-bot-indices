@@ -5,10 +5,16 @@ Trading Bot with AI-powered signal generation and automatic execution on MT5
 
 import asyncio
 import os
+import threading
 from typing import Dict, List
 from datetime import datetime
 from loguru import logger
 import signal as sys_signal
+import sys
+from pathlib import Path
+
+# Add parent directory to path for web_interface imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from config import config
 from utils.logger import setup_logger
@@ -24,6 +30,12 @@ from signal_generator.signal_filter import SignalFilter
 from signal_generator.risk_manager import RiskManager
 
 from telegram_bot.telegram_bot import TelegramBot
+
+# Web interface components
+from web_interface.app import run_flask_app, set_bot_instance
+from web_interface.database import init_database
+from trade_tracker import TradeTracker
+from bot_controller import get_bot_controller
 
 
 class MT5TradingBot:
@@ -41,6 +53,14 @@ class MT5TradingBot:
         logger.info("AI MT5 Trading Bot Starting...")
         logger.info("=" * 60)
 
+        # Initialize web interface database
+        logger.info("Initializing web interface database...")
+        init_database("trading_bot.db")
+
+        # Initialize bot controller
+        logger.info("Initializing bot controller...")
+        self.bot_controller = get_bot_controller()
+
         # Performance tracking
         self.performance = PerformanceTracker()
 
@@ -51,6 +71,7 @@ class MT5TradingBot:
         self.analyzer = None
         self.signal_generator = None
         self.telegram_bot = None
+        self.trade_tracker = None  # Will be initialized after telegram_bot
 
         # Control flags
         self.is_running = False
@@ -253,6 +274,14 @@ class MT5TradingBot:
                 enable_charts=config.telegram_include_charts
             )
 
+            # Trade tracker (needs telegram_bot reference)
+            logger.info("Initializing trade tracker...")
+            self.trade_tracker = TradeTracker(telegram_bot=self.telegram_bot)
+            self.trade_tracker.load_active_trades()
+
+            # Pass bot and telegram references to web interface
+            set_bot_instance(self, self.telegram_bot)
+
             logger.info("All components initialized successfully")
 
         except Exception as e:
@@ -268,6 +297,21 @@ class MT5TradingBot:
 
             # Initialize all components (async)
             await self._initialize_components()
+
+            # Start web interface in separate thread
+            logger.info("Starting web interface...")
+            flask_thread = threading.Thread(
+                target=run_flask_app,
+                kwargs={'host': '0.0.0.0', 'port': 5000, 'debug': False},
+                daemon=True,
+                name="FlaskWebInterface"
+            )
+            flask_thread.start()
+            logger.success("🌐 Web interface started at http://localhost:5000")
+
+            # Start bot controller
+            self.bot_controller.start()
+            logger.success("✅ Bot controller started - Status: RUNNING")
 
             # Test Telegram connection
             if self.telegram_bot:
@@ -316,6 +360,11 @@ class MT5TradingBot:
 
         self.is_running = False
 
+        # Stop bot controller
+        if self.bot_controller:
+            self.bot_controller.stop()
+            logger.info("Bot controller stopped")
+
         # Stop market data collection
         if self.market_data_manager:
             await self.market_data_manager.stop()
@@ -331,7 +380,8 @@ class MT5TradingBot:
                 f"🛑 **AI MT5 Trading Bot Stopped**\n\n"
                 f"**Final Balance:** {account_info['balance'] if account_info else 'N/A'}\n"
                 f"**Total Signals:** {self.performance.signals_generated}\n"
-                f"**Uptime:** {self.performance.get_statistics()['uptime_hours']:.2f} hours"
+                f"**Uptime:** {self.performance.get_statistics()['uptime_hours']:.2f} hours\n"
+                f"**Web Interface:** Stopping..."
             )
 
         logger.info("MT5 Trading Bot stopped")
@@ -343,6 +393,7 @@ class MT5TradingBot:
         while self.is_running:
             try:
                 logger.info("=" * 30 + " Starting New Analysis Cycle " + "=" * 30)
+
                 # Check MT5 connection
                 if not self.mt5_connector.check_connection():
                     logger.error("MT5 connection lost!")
@@ -353,12 +404,18 @@ class MT5TradingBot:
                     await asyncio.sleep(10)
                     continue
 
-                # Gestionar posiciones abiertas (BE y TS)
-                await self._manage_open_positions()
+                # Gestionar posiciones abiertas (BE y TS) - SIEMPRE se ejecuta si el bot está RUNNING o PAUSED
+                if self.bot_controller.can_monitor_trades():
+                    await self._manage_open_positions()
+                    # Actualizar monitoreo de trades activos
+                    self.trade_tracker.update_trade_monitoring()
 
-                # Analizar todos los símbolos para nuevas señales
-                for symbol in config.trading_symbols:
-                    await self._analyze_and_execute(symbol)
+                # Analizar todos los símbolos para nuevas señales - SOLO si el bot está RUNNING
+                if self.bot_controller.can_generate_signals():
+                    for symbol in config.trading_symbols:
+                        await self._analyze_and_execute(symbol)
+                else:
+                    logger.info("Bot is paused - Skipping signal generation, monitoring trades only")
 
                 logger.info("=" * 30 + " Analysis Cycle Completed " + "=" * 32)
                 logger.info(f"Waiting for {self.analysis_interval} seconds until next cycle...")
@@ -548,6 +605,25 @@ class MT5TradingBot:
                     f"Time: {result['time'].strftime('%Y-%m-%d %H:%M:%S')}"
                 )
 
+                # Register trade in TradeTracker for web interface
+                try:
+                    self.trade_tracker.register_trade_opened(
+                        signal_id=signal.signal_id,
+                        symbol=signal.symbol,
+                        signal_type=signal.signal_type,
+                        entry_price=result['price'],
+                        sl=result['sl'],
+                        tp1=signal.take_profit_levels[0],
+                        tp2=signal.take_profit_levels[1] if len(signal.take_profit_levels) > 1 else signal.take_profit_levels[0],
+                        lot_size=result['volume'],
+                        confidence=signal.confidence,
+                        timeframe=signal.timeframe,
+                        mt5_ticket=result['ticket']
+                    )
+                    logger.success(f"Trade {signal.signal_id} registered in TradeTracker")
+                except Exception as e:
+                    logger.error(f"Error registering trade in TradeTracker: {e}")
+
                 # Store execution info for internal tracking
                 self.performance.record_signal(signal.symbol, signal.signal_type)
                 return True
@@ -629,6 +705,12 @@ class MT5TradingBot:
                                 if modified:
                                     self.break_even_activated[ticket] = True
                                     await self.telegram_bot.send_break_even_notification(position, new_sl)
+                                    # Register in TradeTracker
+                                    try:
+                                        signal_id = f"{symbol}_{ticket}"
+                                        self.trade_tracker.register_break_even(signal_id, new_sl)
+                                    except Exception as e:
+                                        logger.error(f"Error registering BE in TradeTracker: {e}")
                             else:
                                 self.break_even_activated[ticket] = True
 
@@ -648,6 +730,12 @@ class MT5TradingBot:
                                 modified = self.order_executor.modify_order(ticket, stop_loss=new_sl)
                                 if modified:
                                     await self.telegram_bot.send_trailing_stop_notification(position, new_sl)
+                                    # Register in TradeTracker
+                                    try:
+                                        signal_id = f"{symbol}_{ticket}"
+                                        self.trade_tracker.register_trailing_stop(signal_id, new_sl)
+                                    except Exception as e:
+                                        logger.error(f"Error registering TS in TradeTracker: {e}")
 
                 else:
                     # --- MODO FIJO: Usar valores en PUNTOS ---
@@ -670,6 +758,12 @@ class MT5TradingBot:
                                 if modified:
                                     self.break_even_activated[ticket] = True
                                     await self.telegram_bot.send_break_even_notification(position, new_sl)
+                                    # Register in TradeTracker
+                                    try:
+                                        signal_id = f"{symbol}_{ticket}"
+                                        self.trade_tracker.register_break_even(signal_id, new_sl)
+                                    except Exception as e:
+                                        logger.error(f"Error registering BE in TradeTracker: {e}")
                             else:
                                 self.break_even_activated[ticket] = True
 
@@ -689,6 +783,12 @@ class MT5TradingBot:
                                 modified = self.order_executor.modify_order(ticket, stop_loss=new_sl)
                                 if modified:
                                     await self.telegram_bot.send_trailing_stop_notification(position, new_sl)
+                                    # Register in TradeTracker
+                                    try:
+                                        signal_id = f"{symbol}_{ticket}"
+                                        self.trade_tracker.register_trailing_stop(signal_id, new_sl)
+                                    except Exception as e:
+                                        logger.error(f"Error registering TS in TradeTracker: {e}")
 
         except Exception as e:
             logger.error(f"Error al gestionar las posiciones abiertas: {e}")
