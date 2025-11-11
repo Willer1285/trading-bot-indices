@@ -145,13 +145,13 @@ function controlBot(action) {
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                alert(data.message);
+                showToast('success', 'Control del Bot', data.message);
                 loadStats();
             } else {
-                alert('Error: ' + (data.error || data.message));
+                showToast('error', 'Error', data.error || data.message);
             }
         })
-        .catch(err => alert('Error: ' + err));
+        .catch(err => showToast('error', 'Error de Conexión', err.toString()));
 }
 
 function loadStats() {

@@ -316,3 +316,34 @@ class TelegramBot:
         """Sends a trailing stop notification."""
         message = self.formatter.format_trailing_stop(position, new_sl)
         return await self.send_message(message)
+
+    async def send_photo(self, photo_path: str, caption: Optional[str] = None) -> bool:
+        """
+        Send a photo to Telegram channel
+
+        Args:
+            photo_path: Path to the image file
+            caption: Optional caption for the photo
+
+        Returns:
+            True if sent successfully
+        """
+        if not self.bot:
+            logger.warning("Telegram bot not initialized")
+            return False
+
+        try:
+            with open(photo_path, 'rb') as photo_file:
+                await self.bot.send_photo(
+                    chat_id=self.channel_id,
+                    photo=photo_file,
+                    caption=caption,
+                    parse_mode=ParseMode.MARKDOWN if caption else None
+                )
+
+            logger.info(f"Sent photo to Telegram: {photo_path}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Error sending photo to Telegram: {e}")
+            return False

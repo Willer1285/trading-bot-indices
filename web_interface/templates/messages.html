@@ -114,14 +114,14 @@ function saveTemplate() {
     .then(res => res.json())
     .then(data => {
         if (data.success) {
-            alert('Plantilla guardada correctamente');
+            showToast('success', 'Plantilla Guardada', 'Los cambios se guardaron correctamente');
             bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
             loadTemplates();
         } else {
-            alert('Error: ' + data.error);
+            showToast('error', 'Error al Guardar', data.error);
         }
     })
-    .catch(err => alert('Error: ' + err));
+    .catch(err => showToast('error', 'Error de Conexión', err.toString()));
 }
 
 function toggleTemplate(id) {
@@ -129,12 +129,13 @@ function toggleTemplate(id) {
         .then(res => res.json())
         .then(data => {
             if (data.success) {
+                showToast('success', 'Estado Actualizado', `Plantilla ${data.enabled ? 'activada' : 'desactivada'}`);
                 loadTemplates();
             } else {
-                alert('Error: ' + data.error);
+                showToast('error', 'Error', data.error);
             }
         })
-        .catch(err => alert('Error: ' + err));
+        .catch(err => showToast('error', 'Error de Conexión', err.toString()));
 }
 
 loadTemplates();

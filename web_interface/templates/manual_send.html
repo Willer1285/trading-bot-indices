@@ -1,6 +1,61 @@
 {% extends "base.html" %}
 
 {% block content %}
+<style>
+    .emoji-picker {
+        display: none;
+        position: absolute;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        max-width: 320px;
+        z-index: 1000;
+    }
+
+    .emoji-picker.show {
+        display: block;
+    }
+
+    .emoji-grid {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 5px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .emoji-btn {
+        font-size: 24px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 4px;
+    }
+
+    .emoji-btn:hover {
+        background: #f0f0f0;
+    }
+
+    .image-preview {
+        max-width: 100%;
+        max-height: 200px;
+        margin-top: 10px;
+        border-radius: 8px;
+        display: none;
+    }
+
+    .image-preview.show {
+        display: block;
+    }
+
+    .btn-remove-image {
+        margin-top: 10px;
+    }
+</style>
+
 <div class="row">
     <div class="col-md-8">
         <div class="card">
@@ -8,7 +63,17 @@
                 <h5 class="card-title">📤 Enviar Notificación Manual</h5>
                 <div class="mb-3">
                     <label class="form-label">Mensaje</label>
-                    <textarea class="form-control" id="manualMessage" rows="10" placeholder="Escribe tu mensaje aquí..."></textarea>
+                    <div class="position-relative">
+                        <textarea class="form-control" id="manualMessage" rows="10" placeholder="Escribe tu mensaje aquí..."></textarea>
+                        <button class="btn btn-sm btn-outline-secondary position-absolute" style="top: 5px; right: 5px;" onclick="toggleEmojiPicker()">😊</button>
+                        <div id="emojiPicker" class="emoji-picker"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Imagen (opcional)</label>
+                    <input type="file" class="form-control" id="imageInput" accept="image/*" onchange="previewImage(event)">
+                    <img id="imagePreview" class="image-preview" alt="Preview">
+                    <button id="btnRemoveImage" class="btn btn-sm btn-danger btn-remove-image" onclick="removeImage()" style="display: none;">🗑️ Eliminar Imagen</button>
                 </div>
                 <button class="btn btn-primary btn-lg" onclick="sendNotification()">📤 Enviar al Canal de Telegram</button>
             </div>
@@ -30,30 +95,96 @@
 
 {% block scripts %}
 <script>
+// Emoji Picker
+const emojis = ['😀','😃','😄','😁','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕','🤑','🤠','👍','👎','👌','✌️','🤞','🤝','👏','🙌','👐','🤲','🙏','✍️','💪','🦾','🦿','🦵','🦶','👂','🦻','👃','🧠','🫀','🫁','🦷','🦴','👀','👁️','👅','👄','💋','🩸','💰','💵','💴','💶','💷','💸','💳','🪙','💎','⚖️','🪜','🧰','🪛','🪚','🔧','🔨','⚒️','🛠️','⛏️','🪓','🪃','💣','🔫','🏹','🛡️','🪤','🔪','🗡️','⚔️','🚬','⚰️','🪦','⚱️','🏺','🔮','📿','🧿','💈','⚗️','🔭','🔬','🕳️','🩹','🩺','💊','💉','🩸','🧬','🦠','🧫','🧪','🌡️','🧹','🪠','🧺','🧻','🪣','🧼','🪥','🧽','🧴','🛎️','🔑','🗝️','🚪','🪑','🛋️','🛏️','🛌','🧸','🖼️','🪞','🪟','🛍️','🛒','🎁','🎈','🎏','🎀','🎊','🎉','🎎','🏮','🎐','🧧','✉️','📩','📨','📧','💌','📥','📤','📦','🏷️','🪧','📪','📫','📬','📭','📮','📯','📜','📃','📄','📑','🧾','📊','📈','📉','🗒️','🗓️','📆','📅','🗑️','📇','🗃️','🗳️','🗄️','📋','📁','📂','🗂️','🗞️','📰','📓','📔','📒','📕','📗','📘','📙','📚','📖','🔖','🧷','🔗','📎','🖇️','📐','📏','🧮','📌','📍','✂️','🖊️','🖋️','✒️','🖌️','🖍️','📝','✏️','🔍','🔎','🔏','🔐','🔒','🔓'];
+
+function initEmojiPicker() {
+    const picker = document.getElementById('emojiPicker');
+    const grid = document.createElement('div');
+    grid.className = 'emoji-grid';
+
+    emojis.forEach(emoji => {
+        const btn = document.createElement('button');
+        btn.className = 'emoji-btn';
+        btn.textContent = emoji;
+        btn.onclick = (e) => {
+            e.preventDefault();
+            insertEmoji(emoji);
+        };
+        grid.appendChild(btn);
+    });
+
+    picker.appendChild(grid);
+}
+
+function toggleEmojiPicker() {
+    const picker = document.getElementById('emojiPicker');
+    picker.classList.toggle('show');
+}
+
+function insertEmoji(emoji) {
+    const textarea = document.getElementById('manualMessage');
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    textarea.value = text.substring(0, start) + emoji + text.substring(end);
+    textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+    textarea.focus();
+    toggleEmojiPicker();
+}
+
+function previewImage(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('imagePreview');
+            preview.src = e.target.result;
+            preview.classList.add('show');
+            document.getElementById('btnRemoveImage').style.display = 'inline-block';
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function removeImage() {
+    document.getElementById('imageInput').value = '';
+    document.getElementById('imagePreview').classList.remove('show');
+    document.getElementById('btnRemoveImage').style.display = 'none';
+}
+
 function sendNotification() {
     const message = document.getElementById('manualMessage').value.trim();
+    const imageInput = document.getElementById('imageInput');
+    const hasImage = imageInput.files.length > 0;
 
-    if (!message) {
-        alert('Por favor escribe un mensaje');
+    if (!message && !hasImage) {
+        showToast('warning', 'Campo Vacío', 'Por favor escribe un mensaje o selecciona una imagen');
         return;
+    }
+
+    const formData = new FormData();
+    formData.append('message', message);
+    if (hasImage) {
+        formData.append('image', imageInput.files[0]);
     }
 
     fetch('/api/notifications/send', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: message })
+        body: formData
     })
     .then(res => res.json())
     .then(data => {
         if (data.success) {
-            alert('✅ Notificación enviada correctamente');
+            showToast('success', 'Notificación Enviada', 'El mensaje se envió correctamente al canal de Telegram');
             document.getElementById('manualMessage').value = '';
+            removeImage();
             loadHistory();
         } else {
-            alert('❌ Error al enviar: ' + (data.error || 'Unknown error'));
+            showToast('error', 'Error al Enviar', data.error || 'Error desconocido');
         }
     })
-    .catch(err => alert('❌ Error: ' + err));
+    .catch(err => showToast('error', 'Error de Conexión', err.toString()));
 }
 
 function loadHistory() {
@@ -73,7 +204,7 @@ function loadHistory() {
                     const item = `
                         <div class="border-bottom pb-2 mb-2">
                             <small class="text-muted">${new Date(notif.sent_at).toLocaleString()}</small>
-                            <div class="mt-1" style="white-space: pre-wrap; font-size: 0.9em;">${notif.message}</div>
+                            <div class="mt-1" style="white-space: pre-wrap; font-size: 0.9em;">${notif.message || '[Imagen enviada]'}</div>
                             ${notif.success ? '<span class="badge bg-success">✓ Enviado</span>' : '<span class="badge bg-danger">✗ Error</span>'}
                         </div>
                     `;
@@ -84,6 +215,16 @@ function loadHistory() {
         .catch(err => console.error('Error:', err));
 }
 
+// Close emoji picker when clicking outside
+document.addEventListener('click', function(event) {
+    const picker = document.getElementById('emojiPicker');
+    const emojiBtn = event.target.closest('.btn-outline-secondary');
+    if (!picker.contains(event.target) && !emojiBtn) {
+        picker.classList.remove('show');
+    }
+});
+
+initEmojiPicker();
 loadHistory();
 </script>
 {% endblock %}

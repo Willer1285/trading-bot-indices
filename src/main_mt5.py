@@ -34,8 +34,8 @@ from telegram_bot.telegram_bot import TelegramBot
 # Web interface components
 from web_interface.app import run_flask_app, set_bot_instance
 from web_interface.database import init_database
-from trade_tracker import TradeTracker
-from bot_controller import get_bot_controller
+from src.trade_tracker import TradeTracker
+from src.bot_controller import get_bot_controller
 
 
 class MT5TradingBot:

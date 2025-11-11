@@ -308,13 +308,17 @@ def toggle_message_template(template_id):
         template = session.query(MessageTemplate).filter_by(id=template_id).first()
 
         if not template:
+            session.close()
             return jsonify({'success': False, 'error': 'Template not found'}), 404
 
+        # Toggle enabled state
         template.enabled = not template.enabled
+        new_enabled_state = template.enabled  # Capture before closing session
+
         session.commit()
         session.close()
 
-        return jsonify({'success': True, 'enabled': template.enabled})
+        return jsonify({'success': True, 'enabled': new_enabled_state})
 
     except Exception as e:
         logger.error(f"Error toggling template: {e}")
@@ -325,13 +329,14 @@ def toggle_message_template(template_id):
 
 @app.route('/api/notifications/send', methods=['POST'])
 def send_manual_notification():
-    """Envía una notificación manual via Telegram"""
+    """Envía una notificación manual via Telegram (con soporte para imágenes)"""
     try:
-        data = request.json
-        message = data.get('message', '')
+        # Obtener datos del formulario
+        message = request.form.get('message', '').strip()
+        image_file = request.files.get('image')
 
-        if not message:
-            return jsonify({'success': False, 'error': 'Message is required'}), 400
+        if not message and not image_file:
+            return jsonify({'success': False, 'error': 'Message or image is required'}), 400
 
         session = db.get_session()
 
@@ -342,20 +347,43 @@ def send_manual_notification():
         if _telegram_instance:
             try:
                 import asyncio
+                import tempfile
+                import os
+
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
-                loop.run_until_complete(_telegram_instance.send_message(message))
+
+                # Si hay imagen, enviar con send_photo
+                if image_file:
+                    # Guardar temporalmente la imagen
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(image_file.filename)[1]) as tmp_file:
+                        image_file.save(tmp_file.name)
+                        tmp_path = tmp_file.name
+
+                    try:
+                        # Enviar imagen con caption
+                        loop.run_until_complete(_telegram_instance.send_photo(tmp_path, caption=message if message else None))
+                        success = True
+                    finally:
+                        # Eliminar archivo temporal
+                        if os.path.exists(tmp_path):
+                            os.remove(tmp_path)
+                else:
+                    # Solo mensaje de texto
+                    loop.run_until_complete(_telegram_instance.send_message(message))
+                    success = True
+
                 loop.close()
-                success = True
+
             except Exception as e:
                 error_msg = str(e)
-                logger.error(f"Error sending Telegram message: {e}")
+                logger.error(f"Error sending Telegram notification: {e}")
         else:
             error_msg = "Telegram bot not initialized"
 
         # Guardar en base de datos
         notification = ManualNotification(
-            message=message,
+            message=message if message else '[Imagen enviada]',
             success=success,
             error_message=error_msg
         )
