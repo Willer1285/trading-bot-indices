@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <!-- Bot Controls -->
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">🎮 Control del Bot</h5>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-success" id="btnStart" onclick="controlBot('start')">▶️ Iniciar</button>
+                    <button class="btn btn-warning" id="btnPause" onclick="controlBot('pause')">⏸️ Pausar</button>
+                    <button class="btn btn-info" id="btnResume" onclick="controlBot('resume')">▶️ Reanudar</button>
+                    <button class="btn btn-danger" id="btnStop" onclick="controlBot('stop')">⏹️ Detener</button>
+                </div>
+                <div class="mt-3">
+                    <strong>Estado:</strong> <span id="currentStatus" class="badge bg-secondary">STOPPED</span><br>
+                    <strong>Uptime:</strong> <span id="uptime">0s</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Period Filter -->
+    <div class="col-12 mb-3">
+        <select class="form-select" id="periodFilter" onchange="loadStats()">
+            <option value="hour">Última Hora</option>
+            <option value="day" selected>Último Día</option>
+            <option value="week">Última Semana</option>
+            <option value="month">Último Mes</option>
+            <option value="year">Último Año</option>
+            <option value="all">Todo el Tiempo</option>
+        </select>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="stat-value" id="statSignals">0</div>
+            <div class="stat-label">Señales Totales</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="stat-value win" id="statTP1">0</div>
+            <div class="stat-label">TP1 Alcanzados</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="stat-value win" id="statTP2">0</div>
+            <div class="stat-label">TP2 Alcanzados</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="stat-value loss" id="statSL">0</div>
+            <div class="stat-label">SL Alcanzados</div>
+        </div>
+    </div>
+
+    <!-- More Stats -->
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="stat-value" id="statOpen">0</div>
+            <div class="stat-label">Operaciones Abiertas</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="stat-value" id="statProfit">0</div>
+            <div class="stat-label">En Ganancia</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="stat-value" id="statBE">0</div>
+            <div class="stat-label">Break Even</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="stat-value" id="statTS">0</div>
+            <div class="stat-label">Trailing Stop</div>
+        </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">📈 Resultados</h5>
+                <canvas id="resultsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Win Rate -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">📊 Win Rate</h5>
+                <div class="text-center">
+                    <div class="stat-value win" id="winRate">0%</div>
+                    <div class="stat-label">Tasa de Éxito</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Trades Table -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">📋 Últimas Operaciones</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Símbolo</th>
+                                <th>Tipo</th>
+                                <th>Entrada</th>
+                                <th>Estado</th>
+                                <th>Ganancia</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tradesTable">
+                            <tr><td colspan="6" class="text-center">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let resultsChart = null;
+
+function controlBot(action) {
+    fetch(`/api/bot/${action}`, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                loadStats();
+            } else {
+                alert('Error: ' + (data.error || data.message));
+            }
+        })
+        .catch(err => alert('Error: ' + err));
+}
+
+function loadStats() {
+    const period = document.getElementById('periodFilter').value;
+
+    // Cargar estadísticas
+    fetch(`/api/dashboard/stats?period=${period}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const stats = data.data;
+                document.getElementById('statSignals').textContent = stats.total_signals;
+                document.getElementById('statTP1').textContent = stats.closed_tp1;
+                document.getElementById('statTP2').textContent = stats.closed_tp2;
+                document.getElementById('statSL').textContent = stats.closed_sl;
+                document.getElementById('statOpen').textContent = stats.open_trades;
+                document.getElementById('statProfit').textContent = stats.events_in_profit;
+                document.getElementById('statBE').textContent = stats.events_be;
+                document.getElementById('statTS').textContent = stats.events_ts;
+                document.getElementById('winRate').textContent = stats.win_rate.toFixed(1) + '%';
+
+                // Actualizar gráfico
+                updateChart(stats);
+            }
+        });
+
+    // Cargar trades
+    fetch('/api/dashboard/trades?limit=10')
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const tbody = document.getElementById('tradesTable');
+                tbody.innerHTML = '';
+                data.data.forEach(trade => {
+                    const row = `<tr>
+                        <td>${trade.symbol}</td>
+                        <td><span class="badge ${trade.signal_type === 'BUY' ? 'bg-success' : 'bg-danger'}">${trade.signal_type}</span></td>
+                        <td>${trade.entry_price.toFixed(5)}</td>
+                        <td><span class="badge bg-secondary">${trade.status}</span></td>
+                        <td class="${trade.profit >= 0 ? 'win' : 'loss'}">${trade.profit ? trade.profit.toFixed(2) : '0.00'}</td>
+                        <td>${new Date(trade.opened_at).toLocaleString()}</td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+            }
+        });
+
+    // Actualizar estado del bot
+    fetch('/api/bot/status')
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('currentStatus').textContent = data.data.status;
+                document.getElementById('currentStatus').className = `badge bg-${getBadgeClass(data.data.status)}`;
+                document.getElementById('uptime').textContent = data.data.uptime_formatted;
+            }
+        });
+}
+
+function getBadgeClass(status) {
+    return { RUNNING: 'success', PAUSED: 'warning', STOPPED: 'danger' }[status] || 'secondary';
+}
+
+function updateChart(stats) {
+    const ctx = document.getElementById('resultsChart').getContext('2d');
+
+    if (resultsChart) {
+        resultsChart.destroy();
+    }
+
+    resultsChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['TP1', 'TP2', 'SL', 'Break Even'],
+            datasets: [{
+                data: [stats.closed_tp1, stats.closed_tp2, stats.closed_sl, stats.closed_be],
+                backgroundColor: ['#28a745', '#20c997', '#dc3545', '#ffc107']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+}
+
+// Cargar datos al iniciar
+loadStats();
+
+// Actualizar cada 10 segundos
+setInterval(loadStats, 10000);
+</script>
+{% endblock %}

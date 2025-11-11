@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">✉️ Plantillas de Mensajes</h5>
+                <p class="text-muted">Edita y configura los mensajes automáticos del bot</p>
+                <div id="templatesContainer">
+                    <p class="text-center">Cargando plantillas...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de edición -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Plantilla</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Nombre</label>
+                    <input type="text" class="form-control" id="modalName" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Plantilla</label>
+                    <textarea class="form-control" id="modalTemplate" rows="15" style="font-family: monospace;"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted">Variables disponibles: <span id="modalVariables"></span></label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="saveTemplate()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentTemplateId = null;
+
+function loadTemplates() {
+    fetch('/api/messages/templates')
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const container = document.getElementById('templatesContainer');
+                container.innerHTML = '';
+
+                data.data.forEach(template => {
+                    const card = `
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6>${template.name}</h6>
+                                        <span class="badge ${template.enabled ? 'bg-success' : 'bg-secondary'}">
+                                            ${template.enabled ? 'Activo' : 'Inactivo'}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-sm btn-primary" onclick="editTemplate(${template.id})">
+                                            ✏️ Editar
+                                        </button>
+                                        <button class="btn btn-sm ${template.enabled ? 'btn-warning' : 'btn-success'}" onclick="toggleTemplate(${template.id})">
+                                            ${template.enabled ? '🔇 Desactivar' : '🔔 Activar'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += card;
+                });
+            }
+        })
+        .catch(err => console.error('Error:', err));
+}
+
+function editTemplate(id) {
+    fetch('/api/messages/templates')
+        .then(res => res.json())
+        .then(data => {
+            const template = data.data.find(t => t.id === id);
+            if (template) {
+                currentTemplateId = id;
+                document.getElementById('modalName').value = template.name;
+                document.getElementById('modalTemplate').value = template.template;
+                document.getElementById('modalVariables').textContent = template.variables || 'N/A';
+
+                new bootstrap.Modal(document.getElementById('editModal')).show();
+            }
+        });
+}
+
+function saveTemplate() {
+    const templateText = document.getElementById('modalTemplate').value;
+
+    fetch(`/api/messages/templates/${currentTemplateId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ template: templateText })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert('Plantilla guardada correctamente');
+            bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+            loadTemplates();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(err => alert('Error: ' + err));
+}
+
+function toggleTemplate(id) {
+    fetch(`/api/messages/templates/${id}/toggle`, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                loadTemplates();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(err => alert('Error: ' + err));
+}
+
+loadTemplates();
+</script>
+{% endblock %}

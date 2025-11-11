@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">📤 Enviar Notificación Manual</h5>
+                <div class="mb-3">
+                    <label class="form-label">Mensaje</label>
+                    <textarea class="form-control" id="manualMessage" rows="10" placeholder="Escribe tu mensaje aquí..."></textarea>
+                </div>
+                <button class="btn btn-primary btn-lg" onclick="sendNotification()">📤 Enviar al Canal de Telegram</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">📜 Historial</h5>
+                <div id="historyContainer" style="max-height: 500px; overflow-y: auto;">
+                    <p class="text-center text-muted">Cargando...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function sendNotification() {
+    const message = document.getElementById('manualMessage').value.trim();
+
+    if (!message) {
+        alert('Por favor escribe un mensaje');
+        return;
+    }
+
+    fetch('/api/notifications/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: message })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Notificación enviada correctamente');
+            document.getElementById('manualMessage').value = '';
+            loadHistory();
+        } else {
+            alert('❌ Error al enviar: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(err => alert('❌ Error: ' + err));
+}
+
+function loadHistory() {
+    fetch('/api/notifications/history')
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const container = document.getElementById('historyContainer');
+                container.innerHTML = '';
+
+                if (data.data.length === 0) {
+                    container.innerHTML = '<p class="text-muted text-center">No hay notificaciones enviadas</p>';
+                    return;
+                }
+
+                data.data.forEach(notif => {
+                    const item = `
+                        <div class="border-bottom pb-2 mb-2">
+                            <small class="text-muted">${new Date(notif.sent_at).toLocaleString()}</small>
+                            <div class="mt-1" style="white-space: pre-wrap; font-size: 0.9em;">${notif.message}</div>
+                            ${notif.success ? '<span class="badge bg-success">✓ Enviado</span>' : '<span class="badge bg-danger">✗ Error</span>'}
+                        </div>
+                    `;
+                    container.innerHTML += item;
+                });
+            }
+        })
+        .catch(err => console.error('Error:', err));
+}
+
+loadHistory();
+</script>
+{% endblock %}

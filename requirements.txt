@@ -24,6 +24,11 @@ keras>=3.0.0               # Keras 3 integrado con TensorFlow 2.20+
 python-telegram-bot>=21.0  # Última versión con mejoras de seguridad
 aiohttp>=3.11.0            # Cliente HTTP asíncrono actualizado
 
+# Web Interface
+flask>=3.0.0               # Framework web
+flask-cors>=4.0.0          # CORS para API REST
+sqlalchemy>=2.0.25         # ORM para base de datos
+
 # Database
 redis>=5.2.0               # Cliente Redis actualizado
 pymongo>=4.10.0            # Driver MongoDB actualizado
