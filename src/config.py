@@ -33,6 +33,7 @@ class Config:
 
         # Configuración de IA y Señales
         self.confidence_threshold: float = float(os.getenv("CONFIDENCE_THRESHOLD", 0.75))
+        self.market_analysis_candles: int = int(os.getenv("MARKET_ANALYSIS_CANDLES", 2000))
 
         # Gestión de Riesgos
         self.atr_period: int = int(os.getenv("ATR_PERIOD", 14))

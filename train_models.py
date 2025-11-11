@@ -405,6 +405,30 @@ async def train_from_mt5():
                     import time
                     time.sleep(2)
 
+                    # 1.5. Save/update historical data to local CSV files
+                    # This keeps local files synchronized with latest MT5 data
+                    try:
+                        # Create directory structure: historical_data/Symbol/
+                        csv_dir = os.path.join(HISTORICAL_DATA_DIR, symbol)
+                        os.makedirs(csv_dir, exist_ok=True)
+
+                        # Generate filename: Symbol_TF.csv (e.g., "PainX 400_M1.csv")
+                        tf_map = {
+                            '1m': 'M1', '5m': 'M5', '15m': 'M15', '30m': 'M30',
+                            '1h': 'H1', '4h': 'H4', '1d': 'D1', '1w': 'W1', '1M': 'MN1'
+                        }
+                        tf_code = tf_map.get(timeframe, timeframe.upper())
+                        csv_filename = f"{symbol}_{tf_code}.csv"
+                        csv_path = os.path.join(csv_dir, csv_filename)
+
+                        # Save DataFrame to CSV (overwrite existing file)
+                        df.to_csv(csv_path)
+                        logger.success(f"Saved historical data to {csv_path} ({len(df)} records)")
+
+                    except Exception as e:
+                        logger.warning(f"Failed to save CSV file for {symbol} [{timeframe}]: {e}")
+                        # Continue training even if CSV save fails
+
                     # 2. Prepare training data
                     X, y = prepare_training_data(df)
                     if X.empty or y.empty:
