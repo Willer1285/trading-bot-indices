@@ -128,23 +128,35 @@ class MT5MarketDataManager:
                         # Using the robust loading logic from train_models.py
                         with open(file_path, 'r', encoding='utf-8') as f:
                             content = f.read().replace('"', '')
-                        
-                        df = pd.read_csv(io.StringIO(content), sep='\t')
+
+                        # Detectar el separador (coma o tabulación)
+                        if ',' in content.split('\n')[0]:
+                            separator = ','
+                        else:
+                            separator = '\t'
+
+                        df = pd.read_csv(io.StringIO(content), sep=separator)
                         
                         df.columns = df.columns.str.replace(r'[<>]', '', regex=True).str.strip()
-                        
-                        if 'TIME' in df.columns and 'DATE' in df.columns:
+
+                        # Intentar leer timestamp de diferentes formatos
+                        if 'timestamp' in df.columns:
+                            # Formato nuevo: ya tiene columna timestamp
+                            df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')
+                        elif 'TIME' in df.columns and 'DATE' in df.columns:
+                            # Formato antiguo: DATE y TIME separados
                             df['timestamp'] = pd.to_datetime(df['DATE'] + ' ' + df['TIME'], errors='coerce')
                         elif 'DATE' in df.columns:
+                            # Solo DATE
                             df['timestamp'] = pd.to_datetime(df['DATE'], format='%Y.%m.%d', errors='coerce')
                         else:
-                            raise ValueError("Missing 'DATE' or 'TIME' columns.")
+                            raise ValueError("Missing 'timestamp', 'DATE' or 'TIME' columns.")
 
                         # Renombrar columnas principales
                         # Nota: Mantenemos VOL y SPREAD como features adicionales (esperadas por los modelos)
                         df.rename(columns={
                             'OPEN': 'open', 'HIGH': 'high', 'LOW': 'low',
-                            'CLOSE': 'close', 'TICKVOL': 'volume'
+                            'CLOSE': 'close', 'TICKVOL': 'volume', 'VOLUME': 'volume'
                         }, inplace=True)
 
                         # Asegurar que VOL y SPREAD existan (son features requeridas por los modelos)
