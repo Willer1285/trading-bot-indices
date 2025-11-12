@@ -166,12 +166,21 @@ class SignalGenerator:
             TradingSignal or None
         """
         try:
-            # Get primary timeframe analysis (1m preferred for scalping)
+            # Get primary timeframe analysis from configuration
             primary_analysis = None
-            for tf in ['1m', '5m', '15m', '1h', '4h']:
-                if tf in multi_tf_analyses and multi_tf_analyses[tf]:
-                    primary_analysis = multi_tf_analyses[tf]
-                    break
+
+            # First try to get the configured primary timeframe
+            if config.primary_timeframe in multi_tf_analyses and multi_tf_analyses[config.primary_timeframe]:
+                primary_analysis = multi_tf_analyses[config.primary_timeframe]
+                logger.info(f"{symbol}: Using configured primary timeframe: {config.primary_timeframe}")
+            else:
+                # Fallback: try other timeframes in order of configuration
+                logger.warning(f"{symbol}: Primary timeframe {config.primary_timeframe} not available, trying fallback")
+                for tf in config.timeframes:
+                    if tf in multi_tf_analyses and multi_tf_analyses[tf]:
+                        primary_analysis = multi_tf_analyses[tf]
+                        logger.info(f"{symbol}: Using fallback timeframe: {tf}")
+                        break
 
             if not primary_analysis:
                 logger.warning(f"{symbol}: No primary analysis available")
