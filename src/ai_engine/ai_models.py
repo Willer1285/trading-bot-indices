@@ -210,14 +210,16 @@ class SimplePatternModel(BaseModel):
     """
     Optimized rule-based model on technical indicators.
 
-    Generates more signals by using multiple technical indicators with
-    weighted scoring system. Less conservative than original version.
+    Generates HIGH-QUALITY signals using multiple technical indicators with
+    weighted scoring system. Increased threshold for better precision.
     """
 
-    def __init__(self, signal_threshold: float = 0.3):
+    def __init__(self, signal_threshold: float = 0.6):
         super().__init__("PatternBased")
         self.is_fitted = True
-        self.signal_threshold = signal_threshold  # Lower threshold = more signals
+        # Increased from 0.3 to 0.6 for better signal quality (fewer but better signals)
+        # The meta-model (LSTM) will further filter these signals
+        self.signal_threshold = signal_threshold
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         pass

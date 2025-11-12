@@ -52,19 +52,17 @@ class TechnicalIndicators:
         return result
 
     def _add_trend_indicators(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Add trend indicators"""
+        """Add trend indicators (optimized - reduced redundancy)"""
 
-        # Simple Moving Averages
-        df['sma_7'] = ta.trend.sma_indicator(df['close'], window=7)
+        # Simple Moving Averages (reduced from 4 to 2 - less correlation)
+        # Removed: sma_7 (too noisy), sma_100 (redundant with sma_50)
         df['sma_25'] = ta.trend.sma_indicator(df['close'], window=25)
         df['sma_50'] = ta.trend.sma_indicator(df['close'], window=50)
-        df['sma_100'] = ta.trend.sma_indicator(df['close'], window=100)
 
-        # Exponential Moving Averages
+        # Exponential Moving Averages (reduced from 4 to 2 - less correlation)
+        # Removed: ema_50, ema_200 (redundant with SMAs)
         df['ema_9'] = ta.trend.ema_indicator(df['close'], window=9)
         df['ema_21'] = ta.trend.ema_indicator(df['close'], window=21)
-        df['ema_50'] = ta.trend.ema_indicator(df['close'], window=50)
-        df['ema_200'] = ta.trend.ema_indicator(df['close'], window=200)
 
         # MACD
         macd = ta.trend.MACD(df['close'])
@@ -88,12 +86,11 @@ class TechnicalIndicators:
         return df
 
     def _add_momentum_indicators(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Add momentum indicators"""
+        """Add momentum indicators (optimized - reduced redundancy)"""
 
-        # RSI
-        df['rsi_6'] = ta.momentum.rsi(df['close'], window=6)
+        # RSI (reduced from 3 to 1 - RSI14 is standard and sufficient)
+        # Removed: rsi_6 (too noisy), rsi_21 (redundant)
         df['rsi_14'] = ta.momentum.rsi(df['close'], window=14)
-        df['rsi_21'] = ta.momentum.rsi(df['close'], window=21)
 
         # Stochastic Oscillator
         stoch = ta.momentum.StochasticOscillator(df['high'], df['low'], df['close'])

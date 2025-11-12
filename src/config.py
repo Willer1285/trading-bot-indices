@@ -43,9 +43,11 @@ class Config:
 
         # Gestión de Riesgo Dinámico (basado en ATR)
         self.enable_dynamic_risk: bool = os.getenv("ENABLE_DYNAMIC_RISK", "true").lower() == "true"
-        self.stop_loss_atr_multiplier: float = float(os.getenv("STOP_LOSS_ATR_MULTIPLIER", 1.5))
-        self.take_profit_1_atr_multiplier: float = float(os.getenv("TAKE_PROFIT_1_ATR_MULTIPLIER", 2.0))
-        self.take_profit_2_atr_multiplier: float = float(os.getenv("TAKE_PROFIT_2_ATR_MULTIPLIER", 4.0))
+        # Optimizado para mejor Risk/Reward Ratio = 2.5:1 (3.0/1.2)
+        # Con R:R 2.5:1, solo necesitas 29% win rate para break-even vs 43% con R:R 1.33:1
+        self.stop_loss_atr_multiplier: float = float(os.getenv("STOP_LOSS_ATR_MULTIPLIER", 1.2))
+        self.take_profit_1_atr_multiplier: float = float(os.getenv("TAKE_PROFIT_1_ATR_MULTIPLIER", 3.0))
+        self.take_profit_2_atr_multiplier: float = float(os.getenv("TAKE_PROFIT_2_ATR_MULTIPLIER", 6.0))
 
         # Gestión de Riesgo Fijo (cuando ENABLE_DYNAMIC_RISK=false)
         # Para índices sintéticos: 1 punto = 1.0 en el precio

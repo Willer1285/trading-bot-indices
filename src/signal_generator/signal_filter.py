@@ -62,12 +62,26 @@ class SignalFilter:
         Returns:
             True if signal passes quality filters (for notification)
         """
-        # Check timeframe confluence
+        # Check timeframe confluence (increased from 50% to 60% for better quality)
         confluence_result, confluence_ratio = self._check_timeframe_confluence(analyses, signal_type)
         if not confluence_result:
-            logger.warning(f"{symbol}: ❌ Insufficient timeframe confluence ({confluence_ratio:.1%} < 50%)")
+            logger.warning(f"{symbol}: ❌ Insufficient timeframe confluence ({confluence_ratio:.1%} < 60%)")
             return False
-        logger.info(f"{symbol}: ✅ Timeframe confluence passed ({confluence_ratio:.1%} >= 50%)")
+        logger.info(f"{symbol}: ✅ Timeframe confluence passed ({confluence_ratio:.1%} >= 60%)")
+
+        # Check trend strength (ADX filter - NEW)
+        trend_strength_result, adx_value = self._check_trend_strength(analyses)
+        if not trend_strength_result:
+            logger.warning(f"{symbol}: ❌ Weak trend strength - ADX {adx_value:.1f} < 25")
+            return False
+        logger.info(f"{symbol}: ✅ Trend strength passed (ADX {adx_value:.1f} >= 25)")
+
+        # Check market regime (NEW - only BUY in uptrend, SELL in downtrend)
+        regime_result, regime_reason = self._check_market_regime(analyses, signal_type)
+        if not regime_result:
+            logger.warning(f"{symbol}: ❌ Market regime mismatch - {regime_reason}")
+            return False
+        logger.info(f"{symbol}: ✅ Market regime aligned")
 
         # Check trend alignment
         trend_result, trend_reason = self._check_trend_alignment(analyses, signal_type)
@@ -167,10 +181,89 @@ class SignalFilter:
         # Count agreements
         agreements = sum(1 for a in valid_analyses if a.signal == signal_type)
 
-        # Need at least 50% agreement (majority consensus)
+        # Need at least 60% agreement (increased from 50% for better quality)
         agreement_ratio = agreements / len(valid_analyses)
 
-        return agreement_ratio >= 0.5, agreement_ratio
+        return agreement_ratio >= 0.6, agreement_ratio
+
+    def _check_trend_strength(
+        self,
+        analyses: Dict[str, Optional[MarketAnalysis]]
+    ) -> tuple[bool, float]:
+        """
+        Check if trend is strong enough (using ADX indicator)
+        Only trade when ADX > 25 (strong trending market)
+        Avoid ranging/choppy markets where scalping is difficult
+        """
+        from config import config
+
+        # Get primary timeframe analysis
+        primary_analysis = analyses.get(config.primary_timeframe)
+
+        if not primary_analysis:
+            # Fallback to any available timeframe
+            for analysis in analyses.values():
+                if analysis:
+                    primary_analysis = analysis
+                    break
+
+        if not primary_analysis:
+            return True, 0.0  # Can't check, allow (conservative)
+
+        adx = primary_analysis.indicators.get('adx', 0)
+
+        # ADX > 25 indicates strong trend (good for scalping)
+        # ADX < 25 indicates weak/ranging market (avoid)
+        return adx >= 25, adx
+
+    def _check_market_regime(
+        self,
+        analyses: Dict[str, Optional[MarketAnalysis]],
+        signal_type: str
+    ) -> tuple[bool, str]:
+        """
+        Check if signal aligns with market regime
+        Only BUY in clear uptrends, only SELL in clear downtrends
+        More strict than trend_alignment check
+        """
+        from config import config
+
+        # Get primary timeframe analysis
+        primary_analysis = analyses.get(config.primary_timeframe)
+
+        if not primary_analysis:
+            return True, "No primary analysis"
+
+        indicators = primary_analysis.indicators
+
+        # Get EMA crossover (short-term trend)
+        ema_9 = indicators.get('ema_9', 0)
+        ema_21 = indicators.get('ema_21', 0)
+
+        # Get SMA for longer-term trend
+        price = indicators.get('price', 0)
+        sma_50 = indicators.get('sma_50', 0)
+
+        if ema_9 == 0 or ema_21 == 0 or sma_50 == 0:
+            return True, "Missing indicators"
+
+        # Determine market regime
+        is_uptrend = (ema_9 > ema_21) and (price > sma_50)
+        is_downtrend = (ema_9 < ema_21) and (price < sma_50)
+
+        if signal_type == 'BUY':
+            if is_uptrend:
+                return True, f"Uptrend confirmed (EMA9 > EMA21, Price > SMA50)"
+            else:
+                return False, f"Not in uptrend (EMA9/EMA21/SMA50 misaligned)"
+
+        elif signal_type == 'SELL':
+            if is_downtrend:
+                return True, f"Downtrend confirmed (EMA9 < EMA21, Price < SMA50)"
+            else:
+                return False, f"Not in downtrend (EMA9/EMA21/SMA50 misaligned)"
+
+        return False, "Unknown signal type"
 
     def _check_trend_alignment(
         self,

@@ -172,7 +172,15 @@ def prepare_training_data(df: pd.DataFrame) -> (pd.DataFrame, pd.Series):
     primary_predictions = pd.Series(primary_model.predict(temp_X), index=temp_X.index)
 
     # 3. Create meta-labels based on primary model signals
-    meta_labels = create_meta_labels(df.loc[temp_X.index], primary_predictions)
+    # IMPORTANTE: Usar los MISMOS parámetros que se usan en producción (config.py)
+    # Esto asegura que el modelo aprenda con el mismo estándar que usará en vivo
+    meta_labels = create_meta_labels(
+        df.loc[temp_X.index],
+        primary_predictions,
+        lookforward_periods=30,          # Aumentado de 20 a 30 para mejor evaluación
+        profit_target_atr_mult=3.0,     # Alineado con TAKE_PROFIT_1_ATR_MULTIPLIER
+        loss_limit_atr_mult=1.2          # Alineado con STOP_LOSS_ATR_MULTIPLIER
+    )
     meta_labels.name = 'meta_label'
 
     # 4. Combine features and labels
