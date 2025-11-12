@@ -52,119 +52,63 @@ class TechnicalIndicators:
         return result
 
     def _add_trend_indicators(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Add trend indicators (optimized - reduced redundancy)"""
+        """Add trend indicators (highly optimized - only most effective)"""
 
-        # Simple Moving Averages (reduced from 4 to 2 - less correlation)
-        # Removed: sma_7 (too noisy), sma_100 (redundant with sma_50)
-        df['sma_25'] = ta.trend.sma_indicator(df['close'], window=25)
+        # Moving Averages - Keep only essential ones
+        # SMA 50 for medium-term trend identification
         df['sma_50'] = ta.trend.sma_indicator(df['close'], window=50)
 
-        # Exponential Moving Averages (reduced from 4 to 2 - less correlation)
-        # Removed: ema_50, ema_200 (redundant with SMAs)
+        # EMAs for short-term trend (faster reaction than SMA)
         df['ema_9'] = ta.trend.ema_indicator(df['close'], window=9)
         df['ema_21'] = ta.trend.ema_indicator(df['close'], window=21)
 
-        # MACD
+        # MACD - Essential trend-following indicator
         macd = ta.trend.MACD(df['close'])
         df['macd'] = macd.macd()
         df['macd_signal'] = macd.macd_signal()
         df['macd_diff'] = macd.macd_diff()
 
-        # ADX (Average Directional Index)
+        # ADX - Trend strength (essential for filters)
         adx = ta.trend.ADXIndicator(df['high'], df['low'], df['close'])
         df['adx'] = adx.adx()
-        df['adx_pos'] = adx.adx_pos()
-        df['adx_neg'] = adx.adx_neg()
-
-        # Ichimoku
-        ichimoku = ta.trend.IchimokuIndicator(df['high'], df['low'])
-        df['ichimoku_a'] = ichimoku.ichimoku_a()
-        df['ichimoku_b'] = ichimoku.ichimoku_b()
-        df['ichimoku_base'] = ichimoku.ichimoku_base_line()
-        df['ichimoku_conversion'] = ichimoku.ichimoku_conversion_line()
 
         return df
 
     def _add_momentum_indicators(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Add momentum indicators (optimized - reduced redundancy)"""
+        """Add momentum indicators (highly optimized - only most effective)"""
 
-        # RSI (reduced from 3 to 1 - RSI14 is standard and sufficient)
-        # Removed: rsi_6 (too noisy), rsi_21 (redundant)
+        # RSI - Most important momentum indicator (industry standard)
         df['rsi_14'] = ta.momentum.rsi(df['close'], window=14)
 
-        # Stochastic Oscillator
+        # Stochastic Oscillator - Complements RSI for overbought/oversold
         stoch = ta.momentum.StochasticOscillator(df['high'], df['low'], df['close'])
         df['stoch_k'] = stoch.stoch()
         df['stoch_d'] = stoch.stoch_signal()
 
-        # Williams %R
-        df['williams_r'] = ta.momentum.williams_r(df['high'], df['low'], df['close'])
-
-        # ROC (Rate of Change)
-        df['roc'] = ta.momentum.roc(df['close'], window=12)
-
-        # TSI (True Strength Index)
-        df['tsi'] = ta.momentum.tsi(df['close'])
-
-        # Ultimate Oscillator
-        df['uo'] = ta.momentum.ultimate_oscillator(df['high'], df['low'], df['close'])
-
-        # Awesome Oscillator
-        df['ao'] = ta.momentum.awesome_oscillator(df['high'], df['low'])
-
         return df
 
     def _add_volatility_indicators(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Add volatility indicators"""
+        """Add volatility indicators (highly optimized - only most effective)"""
         from src.config import config
-        
-        # Bollinger Bands
-        bollinger = ta.volatility.BollingerBands(df['close'])
-        df['bb_high'] = bollinger.bollinger_hband()
-        df['bb_mid'] = bollinger.bollinger_mavg()
-        df['bb_low'] = bollinger.bollinger_lband()
-        df['bb_width'] = bollinger.bollinger_wband()
-        df['bb_pband'] = bollinger.bollinger_pband()
 
-        # ATR (Average True Range)
+        # ATR - Critical for risk management and dynamic SL/TP
         df['atr'] = ta.volatility.average_true_range(df['high'], df['low'], df['close'], window=config.atr_period)
 
-        # Keltner Channel
-        keltner = ta.volatility.KeltnerChannel(df['high'], df['low'], df['close'], window=config.atr_period)
-        df['kc_high'] = keltner.keltner_channel_hband()
-        df['kc_mid'] = keltner.keltner_channel_mband()
-        df['kc_low'] = keltner.keltner_channel_lband()
-
-        # Donchian Channel
-        donchian = ta.volatility.DonchianChannel(df['high'], df['low'], df['close'])
-        df['dc_high'] = donchian.donchian_channel_hband()
-        df['dc_mid'] = donchian.donchian_channel_mband()
-        df['dc_low'] = donchian.donchian_channel_lband()
+        # Bollinger Bands - Essential volatility indicator
+        bollinger = ta.volatility.BollingerBands(df['close'])
+        df['bb_high'] = bollinger.bollinger_hband()
+        df['bb_low'] = bollinger.bollinger_lband()
+        df['bb_width'] = bollinger.bollinger_wband()
 
         return df
 
     def _add_volume_indicators(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Add volume indicators"""
+        """Add volume indicators (highly optimized - only most effective)"""
 
-        # On-Balance Volume (OBV)
+        # On-Balance Volume - Best volume momentum indicator
         df['obv'] = ta.volume.on_balance_volume(df['close'], df['volume'])
 
-        # Chaikin Money Flow
-        df['cmf'] = ta.volume.chaikin_money_flow(df['high'], df['low'], df['close'], df['volume'])
-
-        # Force Index
-        df['fi'] = ta.volume.force_index(df['close'], df['volume'])
-
-        # Ease of Movement
-        df['eom'] = ta.volume.ease_of_movement(df['high'], df['low'], df['volume'])
-
-        # Volume Price Trend
-        df['vpt'] = ta.volume.volume_price_trend(df['close'], df['volume'])
-
-        # Negative Volume Index
-        df['nvi'] = ta.volume.negative_volume_index(df['close'], df['volume'])
-
-        # Volume Weighted Average Price (VWAP)
+        # Volume Weighted Average Price - Essential for institutional levels
         df['vwap'] = ta.volume.volume_weighted_average_price(
             df['high'], df['low'], df['close'], df['volume']
         )
@@ -172,33 +116,18 @@ class TechnicalIndicators:
         return df
 
     def _add_custom_indicators(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Add custom indicators"""
+        """Add custom indicators (highly optimized - only most effective)"""
 
-        # Price momentum
-        df['momentum_1'] = df['close'].pct_change(1)
-        df['momentum_3'] = df['close'].pct_change(3)
-        df['momentum_5'] = df['close'].pct_change(5)
-        df['momentum_10'] = df['close'].pct_change(10)
-
-        # Volatility
-        df['volatility_7'] = df['close'].pct_change().rolling(window=7).std()
-        df['volatility_14'] = df['close'].pct_change().rolling(window=14).std()
-        df['volatility_30'] = df['close'].pct_change().rolling(window=30).std()
-
-        # High-Low spread
+        # High-Low spread - Candle range relative to price
         df['hl_spread'] = (df['high'] - df['low']) / df['close']
 
-        # Close position in range
+        # Close position in range - Where price closed within the candle
         df['close_position'] = (df['close'] - df['low']) / (df['high'] - df['low'])
 
-        # Volume momentum
-        df['volume_change'] = df['volume'].pct_change(1)
-
-        # Price vs SMA
-        df['price_vs_sma20'] = (df['close'] - df['sma_25']) / df['sma_25']
+        # Price vs SMA50 - Deviation from medium-term trend
         df['price_vs_sma50'] = (df['close'] - df['sma_50']) / df['sma_50']
 
-        # Trend strength
+        # Trend strength - How strong is the trend relative to volatility
         df['trend_strength'] = abs(df['close'] - df['sma_50']) / df['atr']
 
         return df

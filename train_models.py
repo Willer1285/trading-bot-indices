@@ -172,14 +172,15 @@ def prepare_training_data(df: pd.DataFrame) -> (pd.DataFrame, pd.Series):
     primary_predictions = pd.Series(primary_model.predict(temp_X), index=temp_X.index)
 
     # 3. Create meta-labels based on primary model signals
-    # IMPORTANTE: Usar los MISMOS parámetros que se usan en producción (config.py)
-    # Esto asegura que el modelo aprenda con el mismo estándar que usará en vivo
+    # IMPORTANTE: Usar parámetros más permisivos durante entrenamiento para que el modelo
+    # aprenda a identificar señales ganadoras de perdedoras con datos suficientes
+    # Los filtros estrictos (ADX, Market Regime) se aplicarán en producción
     meta_labels = create_meta_labels(
         df.loc[temp_X.index],
         primary_predictions,
-        lookforward_periods=30,          # Aumentado de 20 a 30 para mejor evaluación
-        profit_target_atr_mult=3.0,     # Alineado con TAKE_PROFIT_1_ATR_MULTIPLIER
-        loss_limit_atr_mult=1.2          # Alineado con STOP_LOSS_ATR_MULTIPLIER
+        lookforward_periods=20,          # Valores originales que funcionaron bien
+        profit_target_atr_mult=2.0,     # R:R 1.33:1 para entrenamiento
+        loss_limit_atr_mult=1.5          # Más permisivo durante entrenamiento
     )
     meta_labels.name = 'meta_label'
 
