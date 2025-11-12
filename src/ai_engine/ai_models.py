@@ -679,7 +679,8 @@ class LSTMModel(BaseModel):
         logger.info(f"Balanced total samples: {total_samples_balanced}")
         logger.info(f"Class weights: {class_weights}")
 
-        early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+        # Early stopping con patience aumentado para permitir más exploración
+        early_stopping = EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True)
 
         n_samples, n_timesteps, n_features = X.shape
         X_reshaped = X.reshape((n_samples * n_timesteps, n_features))
@@ -689,7 +690,7 @@ class LSTMModel(BaseModel):
 
         history = self.model.fit(
             X_scaled, y,
-            epochs=50,
+            epochs=100,  # Aumentado a 100 para dar más margen
             batch_size=32,
             validation_split=0.2,  # Aumentado de 0.1 a 0.2 para métricas más confiables
             callbacks=[early_stopping],
