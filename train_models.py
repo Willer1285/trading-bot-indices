@@ -172,15 +172,15 @@ def prepare_training_data(df: pd.DataFrame) -> (pd.DataFrame, pd.Series):
     primary_predictions = pd.Series(primary_model.predict(temp_X), index=temp_X.index)
 
     # 3. Create meta-labels based on primary model signals
-    # IMPORTANTE: Usar parámetros más permisivos durante entrenamiento para que el modelo
-    # aprenda a identificar señales ganadoras de perdedoras con datos suficientes
-    # Los filtros estrictos (ADX, Market Regime) se aplicarán en producción
+    # IMPORTANTE: Parámetros MUY PERMISIVOS durante entrenamiento para generar suficientes datos
+    # El objetivo es que el LSTM tenga muchos ejemplos (buenos y malos) para aprender
+    # Los filtros estrictos (ADX, Market Regime, R:R 2.5:1) se aplicarán en producción
     meta_labels = create_meta_labels(
         df.loc[temp_X.index],
         primary_predictions,
-        lookforward_periods=20,          # Valores originales que funcionaron bien
-        profit_target_atr_mult=2.0,     # R:R 1.33:1 para entrenamiento
-        loss_limit_atr_mult=1.5          # Más permisivo durante entrenamiento
+        lookforward_periods=15,          # Reducido: más fácil alcanzar objetivo en menos tiempo
+        profit_target_atr_mult=1.5,     # R:R 0.75:1 - MUY permisivo para máximo aprendizaje
+        loss_limit_atr_mult=2.0          # Stop loss más amplio - tolera más pérdida
     )
     meta_labels.name = 'meta_label'
 

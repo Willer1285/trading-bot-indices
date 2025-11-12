@@ -214,11 +214,12 @@ class SimplePatternModel(BaseModel):
     weighted scoring system. Increased threshold for better precision.
     """
 
-    def __init__(self, signal_threshold: float = 0.3):
+    def __init__(self, signal_threshold: float = 0.2):
         super().__init__("PatternBased")
         self.is_fitted = True
-        # Threshold 0.3 generates sufficient signals for LSTM training
-        # Production filters (ADX, Market Regime) will filter quality in production
+        # Threshold 0.2 - MUY PERMISIVO para generar máximo de señales para entrenamiento
+        # El LSTM necesita muchos ejemplos (buenos y malos) para aprender patrones
+        # Production filters (ADX, Market Regime, confluence 60%) filtrarán calidad
         self.signal_threshold = signal_threshold
 
     def fit(self, X: pd.DataFrame, y: pd.Series):

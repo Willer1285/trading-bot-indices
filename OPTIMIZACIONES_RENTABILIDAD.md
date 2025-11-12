@@ -112,13 +112,14 @@ Separación clara entre entrenamiento y producción:
 
 **Durante ENTRENAMIENTO** (train_models.py):
 ```python
-# Parámetros PERMISIVOS para generar suficientes datos de entrenamiento
+# Parámetros MUY PERMISIVOS para generar máximo de datos de entrenamiento
+# Pattern threshold = 0.2 (muy bajo para generar muchas señales)
 meta_labels = create_meta_labels(
     df,
     primary_predictions,
-    lookforward_periods=20,          # Original que funcionaba
-    profit_target_atr_mult=2.0,     # R:R 1.33:1 - más realista para entrenamiento
-    loss_limit_atr_mult=1.5          # Más permisivo
+    lookforward_periods=15,          # Reducido: más fácil alcanzar objetivo
+    profit_target_atr_mult=1.5,     # R:R 0.75:1 - MUY permisivo para máximo aprendizaje
+    loss_limit_atr_mult=2.0          # Stop loss amplio - tolera más pérdida
 )
 ```
 
@@ -209,24 +210,27 @@ price_vs_sma50, trend_strength           # Trend analysis
 - ❌ Entrenamiento falló completamente
 - ❌ Modelos empezaron a predecir al azar
 
-**Solución - Revertido a original:**
-Threshold vuelve a 0.3 para generar suficientes señales de entrenamiento:
+**Solución - Threshold MUY PERMISIVO:**
+Threshold reducido a 0.2 para generar máximo de señales de entrenamiento:
 
 ```python
-# CONFIGURACIÓN CORRECTA (REVERTIDA)
-def __init__(self, signal_threshold: float = 0.3):
-    # Threshold 0.3 genera suficientes señales para LSTM training
-    # Production filters (ADX, Market Regime) will filter quality in production
+# CONFIGURACIÓN ACTUAL (MUY PERMISIVA)
+def __init__(self, signal_threshold: float = 0.2):
+    # Threshold 0.2 - MUY PERMISIVO para generar máximo de señales
+    # El LSTM necesita muchos ejemplos (buenos y malos) para aprender
+    # Production filters (ADX, Market Regime, confluence 60%) filtrarán calidad
 ```
 
 **Archivos modificados:**
 - `src/ai_engine/ai_models.py` (línea 217)
 
 **Concepto clave:**
-- **Entrenamiento:** Threshold bajo (0.3) = más datos para LSTM
-- **Producción:** Filtros estrictos (ADX, Market Regime) = solo señales de calidad
+- **Entrenamiento:** Threshold 0.2 (MUY bajo) = máximo de datos para LSTM
+- **Producción:** Filtros estrictos (ADX>25, Market Regime, confluence 60%) = solo señales de calidad
 
-**Impacto esperado:** Modelos vuelven a tener AUC > 0.80 (92%+ éxito vs 20% con threshold 0.6)
+**Resultado esperado:**
+- Más señales primarias → Más datos para LSTM → Entrenamiento más largo (50-100+ epochs)
+- Modelos con AUC > 0.80 (92%+ éxito)
 
 ---
 
@@ -282,23 +286,29 @@ Entrenamiento: Bueno (92% modelos AUC > 0.80)
 Producción: Malo (perdedor a pesar de alta confianza)
 ```
 
-### Después de las Optimizaciones:
+### Después de las Optimizaciones (Actualización 2025-11-12):
 ```
-ENTRENAMIENTO:
-- Pattern Threshold:         0.3 (suficientes señales para LSTM) ✅
-- Meta-labeling:             Permisivo (R:R 1.33:1, lookforward=20) ✅
+ENTRENAMIENTO (MUY PERMISIVO):
+- Pattern Threshold:         0.2 (MUY bajo - máximo de señales) ✅
+- Meta-labeling:             MUY Permisivo (R:R 0.75:1, lookforward=15) ✅
+  * TP = 1.5×ATR, SL = 2.0×ATR (objetivo fácil de alcanzar)
 - Sin filtros ADX/Regime     (modelo aprende de todos los datos) ✅
 - Indicadores:               ~20 (solo más efectivos, -75%) ✅
 
-PRODUCCIÓN:
-- Risk/Reward Ratio:         2.5:1 ⬆️ (+88% mejora)
+OBJETIVO ENTRENAMIENTO:
+- Generar máximo de datos para LSTM (buenos y malos)
+- Entrenamiento más largo (50-100+ epochs vs 12 epochs)
+- 92%+ modelos con AUC > 0.80
+
+PRODUCCIÓN (MUY ESTRICTO):
+- Risk/Reward Ratio:         2.5:1 ⬆️ (+88% mejora vs original)
 - Win Rate Necesario:        29% (break-even) ⬇️ (-14 puntos)
-- Filtros:                   Estrictos (60% confluence + ADX>25 + Regime) ✅
+- Filtros:                   MUY Estrictos (60% confluence + ADX>25 + Regime) ✅
 - SL/TP dinámico:            1.2×ATR / 3.0×ATR ✅
 
 RESULTADO ESPERADO: RENTABLE ✅
-- Entrenamiento: Excelente (92% modelos AUC > 0.80)
-- Producción: Alta calidad (filtros estrictos)
+- Entrenamiento: Largo y efectivo (50-100+ epochs)
+- Producción: Solo señales de máxima calidad
 - Con 40% win rate → +15-25% ganancia mensual
 ```
 
@@ -405,10 +415,10 @@ PRODUCCIÓN (Examen):
 
 ### Implementación:
 
-| Fase | Pattern Threshold | Meta-labeling R:R | Filtros ADX/Regime | Objetivo |
-|------|------------------|-------------------|-------------------|----------|
-| **Entrenamiento** | 0.3 (permisivo) | 1.33:1 (realista) | ❌ No aplicar | Máximo aprendizaje |
-| **Producción** | N/A (ya entrenado) | 2.5:1 (ambicioso) | ✅ Aplicar | Máxima calidad |
+| Fase | Pattern Threshold | Meta-labeling R:R | Lookforward | Filtros ADX/Regime | Objetivo |
+|------|------------------|-------------------|-------------|-------------------|----------|
+| **Entrenamiento** | 0.2 (MUY permisivo) | 0.75:1 (TP=1.5, SL=2.0) | 15 periodos | ❌ No aplicar | Máximo aprendizaje |
+| **Producción** | N/A (ya entrenado) | 2.5:1 (TP=3.0, SL=1.2) | N/A | ✅ Aplicar | Máxima calidad |
 
 ### Resultado:
 
