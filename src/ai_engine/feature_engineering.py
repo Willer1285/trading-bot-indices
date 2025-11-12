@@ -155,8 +155,7 @@ class FeatureEngineer:
     def _get_market_regime_features(self, df: pd.DataFrame) -> Dict[str, pd.Series]:
         """Calculate market regime features and return as a dictionary."""
         features = {}
-        
-        features['trend_20'] = np.where(df['close'] > df['sma_25'], 1, -1)
+
         features['trend_50'] = np.where(df['close'] > df['sma_50'], 1, -1)
 
         vol_20 = df['close'].pct_change().rolling(20).std()

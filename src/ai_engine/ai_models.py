@@ -298,13 +298,6 @@ class SimplePatternModel(BaseModel):
                 if row['adx'] < 25:  # Weak trend, reduce signal strength
                     score *= 0.7
 
-            # === Momentum Indicators (Weight: 0.5) ===
-            if 'momentum_5' in row and not pd.isna(row['momentum_5']):
-                if row['momentum_5'] > 0:
-                    score += 0.5
-                else:
-                    score -= 0.5
-
             # === Generate Prediction ===
             # Use lower threshold to generate more signals
             # The meta-model will learn to filter out bad signals
