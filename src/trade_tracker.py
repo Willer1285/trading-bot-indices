@@ -130,7 +130,19 @@ class TradeTracker:
         session = self.db.get_session()
 
         try:
-            for signal_id, trade in list(self.active_trades.items()):
+            for signal_id in list(self.active_trades.keys()):
+                # Obtener el trade fresco de la base de datos en esta sesión
+                trade = session.query(Trade).filter_by(signal_id=signal_id).first()
+
+                if not trade or trade.status != 'OPEN':
+                    # Si el trade no existe o ya está cerrado, eliminarlo de activos
+                    if signal_id in self.active_trades:
+                        del self.active_trades[signal_id]
+                    continue
+
+                # Actualizar referencia en memoria
+                self.active_trades[signal_id] = trade
+
                 # Obtener precio actual desde MT5
                 if trade.mt5_ticket:
                     current_price = self._get_current_price_from_mt5(trade.symbol, trade.mt5_ticket)

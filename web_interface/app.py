@@ -349,31 +349,46 @@ def send_manual_notification():
                 import asyncio
                 import tempfile
                 import os
+                import threading
+                from concurrent.futures import ThreadPoolExecutor
 
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-
-                # Si hay imagen, enviar con send_photo
-                if image_file:
-                    # Guardar temporalmente la imagen
-                    with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(image_file.filename)[1]) as tmp_file:
-                        image_file.save(tmp_file.name)
-                        tmp_path = tmp_file.name
-
+                # Función para ejecutar en thread separado con su propio loop
+                def send_telegram_message():
                     try:
-                        # Enviar imagen con caption
-                        loop.run_until_complete(_telegram_instance.send_photo(tmp_path, caption=message if message else None))
-                        success = True
-                    finally:
-                        # Eliminar archivo temporal
-                        if os.path.exists(tmp_path):
-                            os.remove(tmp_path)
-                else:
-                    # Solo mensaje de texto
-                    loop.run_until_complete(_telegram_instance.send_message(message))
-                    success = True
+                        # Crear un nuevo loop para este thread
+                        new_loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(new_loop)
 
-                loop.close()
+                        try:
+                            # Si hay imagen, enviar con send_photo
+                            if image_file:
+                                # Guardar temporalmente la imagen
+                                with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(image_file.filename)[1]) as tmp_file:
+                                    image_file.save(tmp_file.name)
+                                    tmp_path = tmp_file.name
+
+                                try:
+                                    # Enviar imagen con caption
+                                    new_loop.run_until_complete(_telegram_instance.send_photo(tmp_path, caption=message if message else None))
+                                finally:
+                                    # Eliminar archivo temporal
+                                    if os.path.exists(tmp_path):
+                                        os.remove(tmp_path)
+                            else:
+                                # Solo mensaje de texto
+                                new_loop.run_until_complete(_telegram_instance.send_message(message))
+
+                            return True, None
+                        finally:
+                            new_loop.close()
+                    except Exception as e:
+                        return False, str(e)
+
+                # Ejecutar en thread separado
+                executor = ThreadPoolExecutor(max_workers=1)
+                future = executor.submit(send_telegram_message)
+                success, error_msg = future.result(timeout=10)  # 10 segundos timeout
+                executor.shutdown(wait=False)
 
             except Exception as e:
                 error_msg = str(e)

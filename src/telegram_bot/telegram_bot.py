@@ -333,16 +333,63 @@ class TelegramBot:
             return False
 
         try:
-            with open(photo_path, 'rb') as photo_file:
-                await self.bot.send_photo(
-                    chat_id=self.channel_id,
-                    photo=photo_file,
-                    caption=caption,
-                    parse_mode=ParseMode.MARKDOWN if caption else None
-                )
+            from PIL import Image
+            import os
+            import tempfile
 
-            logger.info(f"Sent photo to Telegram: {photo_path}")
-            return True
+            # Validar y redimensionar la imagen si es necesario
+            validated_path = photo_path
+            temp_file_created = False
+
+            try:
+                with Image.open(photo_path) as img:
+                    width, height = img.size
+
+                    # Telegram limits: width + height <= 10000, each dimension <= 10000
+                    needs_resize = width > 10000 or height > 10000 or (width + height) > 10000
+
+                    if needs_resize:
+                        logger.info(f"Image dimensions {width}x{height} exceed Telegram limits, resizing...")
+
+                        # Calculate new dimensions maintaining aspect ratio
+                        max_dimension = 4096  # Safe maximum
+                        if width > height:
+                            new_width = max_dimension
+                            new_height = int((max_dimension / width) * height)
+                        else:
+                            new_height = max_dimension
+                            new_width = int((max_dimension / height) * width)
+
+                        # Resize image
+                        resized_img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+
+                        # Save to temporary file
+                        temp_fd, validated_path = tempfile.mkstemp(suffix=os.path.splitext(photo_path)[1])
+                        os.close(temp_fd)
+                        resized_img.save(validated_path, quality=85, optimize=True)
+                        temp_file_created = True
+
+                        logger.info(f"Image resized to {new_width}x{new_height}")
+
+                # Send the photo
+                with open(validated_path, 'rb') as photo_file:
+                    await self.bot.send_photo(
+                        chat_id=self.channel_id,
+                        photo=photo_file,
+                        caption=caption,
+                        parse_mode=ParseMode.MARKDOWN if caption else None
+                    )
+
+                logger.info(f"Sent photo to Telegram: {photo_path}")
+                return True
+
+            finally:
+                # Clean up temporary file if created
+                if temp_file_created and os.path.exists(validated_path):
+                    try:
+                        os.remove(validated_path)
+                    except:
+                        pass
 
         except Exception as e:
             logger.error(f"Error sending photo to Telegram: {e}")
