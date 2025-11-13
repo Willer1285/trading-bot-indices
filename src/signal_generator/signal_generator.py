@@ -78,7 +78,8 @@ class SignalGenerator:
         analyzer: MarketAnalyzer,
         signal_filter: SignalFilter,
         risk_manager: RiskManager,
-        min_confidence: float = 0.75
+        min_confidence: float = 0.75,
+        mt5_connector=None  # Optional MT5 connector for real position verification
     ):
         """
         Initialize Signal Generator
@@ -88,10 +89,12 @@ class SignalGenerator:
             signal_filter: Signal filter instance
             risk_manager: Risk manager instance
             min_confidence: Minimum confidence threshold
+            mt5_connector: Optional MT5Connector for verifying real positions
         """
         self.analyzer = analyzer
         self.signal_filter = signal_filter
         self.risk_manager = risk_manager
+        self.mt5_connector = mt5_connector  # Store MT5 connector
         self.signal_tracker = SignalTracker(
             min_time_between_signals=30,  # 30 minutes for scalping
             max_price_distance_percent=0.5,  # 0.5% price movement invalidates signal
@@ -201,12 +204,13 @@ class SignalGenerator:
             if not self._validate_signal_direction(symbol, signal_type):
                 return None
 
-            # Check for duplicate signals
+            # Check for duplicate signals (with MT5 verification if available)
             if not self.signal_tracker.should_send_signal(
                 symbol=symbol,
                 signal_type=signal_type,
                 entry_price=current_price,
-                current_price=current_price
+                current_price=current_price,
+                mt5_connector=self.mt5_connector  # Pass MT5 connector for real verification
             ):
                 return None
 

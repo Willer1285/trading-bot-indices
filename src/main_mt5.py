@@ -263,7 +263,8 @@ class MT5TradingBot:
                 analyzer=self.analyzer,
                 signal_filter=signal_filter,
                 risk_manager=risk_manager,
-                min_confidence=config.confidence_threshold
+                min_confidence=config.confidence_threshold,
+                mt5_connector=self.mt5_connector  # Pass MT5 connector for position verification
             )
 
             # Telegram bot

@@ -93,7 +93,8 @@ class SignalTracker:
         symbol: str,
         signal_type: str,
         entry_price: float,
-        current_price: float
+        current_price: float,
+        mt5_connector=None  # Optional MT5 connector to verify real positions
     ) -> bool:
         """
         Check if signal should be sent (not a duplicate)
@@ -103,12 +104,40 @@ class SignalTracker:
             signal_type: BUY or SELL
             entry_price: Proposed entry price
             current_price: Current market price
+            mt5_connector: Optional MT5Connector to verify real open positions
 
         Returns:
             True if signal should be sent
         """
         # Clean up old signals first
         self._cleanup_old_signals()
+
+        # VERIFICACIÓN CRÍTICA: Si tenemos acceso a MT5, verificar posiciones reales
+        if mt5_connector is not None:
+            try:
+                open_positions = mt5_connector.get_open_positions()
+                has_open_position = any(
+                    pos['symbol'] == symbol and pos['type'].upper() == signal_type
+                    for pos in open_positions
+                )
+
+                if not has_open_position:
+                    # No hay posición abierta en MT5, limpiar señales antiguas de este símbolo
+                    if symbol in self.active_signals:
+                        # Limpiar señales del mismo tipo que no tienen posición real
+                        self.active_signals[symbol] = [
+                            sig for sig in self.active_signals[symbol]
+                            if sig.signal_type != signal_type
+                        ]
+                        if not self.active_signals[symbol]:
+                            del self.active_signals[symbol]
+
+                    logger.info(f"{symbol}: ✅ No open {signal_type} position in MT5, OK to send new signal")
+                    return True
+                else:
+                    logger.info(f"{symbol}: ℹ️ Open {signal_type} position exists in MT5, checking cache")
+            except Exception as e:
+                logger.warning(f"{symbol}: Could not verify MT5 positions: {e}, using cache only")
 
         # Get signals for this symbol
         if symbol not in self.active_signals:

@@ -201,36 +201,35 @@ class FeatureEngineer:
         # Se crea una copia para no modificar el DataFrame original.
         df_clean = df.copy()
 
-        # La selección de columnas ahora se realiza fuera de esta función.
-        # Esta función se centra únicamente en la limpieza de los datos que recibe.
-        
-        # Se manejan los valores ausentes (NaN) de forma más robusta.
-        # Primero, se rellenan hacia adelante para propagar el último valor válido.
-        if fill_method == 'ffill':
-            df_clean.ffill(inplace=True)
-        
-        # Luego, se rellenan hacia atrás para cubrir los NaN que pudieran quedar al principio.
+        # Reemplazar infinitos PRIMERO (antes de cualquier relleno)
+        df_clean = df_clean.replace([np.inf, -np.inf], np.nan)
+
+        # RELLENO AGRESIVO para preservar máximo de datos
+        # 1. Forward fill (propagar último valor válido)
+        df_clean.ffill(inplace=True)
+
+        # 2. Backward fill (cubrir NaNs iniciales)
         df_clean.bfill(inplace=True)
-        
-        # Si se especifica 'zero', se rellenan los NaN restantes con 0.
-        if fill_method == 'zero':
-            df_clean.fillna(0, inplace=True)
 
-        # Se eliminan las filas que todavía contengan algún NaN después del relleno.
-        # Esto es crucial para asegurar que no haya datos inválidos.
-        
-        # Guardamos una copia antes de eliminar las filas con NaN
-        df_before_dropna = df_clean.copy()
-        df_clean.dropna(inplace=True)
+        # 3. Si aún quedan NaNs (poco probable), rellenar con 0
+        df_clean.fillna(0, inplace=True)
 
-        # Si después de eliminar los NaN nos quedamos sin datos, revertimos la operación
-        # y registramos una advertencia. Esto es útil para conjuntos de datos pequeños.
-        if df_clean.empty and not df_before_dropna.empty:
-            logger.warning("Se perdieron todos los datos al eliminar los NaN. Se conservarán los datos rellenados.")
-            df_clean = df_before_dropna
+        # Verificar cuántas filas quedan después de limpieza
+        rows_before = len(df)
+        rows_after = len(df_clean)
 
-        # Replace infinite values
-        df_clean = df_clean.replace([np.inf, -np.inf], 0)
+        if rows_after < rows_before:
+            logger.info(f"prepare_for_model: Preserved {rows_after}/{rows_before} rows ({rows_after/rows_before*100:.1f}%)")
+
+        # Solo hacer dropna() si todavía hay NaNs (debería ser raro después del relleno agresivo)
+        if df_clean.isna().any().any():
+            logger.warning(f"Still have NaNs after aggressive filling, dropping {df_clean.isna().sum().sum()} NaN values")
+            df_clean.dropna(inplace=True)
+
+        # Verificación final
+        if df_clean.empty and not df.empty:
+            logger.error("All data lost during preparation! Using original data with 0-fill")
+            df_clean = df.copy().replace([np.inf, -np.inf], 0).fillna(0)
 
         return df_clean
 
