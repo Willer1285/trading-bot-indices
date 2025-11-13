@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2><i class="bi bi-gear-fill"></i> Administración del Sistema</h2>
+
+    <!-- System Stats Card -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-server"></i> Estadísticas del Sistema</h5>
+        </div>
+        <div class="card-body">
+            <div class="row" id="system-stats">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-value" id="cpu-usage">--%</div>
+                        <div class="stat-label">CPU</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-value" id="memory-usage">--%</div>
+                        <div class="stat-label">Memoria</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-value" id="disk-usage">--%</div>
+                        <div class="stat-label">Disco</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-value" id="logs-size">-- MB</div>
+                        <div class="stat-label">Logs</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <small class="text-muted">Última limpieza: <span id="last-cleanup">--</span></small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cleanup Actions Card -->
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="bi bi-trash"></i> Limpieza del Sistema</h5>
+        </div>
+        <div class="card-body">
+            <button class="btn btn-success btn-lg" onclick="runCleanup()">
+                <i class="bi bi-recycle"></i> Ejecutar Limpieza Manual
+            </button>
+            <p class="mt-2 text-muted mb-0">
+                <small>Elimina logs viejos (>7 días), rota archivos grandes, libera memoria</small>
+            </p>
+        </div>
+    </div>
+
+    <!-- Database Management Card -->
+    <div class="card">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0"><i class="bi bi-database"></i> Gestión de Base de Datos</h5>
+        </div>
+        <div class="card-body">
+            <h6>Resetear Métricas del Dashboard</h6>
+            <p class="text-muted">
+                <small>Elimina todos los trades y eventos del dashboard. Útil para empezar de cero.</small>
+            </p>
+            <button class="btn btn-warning" onclick="confirmResetMetrics()">
+                <i class="bi bi-arrow-counterclockwise"></i> Resetear Métricas
+            </button>
+
+            <hr>
+
+            <h6>Borrar Mensajes de Telegram</h6>
+            <p class="text-muted">
+                <small>Elimina todos los mensajes enviados desde la interfaz web.</small>
+            </p>
+            <button class="btn btn-warning" onclick="confirmDeleteMessages()">
+                <i class="bi bi-envelope-x"></i> Borrar Todos los Mensajes
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Load system stats
+function loadSystemStats() {
+    fetch('/api/admin/cleanup_stats')
+        .then(response => response.json())
+        .then(result => {
+            if (result.success && result.data) {
+                const data = result.data;
+
+                // System stats
+                if (data.system_stats) {
+                    document.getElementById('cpu-usage').textContent =
+                        data.system_stats.cpu_percent.toFixed(1) + '%';
+                    document.getElementById('memory-usage').textContent =
+                        data.system_stats.memory_percent.toFixed(1) + '%';
+                    document.getElementById('disk-usage').textContent =
+                        data.system_stats.disk_usage_percent.toFixed(1) + '%';
+                }
+
+                // Disk usage
+                if (data.disk_usage) {
+                    document.getElementById('logs-size').textContent =
+                        data.disk_usage.logs_mb.toFixed(1) + ' MB';
+                }
+
+                // Last cleanup
+                if (data.last_cleanup) {
+                    const date = new Date(data.last_cleanup);
+                    document.getElementById('last-cleanup').textContent =
+                        date.toLocaleString('es-ES');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error loading system stats:', error);
+        });
+}
+
+// Run manual cleanup
+function runCleanup() {
+    if (!confirm('¿Ejecutar limpieza del sistema ahora?')) return;
+
+    showToast('Ejecutando limpieza...', 'info');
+
+    fetch('/api/admin/run_cleanup', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            const stats = result.data;
+            showToast(
+                `Limpieza completada: ${stats.logs_deleted} logs eliminados, ` +
+                `${stats.logs_size_freed_mb.toFixed(1)}MB liberados`,
+                'success'
+            );
+            loadSystemStats();
+        } else {
+            showToast('Error: ' + result.error, 'error');
+        }
+    })
+    .catch(error => {
+        showToast('Error ejecutando limpieza: ' + error, 'error');
+    });
+}
+
+// Reset metrics
+function confirmResetMetrics() {
+    if (!confirm('⚠️ ¿Estás seguro? Esto eliminará TODOS los trades y métricas del dashboard.')) return;
+    if (!confirm('¿Realmente quieres continuar? Esta acción NO se puede deshacer.')) return;
+
+    fetch('/api/admin/reset_metrics', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            showToast(result.message, 'success');
+            setTimeout(() => window.location.href = '/', 2000);
+        } else {
+            showToast('Error: ' + result.error, 'error');
+        }
+    })
+    .catch(error => {
+        showToast('Error reseteando métricas: ' + error, 'error');
+    });
+}
+
+// Delete all messages
+function confirmDeleteMessages() {
+    if (!confirm('⚠️ ¿Eliminar TODOS los mensajes enviados a Telegram?')) return;
+    if (!confirm('Esta acción NO se puede deshacer. ¿Continuar?')) return;
+
+    fetch('/api/admin/delete_messages', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            showToast(result.message, 'success');
+        } else {
+            showToast('Error: ' + result.error, 'error');
+        }
+    })
+    .catch(error => {
+        showToast('Error borrando mensajes: ' + error, 'error');
+    });
+}
+
+// Load stats on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadSystemStats();
+    // Auto-refresh every 10 seconds
+    setInterval(loadSystemStats, 10000);
+});
+</script>
+{% endblock %}

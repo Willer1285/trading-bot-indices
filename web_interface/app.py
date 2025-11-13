@@ -445,6 +445,132 @@ def get_notification_history():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+# ==================== ADMIN ROUTES ====================
+
+@app.route('/admin')
+def admin():
+    """Página de administración"""
+    return render_template('admin.html')
+
+
+@app.route('/api/admin/reset_metrics', methods=['POST'])
+def reset_metrics():
+    """Resetear todas las métricas del dashboard"""
+    try:
+        # Eliminar todos los trades
+        db.query(Trade).delete()
+
+        # Eliminar todos los eventos de trades
+        db.query(TradeEvent).delete()
+
+        db.commit()
+
+        logger.info("Dashboard metrics reset successfully")
+        return jsonify({
+            'success': True,
+            'message': 'Métricas del dashboard reseteadas exitosamente'
+        })
+
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error resetting metrics: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/admin/delete_messages', methods=['POST'])
+def delete_all_messages():
+    """Borrar todos los mensajes enviados a Telegram"""
+    try:
+        # Eliminar todas las notificaciones manuales
+        deleted = db.query(ManualNotification).delete()
+        db.commit()
+
+        logger.info(f"Deleted {deleted} manual notifications")
+        return jsonify({
+            'success': True,
+            'message': f'{deleted} mensajes eliminados exitosamente',
+            'deleted_count': deleted
+        })
+
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error deleting messages: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/admin/delete_message/<int:message_id>', methods=['DELETE'])
+def delete_single_message(message_id):
+    """Borrar un mensaje específico de Telegram"""
+    try:
+        message = db.query(ManualNotification).filter_by(id=message_id).first()
+
+        if not message:
+            return jsonify({'success': False, 'error': 'Mensaje no encontrado'}), 404
+
+        db.delete(message)
+        db.commit()
+
+        logger.info(f"Deleted message {message_id}")
+        return jsonify({
+            'success': True,
+            'message': 'Mensaje eliminado exitosamente'
+        })
+
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error deleting message {message_id}: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/admin/cleanup_stats', methods=['GET'])
+def get_cleanup_stats():
+    """Obtener estadísticas de limpieza y uso de recursos"""
+    try:
+        if _bot_instance and hasattr(_bot_instance, 'cleanup_manager'):
+            cleanup_mgr = _bot_instance.cleanup_manager
+
+            stats = {
+                'disk_usage': cleanup_mgr.get_disk_usage(),
+                'system_stats': cleanup_mgr.get_system_stats(),
+                'last_cleanup': cleanup_mgr.last_cleanup.isoformat() if cleanup_mgr.last_cleanup else None
+            }
+
+            return jsonify({'success': True, 'data': stats})
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Cleanup manager no disponible'
+            }), 503
+
+    except Exception as e:
+        logger.error(f"Error getting cleanup stats: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/admin/run_cleanup', methods=['POST'])
+def run_manual_cleanup():
+    """Ejecutar limpieza manual"""
+    try:
+        if _bot_instance and hasattr(_bot_instance, 'cleanup_manager'):
+            cleanup_mgr = _bot_instance.cleanup_manager
+            stats = cleanup_mgr.run_cleanup()
+
+            return jsonify({
+                'success': True,
+                'message': 'Limpieza ejecutada exitosamente',
+                'data': stats
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Cleanup manager no disponible'
+            }), 503
+
+    except Exception as e:
+        logger.error(f"Error running cleanup: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 def run_flask_app(host='0.0.0.0', port=5000, debug=False):
     """
     Inicia la aplicación Flask
