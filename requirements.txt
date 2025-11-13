@@ -52,6 +52,7 @@ ccxt>=4.4.0                # Exchange connector
 
 # Logging & Monitoring
 loguru>=0.7.3              # Sistema de logging mejorado
+psutil>=5.9.0              # Monitoreo de recursos del sistema (CPU, RAM, Disco)
 prometheus-client>=0.21.0  # Métricas Prometheus
 shap>=0.46.0               # Explicabilidad de modelos ML
 
