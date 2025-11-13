@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from config import config
 from utils.logger import setup_logger
 from utils.performance_tracker import PerformanceTracker
+from utils.cleanup_manager import CleanupManager
 
 from data_collector.mt5_connector import MT5Connector, MT5OrderExecutor
 from data_collector.mt5_market_data_manager import MT5MarketDataManager
@@ -63,6 +64,14 @@ class MT5TradingBot:
 
         # Performance tracking
         self.performance = PerformanceTracker()
+
+        # Cleanup manager for VPS 24/7 optimization
+        self.cleanup_manager = CleanupManager(
+            log_retention_days=7,          # Keep logs for 7 days
+            max_log_size_mb=100,           # Rotate logs over 100MB
+            memory_threshold_percent=80.0, # Cleanup if memory > 80%
+            cleanup_interval_hours=6       # Run cleanup every 6 hours
+        )
 
         # Initialize components
         self.mt5_connector = None
@@ -414,7 +423,16 @@ class MT5TradingBot:
                 # Analizar todos los símbolos para nuevas señales - SOLO si el bot está RUNNING
                 if self.bot_controller.can_generate_signals():
                     for symbol in config.trading_symbols:
-                        await self._analyze_and_execute(symbol)
+                        try:
+                            # Timeout para evitar bloqueos (máx 30 segundos por símbolo)
+                            await asyncio.wait_for(
+                                self._analyze_and_execute(symbol),
+                                timeout=30.0
+                            )
+                        except asyncio.TimeoutError:
+                            logger.warning(f"{symbol}: Analysis timeout (>30s), skipping to next symbol")
+                        except Exception as e:
+                            logger.error(f"{symbol}: Error during analysis: {e}")
                 else:
                     logger.info("Bot is paused - Skipping signal generation, monitoring trades only")
 
@@ -422,6 +440,12 @@ class MT5TradingBot:
                 logger.info(f"Waiting for {self.analysis_interval} seconds until next cycle...")
                 # Wait before next iteration
                 await asyncio.sleep(self.analysis_interval)
+
+                # Automatic cleanup check (every 6 hours by default)
+                if self.cleanup_manager.should_run_cleanup():
+                    logger.info("🧹 Running automatic cleanup...")
+                    cleanup_stats = self.cleanup_manager.run_cleanup()
+                    logger.info(f"Cleanup stats: {cleanup_stats}")
 
                 # Periodic tasks (every hour)
                 if datetime.utcnow().minute == 0:
