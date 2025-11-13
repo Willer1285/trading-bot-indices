@@ -14,610 +14,871 @@ OK
 [4/4] Ejecutando el bot...
 ========================================================================
 
-2025-11-11 07:42:23.541620: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
-2025-11-11 07:42:25.530137: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-11-13 19:09:58.454769: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-11-13 19:10:09.233570: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-11-13 19:10:25.522 | INFO     | web_interface.database:__init__:126 - Database initialized at trading_bot.db
+2025-11-13 19:10:25.556 | INFO     | src.bot_controller:__init__:37 - Bot Controller initialized - Status: STOPPED
 ============================================================
 AI MT5 Trading Bot
 Starting...
 ============================================================
 
-2025-11-11 07:42:26 | INFO     | utils.logger:setup_logger - Logger initialized - Level: INFO
-2025-11-11 07:42:26 | INFO     | main_mt5:__init__ - ============================================================
-2025-11-11 07:42:26 | INFO     | main_mt5:__init__ - AI MT5 Trading Bot Starting...
-2025-11-11 07:42:26 | INFO     | main_mt5:__init__ - ============================================================
-2025-11-11 07:42:26 | INFO     | utils.performance_tracker:__init__ - Performance Tracker initialized
-2025-11-11 07:42:26 | INFO     | main_mt5:start - Starting MT5 Trading Bot...
-2025-11-11 07:42:26 | INFO     | main_mt5:_initialize_components - Initializing MT5 connector...
-2025-11-11 07:42:26 | INFO     | data_collector.mt5_connector:_initialize_mt5 - MT5 initialized successfully
-2025-11-11 07:42:26 | INFO     | data_collector.mt5_connector:_initialize_mt5 - Logged in to MT5 account 19510369
-2025-11-11 07:42:26 | INFO     | data_collector.mt5_connector:_initialize_mt5 - Connected to MT5 - Account: 19510369, Balance: 842.43, Server: Weltrade-Demo
-2025-11-11 07:42:26 | INFO     | main_mt5:_initialize_components - Initializing order executor...
-2025-11-11 07:42:26 | INFO     | main_mt5:_initialize_components - MT5 Account: 19510369, Balance: 842.43 USD, Server: Weltrade-Demo
-2025-11-11 07:42:26 | INFO     | main_mt5:_initialize_components - Available symbols from broker: ['FX Vol 20', 'FX Vol 40', 'FX Vol 60', 'FX Vol 80', 'FX Vol 99', 'SFX Vol 20', 'SFX Vol 40', 'SFX Vol 60', 'SFX Vol 80', 'SFX Vol 99', 'PainX 400', 'GainX 400', 'PainX 600', 'GainX 600', 'PainX 800', 'GainX 800', 'PainX 999', 'GainX 999', 'PainX 1200', 'GainX 1200']
-2025-11-11 07:42:26 | INFO     | main_mt5:_initialize_components - Initializing market data manager...
-2025-11-11 07:42:26 | INFO     | data_collector.mt5_market_data_manager:_initialize_storage - Initialized storage for 10 symbols across 4 timeframes
-2025-11-11 07:42:26 | INFO     | main_mt5:_initialize_components - Initializing AI analyzer...
-2025-11-11 07:42:26 | INFO     | ai_engine.market_analyzer:__init__ - Market Analyzer inicializado para gestionar modelos especializados por símbolo/timeframe.
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Checking model age for automatic retraining...
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 400 [1m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 400 [5m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 400 [15m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 400 [1h] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 400 [1m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 400 [5m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 400 [15m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 400 [1h] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 600 [1m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 600 [5m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 600 [15m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 600 [1h] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 600 [1m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 600 [5m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 600 [15m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 600 [1h] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 800 [1m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 800 [5m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 800 [15m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 800 [1h] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 800 [1m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 800 [5m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 800 [15m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 800 [1h] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 999 [1m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 999 [5m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 999 [15m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 999 [1h] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 999 [1m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 999 [5m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 999 [15m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 999 [1h] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 1200 [1m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 1200 [5m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 1200 [15m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 1200 [1h] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 1200 [1m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 1200 [5m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 1200 [15m] is 0 days old
-2025-11-11 07:42:26 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 1200 [1h] is 0 days old
-2025-11-11 07:42:26 | SUCCESS  | main_mt5:_check_and_retrain_models - ✅ Models are up to date (oldest model: 0 days old)
-2025-11-11 07:42:26 | INFO     | ai_engine.market_analyzer:load_models - Buscando y cargando modelos especializados desde 'models'...
-2025-11-11 07:42:26 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:26 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_1200\GainX_1200_H1\feature_info.pkl
-2025-11-11 07:42:26 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_1200\GainX_1200_H1\random_forest.pkl
-2025-11-11 07:42:26 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:26 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_1200\GainX_1200_H1\gradient_boosting.pkl
-2025-11-11 07:42:26 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:26.851597: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+2025-11-13 19:10:25 | INFO     | utils.logger:setup_logger - Logger initialized - Level: INFO
+2025-11-13 19:10:25 | INFO     | main_mt5:__init__ - ============================================================
+2025-11-13 19:10:25 | INFO     | main_mt5:__init__ - AI MT5 Trading Bot Starting...
+2025-11-13 19:10:25 | INFO     | main_mt5:__init__ - ============================================================
+2025-11-13 19:10:25 | INFO     | main_mt5:__init__ - Initializing web interface database...
+2025-11-13 19:10:25 | INFO     | web_interface.database:__init__ - Database initialized at trading_bot.db
+2025-11-13 19:10:25 | INFO     | main_mt5:__init__ - Initializing bot controller...
+2025-11-13 19:10:25 | INFO     | utils.performance_tracker:__init__ - Performance Tracker initialized
+2025-11-13 19:10:25 | INFO     | utils.cleanup_manager:__init__ - Cleanup Manager initialized - Log retention: 7d, Max log size: 100MB, Memory threshold: 80.0%, Cleanup interval: 6h
+2025-11-13 19:10:25 | INFO     | main_mt5:start - Starting MT5 Trading Bot...
+2025-11-13 19:10:25 | INFO     | main_mt5:_initialize_components - Initializing MT5 connector...
+2025-11-13 19:10:25 | INFO     | data_collector.mt5_connector:_initialize_mt5 - MT5 initialized successfully
+2025-11-13 19:10:25 | INFO     | data_collector.mt5_connector:_initialize_mt5 - Logged in to MT5 account 19510369
+2025-11-13 19:10:25 | INFO     | data_collector.mt5_connector:_initialize_mt5 - Connected to MT5 - Account: 19510369, Balance: 2458.8, Server: Weltrade-Demo
+2025-11-13 19:10:25 | INFO     | main_mt5:_initialize_components - Initializing order executor...
+2025-11-13 19:10:25 | INFO     | main_mt5:_initialize_components - MT5 Account: 19510369, Balance: 2458.8 USD, Server: Weltrade-Demo
+2025-11-13 19:10:25 | INFO     | main_mt5:_initialize_components - Available symbols from broker: ['FX Vol 20', 'FX Vol 40', 'FX Vol 60', 'FX Vol 80', 'FX Vol 99', 'SFX Vol 20', 'SFX Vol 40', 'SFX Vol 60', 'SFX Vol 80', 'SFX Vol 99', 'PainX 400', 'GainX 400', 'PainX 600', 'GainX 600', 'PainX 800', 'GainX 800', 'PainX 999', 'GainX 999', 'PainX 1200', 'GainX 1200']
+2025-11-13 19:10:25 | INFO     | main_mt5:_initialize_components - Initializing market data manager...
+2025-11-13 19:10:25 | INFO     | data_collector.mt5_market_data_manager:_initialize_storage - Initialized storage for 10 symbols across 5 timeframes
+2025-11-13 19:10:25 | INFO     | main_mt5:_initialize_components - Initializing AI analyzer...
+2025-11-13 19:10:25 | INFO     | ai_engine.market_analyzer:__init__ - Market Analyzer inicializado para gestionar modelos especializados por símbolo/timeframe.
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Checking model age for automatic retraining...
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 400 [1m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 400 [5m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 400 [15m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 400 [1h] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 400 [4h] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 400 [1m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 400 [5m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 400 [15m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 400 [1h] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 400 [4h] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 600 [1m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 600 [5m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 600 [15m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 600 [1h] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 600 [4h] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 600 [1m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 600 [5m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 600 [15m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 600 [1h] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 600 [4h] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 800 [1m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 800 [5m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 800 [15m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 800 [1h] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 800 [4h] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 800 [1m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 800 [5m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 800 [15m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 800 [1h] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 800 [4h] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 999 [1m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 999 [5m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 999 [15m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 999 [1h] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 999 [4h] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 999 [1m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 999 [5m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 999 [15m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 999 [1h] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 999 [4h] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 1200 [1m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 1200 [5m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 1200 [15m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 1200 [1h] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for PainX 1200 [4h] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 1200 [1m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 1200 [5m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 1200 [15m] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 1200 [1h] is 1 days old
+2025-11-13 19:10:25 | INFO     | main_mt5:_check_and_retrain_models - Model for GainX 1200 [4h] is 1 days old
+2025-11-13 19:10:25 | SUCCESS  | main_mt5:_check_and_retrain_models - ✅ Models are up to date (oldest model: 1 days old)2025-11-13 19:10:25 | INFO     | ai_engine.market_analyzer:load_models - Buscando y cargando modelos especializados desde 'models'...
+2025-11-13 19:10:25 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:25 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_1200\GainX_1200_H1\feature_info.pkl
+2025-11-13 19:10:26 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_1200\GainX_1200_H1\random_forest.pkl
+2025-11-13 19:10:26 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:26 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_1200\GainX_1200_H1\gradient_boosting.pkl
+2025-11-13 19:10:26 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:26.267411: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
 To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_1200\GainX_1200_H1\lstm.keras and models\GainX_1200\GainX_1200_H1\lstm_scaler.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:27 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 1200 [H1] cargado exitosamente con clave 'GainX 1200_H1'.
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_1200\GainX_1200_M1\feature_info.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_1200\GainX_1200_M1\random_forest.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_1200\GainX_1200_M1\gradient_boosting.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_1200\GainX_1200_M1\lstm.keras and models\GainX_1200\GainX_1200_M1\lstm_scaler.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:27 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 1200 [M1] cargado exitosamente con clave 'GainX 1200_M1'.
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_1200\GainX_1200_M15\feature_info.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_1200\GainX_1200_M15\random_forest.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_1200\GainX_1200_M15\gradient_boosting.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_1200\GainX_1200_M15\lstm.keras and models\GainX_1200\GainX_1200_M15\lstm_scaler.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:27 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 1200 [M15] cargado exitosamente con clave 'GainX 1200_M15'.
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_1200\GainX_1200_M5\feature_info.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_1200\GainX_1200_M5\random_forest.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_1200\GainX_1200_M5\gradient_boosting.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_1200\GainX_1200_M5\lstm.keras and models\GainX_1200\GainX_1200_M5\lstm_scaler.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:27 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 1200 [M5] cargado exitosamente con clave 'GainX 1200_M5'.
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_400\GainX_400_H1\feature_info.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_400\GainX_400_H1\random_forest.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_400\GainX_400_H1\gradient_boosting.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_400\GainX_400_H1\lstm.keras and models\GainX_400\GainX_400_H1\lstm_scaler.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:27 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 400 [H1] cargado exitosamente con clave 'GainX 400_H1'.
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_400\GainX_400_M1\feature_info.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_400\GainX_400_M1\random_forest.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_400\GainX_400_M1\gradient_boosting.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_400\GainX_400_M1\lstm.keras and models\GainX_400\GainX_400_M1\lstm_scaler.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:27 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 400 [M1] cargado exitosamente con clave 'GainX 400_M1'.
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_400\GainX_400_M15\feature_info.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_400\GainX_400_M15\random_forest.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_400\GainX_400_M15\gradient_boosting.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_400\GainX_400_M15\lstm.keras and models\GainX_400\GainX_400_M15\lstm_scaler.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:27 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 400 [M15] cargado exitosamente con clave 'GainX 400_M15'.
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_400\GainX_400_M5\feature_info.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_400\GainX_400_M5\random_forest.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_400\GainX_400_M5\gradient_boosting.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_400\GainX_400_M5\lstm.keras and models\GainX_400\GainX_400_M5\lstm_scaler.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:27 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 400 [M5] cargado exitosamente con clave 'GainX 400_M5'.
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_600\GainX_600_H1\feature_info.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_600\GainX_600_H1\random_forest.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_600\GainX_600_H1\gradient_boosting.pkl
-2025-11-11 07:42:27 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_600\GainX_600_H1\lstm.keras and models\GainX_600\GainX_600_H1\lstm_scaler.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:28 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 600 [H1] cargado exitosamente con clave 'GainX 600_H1'.
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_600\GainX_600_M1\feature_info.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_600\GainX_600_M1\random_forest.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_600\GainX_600_M1\gradient_boosting.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_600\GainX_600_M1\lstm.keras and models\GainX_600\GainX_600_M1\lstm_scaler.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:28 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 600 [M1] cargado exitosamente con clave 'GainX 600_M1'.
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_600\GainX_600_M15\feature_info.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_600\GainX_600_M15\random_forest.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_600\GainX_600_M15\gradient_boosting.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_600\GainX_600_M15\lstm.keras and models\GainX_600\GainX_600_M15\lstm_scaler.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:28 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 600 [M15] cargado exitosamente con clave 'GainX 600_M15'.
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_600\GainX_600_M5\feature_info.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_600\GainX_600_M5\random_forest.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_600\GainX_600_M5\gradient_boosting.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_600\GainX_600_M5\lstm.keras and models\GainX_600\GainX_600_M5\lstm_scaler.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:28 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 600 [M5] cargado exitosamente con clave 'GainX 600_M5'.
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_800\GainX_800_H1\feature_info.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_800\GainX_800_H1\random_forest.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_800\GainX_800_H1\gradient_boosting.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_800\GainX_800_H1\lstm.keras and models\GainX_800\GainX_800_H1\lstm_scaler.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:28 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 800 [H1] cargado exitosamente con clave 'GainX 800_H1'.
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_800\GainX_800_M1\feature_info.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_800\GainX_800_M1\random_forest.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_800\GainX_800_M1\gradient_boosting.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_800\GainX_800_M1\lstm.keras and models\GainX_800\GainX_800_M1\lstm_scaler.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:28 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 800 [M1] cargado exitosamente con clave 'GainX 800_M1'.
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_800\GainX_800_M15\feature_info.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_800\GainX_800_M15\random_forest.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_800\GainX_800_M15\gradient_boosting.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_800\GainX_800_M15\lstm.keras and models\GainX_800\GainX_800_M15\lstm_scaler.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:28 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 800 [M15] cargado exitosamente con clave 'GainX 800_M15'.
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_800\GainX_800_M5\feature_info.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_800\GainX_800_M5\random_forest.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_800\GainX_800_M5\gradient_boosting.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_800\GainX_800_M5\lstm.keras and models\GainX_800\GainX_800_M5\lstm_scaler.pkl
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:28 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 800 [M5] cargado exitosamente con clave 'GainX 800_M5'.
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:28 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_999\GainX_999_H1\feature_info.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_999\GainX_999_H1\random_forest.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_999\GainX_999_H1\gradient_boosting.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_999\GainX_999_H1\lstm.keras and models\GainX_999\GainX_999_H1\lstm_scaler.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:29 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 999 [H1] cargado exitosamente con clave 'GainX 999_H1'.
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_999\GainX_999_M1\feature_info.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_999\GainX_999_M1\random_forest.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_999\GainX_999_M1\gradient_boosting.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_999\GainX_999_M1\lstm.keras and models\GainX_999\GainX_999_M1\lstm_scaler.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:29 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 999 [M1] cargado exitosamente con clave 'GainX 999_M1'.
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_999\GainX_999_M15\feature_info.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_999\GainX_999_M15\random_forest.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_999\GainX_999_M15\gradient_boosting.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_999\GainX_999_M15\lstm.keras and models\GainX_999\GainX_999_M15\lstm_scaler.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:29 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 999 [M15] cargado exitosamente con clave 'GainX 999_M15'.
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_999\GainX_999_M5\feature_info.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_999\GainX_999_M5\random_forest.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_999\GainX_999_M5\gradient_boosting.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_999\GainX_999_M5\lstm.keras and models\GainX_999\GainX_999_M5\lstm_scaler.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:29 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 999 [M5] cargado exitosamente con clave 'GainX 999_M5'.
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_1200\PainX_1200_H1\feature_info.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_1200\PainX_1200_H1\random_forest.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_1200\PainX_1200_H1\gradient_boosting.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_1200\PainX_1200_H1\lstm.keras and models\PainX_1200\PainX_1200_H1\lstm_scaler.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:29 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 1200 [H1] cargado exitosamente con clave 'PainX 1200_H1'.
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_1200\PainX_1200_M1\feature_info.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_1200\PainX_1200_M1\random_forest.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_1200\PainX_1200_M1\gradient_boosting.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_1200\PainX_1200_M1\lstm.keras and models\PainX_1200\PainX_1200_M1\lstm_scaler.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:29 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 1200 [M1] cargado exitosamente con clave 'PainX 1200_M1'.
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_1200\PainX_1200_M15\feature_info.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_1200\PainX_1200_M15\random_forest.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_1200\PainX_1200_M15\gradient_boosting.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_1200\PainX_1200_M15\lstm.keras and models\PainX_1200\PainX_1200_M15\lstm_scaler.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:29 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 1200 [M15] cargado exitosamente con clave 'PainX 1200_M15'.
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_1200\PainX_1200_M5\feature_info.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_1200\PainX_1200_M5\random_forest.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_1200\PainX_1200_M5\gradient_boosting.pkl
-2025-11-11 07:42:29 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_1200\PainX_1200_M5\lstm.keras and models\PainX_1200\PainX_1200_M5\lstm_scaler.pkl
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:30 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 1200 [M5] cargado exitosamente con clave 'PainX 1200_M5'.
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_400\PainX_400_H1\feature_info.pkl
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_400\PainX_400_H1\random_forest.pkl
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_400\PainX_400_H1\gradient_boosting.pkl
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_400\PainX_400_H1\lstm.keras and models\PainX_400\PainX_400_H1\lstm_scaler.pkl
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:30 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 400 [H1] cargado exitosamente con clave 'PainX 400_H1'.
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_400\PainX_400_M1\feature_info.pkl
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_400\PainX_400_M1\random_forest.pkl
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_400\PainX_400_M1\gradient_boosting.pkl
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_400\PainX_400_M1\lstm.keras and models\PainX_400\PainX_400_M1\lstm_scaler.pkl
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:30 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 400 [M1] cargado exitosamente con clave 'PainX 400_M1'.
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_400\PainX_400_M15\feature_info.pkl
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_400\PainX_400_M15\random_forest.pkl
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_400\PainX_400_M15\gradient_boosting.pkl
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_400\PainX_400_M15\lstm.keras and models\PainX_400\PainX_400_M15\lstm_scaler.pkl
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:30 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 400 [M15] cargado exitosamente con clave 'PainX 400_M15'.
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_400\PainX_400_M5\feature_info.pkl
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_400\PainX_400_M5\random_forest.pkl
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_400\PainX_400_M5\gradient_boosting.pkl
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_400\PainX_400_M5\lstm.keras and models\PainX_400\PainX_400_M5\lstm_scaler.pkl
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:30 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 400 [M5] cargado exitosamente con clave 'PainX 400_M5'.
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_600\PainX_600_H1\feature_info.pkl
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_600\PainX_600_H1\random_forest.pkl
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_600\PainX_600_H1\gradient_boosting.pkl
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_600\PainX_600_H1\lstm.keras and models\PainX_600\PainX_600_H1\lstm_scaler.pkl
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:30 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 600 [H1] cargado exitosamente con clave 'PainX 600_H1'.
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_600\PainX_600_M1\feature_info.pkl
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_600\PainX_600_M1\random_forest.pkl
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_600\PainX_600_M1\gradient_boosting.pkl
-2025-11-11 07:42:30 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_600\PainX_600_M1\lstm.keras and models\PainX_600\PainX_600_M1\lstm_scaler.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:31 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 600 [M1] cargado exitosamente con clave 'PainX 600_M1'.
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_600\PainX_600_M15\feature_info.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_600\PainX_600_M15\random_forest.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_600\PainX_600_M15\gradient_boosting.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_600\PainX_600_M15\lstm.keras and models\PainX_600\PainX_600_M15\lstm_scaler.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:31 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 600 [M15] cargado exitosamente con clave 'PainX 600_M15'.
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_600\PainX_600_M5\feature_info.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_600\PainX_600_M5\random_forest.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_600\PainX_600_M5\gradient_boosting.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_600\PainX_600_M5\lstm.keras and models\PainX_600\PainX_600_M5\lstm_scaler.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:31 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 600 [M5] cargado exitosamente con clave 'PainX 600_M5'.
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_800\PainX_800_H1\feature_info.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_800\PainX_800_H1\random_forest.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_800\PainX_800_H1\gradient_boosting.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_800\PainX_800_H1\lstm.keras and models\PainX_800\PainX_800_H1\lstm_scaler.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:31 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 800 [H1] cargado exitosamente con clave 'PainX 800_H1'.
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_800\PainX_800_M1\feature_info.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_800\PainX_800_M1\random_forest.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_800\PainX_800_M1\gradient_boosting.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_800\PainX_800_M1\lstm.keras and models\PainX_800\PainX_800_M1\lstm_scaler.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:31 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 800 [M1] cargado exitosamente con clave 'PainX 800_M1'.
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_800\PainX_800_M15\feature_info.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_800\PainX_800_M15\random_forest.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_800\PainX_800_M15\gradient_boosting.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_800\PainX_800_M15\lstm.keras and models\PainX_800\PainX_800_M15\lstm_scaler.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:31 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 800 [M15] cargado exitosamente con clave 'PainX 800_M15'.
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_800\PainX_800_M5\feature_info.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_800\PainX_800_M5\random_forest.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_800\PainX_800_M5\gradient_boosting.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_800\PainX_800_M5\lstm.keras and models\PainX_800\PainX_800_M5\lstm_scaler.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:31 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 800 [M5] cargado exitosamente con clave 'PainX 800_M5'.
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_999\PainX_999_H1\feature_info.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_999\PainX_999_H1\random_forest.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_999\PainX_999_H1\gradient_boosting.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_999\PainX_999_H1\lstm.keras and models\PainX_999\PainX_999_H1\lstm_scaler.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:31 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 999 [H1] cargado exitosamente con clave 'PainX 999_H1'.
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_999\PainX_999_M1\feature_info.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_999\PainX_999_M1\random_forest.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_999\PainX_999_M1\gradient_boosting.pkl
-2025-11-11 07:42:31 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:32 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_999\PainX_999_M1\lstm.keras and models\PainX_999\PainX_999_M1\lstm_scaler.pkl
-2025-11-11 07:42:32 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:32 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:32 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 999 [M1] cargado exitosamente con clave 'PainX 999_M1'.
-2025-11-11 07:42:32 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:32 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_999\PainX_999_M15\feature_info.pkl
-2025-11-11 07:42:32 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_999\PainX_999_M15\random_forest.pkl
-2025-11-11 07:42:32 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:32 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_999\PainX_999_M15\gradient_boosting.pkl
-2025-11-11 07:42:32 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:32 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_999\PainX_999_M15\lstm.keras and models\PainX_999\PainX_999_M15\lstm_scaler.pkl
-2025-11-11 07:42:32 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:32 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:32 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 999 [M15] cargado exitosamente con clave 'PainX 999_M15'.
-2025-11-11 07:42:32 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
-2025-11-11 07:42:32 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_999\PainX_999_M5\feature_info.pkl
-2025-11-11 07:42:32 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_999\PainX_999_M5\random_forest.pkl
-2025-11-11 07:42:32 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 116 features
-2025-11-11 07:42:32 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_999\PainX_999_M5\gradient_boosting.pkl
-2025-11-11 07:42:32 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 116 features
-2025-11-11 07:42:32 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_999\PainX_999_M5\lstm.keras and models\PainX_999\PainX_999_M5\lstm_scaler.pkl
-2025-11-11 07:42:32 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 116 features
-2025-11-11 07:42:32 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
-2025-11-11 07:42:32 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 999 [M5] cargado exitosamente con clave 'PainX 999_M5'.
-2025-11-11 07:42:32 | INFO     | ai_engine.market_analyzer:load_models - Carga completa. Se cargaron un total de 40 modelos especializados.
-2025-11-11 07:42:32 | INFO     | main_mt5:_initialize_components - Loaded pre-trained models
-2025-11-11 07:42:32 | INFO     | main_mt5:_initialize_components - Initializing signal generator...
-2025-11-11 07:42:32 | INFO     | signal_generator.signal_filter:__init__ - Signal Filter initialized
-2025-11-11 07:42:32 | INFO     | signal_generator.risk_manager:__init__ - Risk Manager inicializado con gestión de riesgo DINÁMICA basada en ATR.
-2025-11-11 07:42:32 | INFO     | signal_generator.risk_manager:__init__ - Multiplicadores: SL=1.5*ATR, TP1=3.0*ATR, TP2=5.0*ATR
-2025-11-11 07:42:32 | INFO     | signal_generator.risk_manager:__init__ - Lotaje DINÁMICO activado: Min=0.1, Max=1.0
-2025-11-11 07:42:32 | INFO     | signal_generator.signal_tracker:__init__ - Signal Tracker initialized - Min time: 30m, Max distance: 0.5%, Max age: 120m
-2025-11-11 07:42:32 | INFO     | signal_generator.signal_generator:__init__ - Signal Generator initialized
-2025-11-11 07:42:32 | INFO     | main_mt5:_initialize_components - Initializing Telegram bot...
-2025-11-11 07:42:33 | INFO     | telegram_bot.telegram_bot:_initialize_bot - Telegram bot initialized
-2025-11-11 07:42:33 | INFO     | main_mt5:_initialize_components - All components initialized successfully
-2025-11-11 07:42:33 | INFO     | telegram_bot.telegram_bot:test_connection - Connected to Telegram as @Willer_AI_Bot
-2025-11-11 07:42:34 | INFO     | main_mt5:start - Starting market data collection...
-2025-11-11 07:42:34 | INFO     | data_collector.mt5_market_data_manager:start - Starting MT5 Market Data Manager...
-2025-11-11 07:42:34 | INFO     | data_collector.mt5_market_data_manager:_fetch_initial_data - Loading initial historical data from local files...
-2025-11-11 07:42:34 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 49424 records for PainX 400 [1m] from historical_data/PainX 400/PainX 400_M1.csv
-2025-11-11 07:42:35 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 48521 records for PainX 400 [5m] from historical_data/PainX 400/PainX 400_M5.csv
-2025-11-11 07:42:35 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 49506 records for PainX 400 [15m] from historical_data/PainX 400/PainX 400_M15.csv
-2025-11-11 07:42:35 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 16199 records for PainX 400 [1h] from historical_data/PainX 400/PainX 400_H1.csv
-2025-11-11 07:42:35 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 49424 records for GainX 400 [1m] from historical_data/GainX 400/GainX 400_M1.csv
-2025-11-11 07:42:35 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 48519 records for GainX 400 [5m] from historical_data/GainX 400/GainX 400_M5.csv
-2025-11-11 07:42:35 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 49506 records for GainX 400 [15m] from historical_data/GainX 400/GainX 400_M15.csv
-2025-11-11 07:42:35 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 16199 records for GainX 400 [1h] from historical_data/GainX 400/GainX 400_H1.csv
-2025-11-11 07:42:35 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 49424 records for PainX 600 [1m] from historical_data/PainX 600/PainX 600_M1.csv
-2025-11-11 07:42:35 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 48520 records for PainX 600 [5m] from historical_data/PainX 600/PainX 600_M5.csv
-2025-11-11 07:42:35 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 47315 records for PainX 600 [15m] from historical_data/PainX 600/PainX 600_M15.csv
-2025-11-11 07:42:35 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 11834 records for PainX 600 [1h] from historical_data/PainX 600/PainX 600_H1.csv
-2025-11-11 07:42:36 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 49424 records for GainX 600 [1m] from historical_data/GainX 600/GainX 600_M1.csv
-2025-11-11 07:42:36 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 48519 records for GainX 600 [5m] from historical_data/GainX 600/GainX 600_M5.csv
-2025-11-11 07:42:36 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 47315 records for GainX 600 [15m] from historical_data/GainX 600/GainX 600_M15.csv
-2025-11-11 07:42:36 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 11834 records for GainX 600 [1h] from historical_data/GainX 600/GainX 600_H1.csv
-2025-11-11 07:42:36 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 49424 records for PainX 800 [1m] from historical_data/PainX 800/PainX 800_M1.csv
-2025-11-11 07:42:36 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 48520 records for PainX 800 [5m] from historical_data/PainX 800/PainX 800_M5.csv
-2025-11-11 07:42:36 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 49506 records for PainX 800 [15m] from historical_data/PainX 800/PainX 800_M15.csv
-2025-11-11 07:42:36 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 16199 records for PainX 800 [1h] from historical_data/PainX 800/PainX 800_H1.csv
-2025-11-11 07:42:36 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 49424 records for GainX 800 [1m] from historical_data/GainX 800/GainX 800_M1.csv
-2025-11-11 07:42:36 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 48519 records for GainX 800 [5m] from historical_data/GainX 800/GainX 800_M5.csv
-2025-11-11 07:42:36 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 49506 records for GainX 800 [15m] from historical_data/GainX 800/GainX 800_M15.csv
-2025-11-11 07:42:36 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 16199 records for GainX 800 [1h] from historical_data/GainX 800/GainX 800_H1.csv
-2025-11-11 07:42:37 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 49424 records for PainX 999 [1m] from historical_data/PainX 999/PainX 999_M1.csv
-2025-11-11 07:42:37 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 48520 records for PainX 999 [5m] from historical_data/PainX 999/PainX 999_M5.csv
-2025-11-11 07:42:37 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 47315 records for PainX 999 [15m] from historical_data/PainX 999/PainX 999_M15.csv
-2025-11-11 07:42:37 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 11834 records for PainX 999 [1h] from historical_data/PainX 999/PainX 999_H1.csv
-2025-11-11 07:42:37 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 49424 records for GainX 999 [1m] from historical_data/GainX 999/GainX 999_M1.csv
-2025-11-11 07:42:37 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 48519 records for GainX 999 [5m] from historical_data/GainX 999/GainX 999_M5.csv
-2025-11-11 07:42:37 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 47315 records for GainX 999 [15m] from historical_data/GainX 999/GainX 999_M15.csv
-2025-11-11 07:42:37 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 11834 records for GainX 999 [1h] from historical_data/GainX 999/GainX 999_H1.csv
-2025-11-11 07:42:37 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 49424 records for PainX 1200 [1m] from historical_data/PainX 1200/PainX 1200_M1.csv
-2025-11-11 07:42:37 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 48520 records for PainX 1200 [5m] from historical_data/PainX 1200/PainX 1200_M5.csv
-2025-11-11 07:42:37 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 49506 records for PainX 1200 [15m] from historical_data/PainX 1200/PainX 1200_M15.csv
-2025-11-11 07:42:37 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 16199 records for PainX 1200 [1h] from historical_data/PainX 1200/PainX 1200_H1.csv
-2025-11-11 07:42:38 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 49424 records for GainX 1200 [1m] from historical_data/GainX 1200/GainX 1200_M1.csv
-2025-11-11 07:42:38 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 48519 records for GainX 1200 [5m] from historical_data/GainX 1200/GainX 1200_M5.csv
-2025-11-11 07:42:38 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 49506 records for GainX 1200 [15m] from historical_data/GainX 1200/GainX 1200_M15.csv
-2025-11-11 07:42:38 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 16199 records for GainX 1200 [1h] from historical_data/GainX 1200/GainX 1200_H1.csv
-2025-11-11 07:42:38 | INFO     | data_collector.mt5_market_data_manager:_fetch_initial_data - Initial data loading process completed.
-2025-11-11 07:42:38 | INFO     | data_collector.mt5_market_data_manager:start - MT5 Market Data Manager started for 10 symbols
-2025-11-11 07:42:38 | INFO     | main_mt5:start - Waiting for initial data collection...
-2025-11-11 07:43:08 | INFO     | main_mt5:start - Starting analysis loop...
-2025-11-11 07:43:08 | INFO     | main_mt5:_run_main_loop - Main loop started
-2025-11-11 07:43:08 | INFO     | main_mt5:_run_main_loop - ============================== Starting New Analysis Cycle ==============================
-2025-11-11 07:43:08 | INFO     | main_mt5:_analyze_and_execute - Analyzing PainX 400...
-2025-11-11 07:43:08 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 200 data points.
-2025-11-11 07:43:08 | INFO     | ai_engine.feature_engineering:create_sequences - Created 180 sequences.
-2025-11-11 07:43:09 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 200 data points.
-2025-11-11 07:43:09 | INFO     | ai_engine.feature_engineering:create_sequences - Created 180 sequences.
-2025-11-11 07:43:09 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 200 data points.
-2025-11-11 07:43:09 | INFO     | ai_engine.feature_engineering:create_sequences - Created 180 sequences.
-WARNING:tensorflow:5 out of the last 13 calls to <function TensorFlowTrainer.make_predict_function.<locals>.one_step_on_data_distributed at 0x00000288C447BEC0> triggered tf.function retracing. Tracing is expensive and the excessive number of tracings could be due to (1) creating @tf.function repeatedly in a loop, (2) passing tensors with different shapes, (3) passing Python objects instead of tensors. For (1), please define your @tf.function outside of the loop. For (2), @tf.function has reduce_retracing=True option that can avoid unnecessary retracing. For (3), please refer to https://www.tensorflow.org/guide/function#controlling_retracing and https://www.tensorflow.org/api_docs/python/tf/function for  more details.
-2025-11-11 07:43:10 | INFO     | signal_generator.signal_generator:generate_signal - Analysis result for PainX 400: Signal=HOLD, Confidence=60.00%
-2025-11-11 07:43:10 | INFO     | signal_generator.signal_generator:generate_signal - PainX 400: ⏸️  Primary signal is HOLD, skipping signal generation
-2025-11-11 07:43:10 | INFO     | main_mt5:_analyze_and_execute - Analysis for PainX 400 complete. No signal generated (HOLD).
-2025-11-11 07:43:10 | INFO     | main_mt5:_analyze_and_execute - Analyzing GainX 400...
-2025-11-11 07:43:10 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 200 data points.
-2025-11-11 07:43:10 | INFO     | ai_engine.feature_engineering:create_sequences - Created 180 sequences.
-WARNING:tensorflow:5 out of the last 13 calls to <function TensorFlowTrainer.make_predict_function.<locals>.one_step_on_data_distributed at 0x00000288C4479120> triggered tf.function retracing. Tracing is expensive and the excessive number of tracings could be due to (1) creating @tf.function repeatedly in a loop, (2) passing tensors with different shapes, (3) passing Python objects instead of tensors. For (1), please define your @tf.function outside of the loop. For (2), @tf.function has reduce_retracing=True option that can avoid unnecessary retracing. For (3), please refer to https://www.tensorflow.org/guide/function#controlling_retracing and https://www.tensorflow.org/api_docs/python/tf/function for  more details.
-2025-11-11 07:43:11 | INFO     | signal_generator.signal_generator:generate_signal - Analysis result for GainX 400: Signal=SELL, Confidence=84.86%
-2025-11-11 07:43:11 | WARNING  | signal_generator.signal_generator:_validate_signal_direction - GainX 400: ❌ GainX index - Only BUY signals allowed (spikes are upward). Blocking SELL signal.
-2025-11-11 07:43:11 | INFO     | main_mt5:_analyze_and_execute - Analysis for GainX 400 complete. No signal generated (HOLD).
-2025-11-11 07:43:11 | INFO     | main_mt5:_analyze_and_execute - Analyzing PainX 600...
-2025-11-11 07:43:11 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 200 data points.
-2025-11-11 07:43:11 | INFO     | ai_engine.feature_engineering:create_sequences - Created 180 sequences.
-2025-11-11 07:43:12 | INFO     | signal_generator.signal_generator:generate_signal - Analysis result for PainX 600: Signal=SELL, Confidence=85.11%
-2025-11-11 07:43:12 | INFO     | signal_generator.signal_generator:_validate_signal_direction - PainX 600: ✅ PainX index - SELL signal is valid (spike direction)
-2025-11-11 07:43:12 | INFO     | signal_generator.signal_tracker:should_send_signal - PainX 600: No previous signals, OK to send
-2025-11-11 07:43:12 | INFO     | signal_generator.signal_generator:generate_signal - PainX 600: ✅ Passed confidence threshold (Confidence: 85.11% >= 80.00%)
-2025-11-11 07:43:12 | WARNING  | signal_generator.signal_filter:should_notify - PainX 600: ❌ Insufficient timeframe confluence (25.0% < 50%)
-2025-11-11 07:43:12 | WARNING  | signal_generator.signal_generator:generate_signal - PainX 600: ❌ Signal filtered out by quality filters
-2025-11-11 07:43:12 | INFO     | main_mt5:_analyze_and_execute - Analysis for PainX 600 complete. No signal generated (HOLD).
-2025-11-11 07:43:12 | INFO     | main_mt5:_analyze_and_execute - Analyzing GainX 600...
-2025-11-11 07:43:12 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 200 data points.
-2025-11-11 07:43:12 | INFO     | ai_engine.feature_engineering:create_sequences - Created 180 sequences.
-2025-11-11 07:43:13 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 200 data points.
-2025-11-11 07:43:13 | INFO     | ai_engine.feature_engineering:create_sequences - Created 180 sequences.
-2025-11-11 07:43:13 | INFO     | signal_generator.signal_generator:generate_signal - Analysis result for GainX 600: Signal=HOLD, Confidence=60.00%
-2025-11-11 07:43:13 | INFO     | signal_generator.signal_generator:generate_signal - GainX 600: ⏸️  Primary signal is HOLD, skipping signal generation
-2025-11-11 07:43:13 | INFO     | main_mt5:_analyze_and_execute - Analysis for GainX 600 complete. No signal generated (HOLD).
-2025-11-11 07:43:14 | INFO     | main_mt5:_analyze_and_execute - Analyzing PainX 800...
-2025-11-11 07:43:14 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 200 data points.
-2025-11-11 07:43:14 | INFO     | ai_engine.feature_engineering:create_sequences - Created 180 sequences.
-2025-11-11 07:43:14 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 200 data points.
-2025-11-11 07:43:14 | INFO     | ai_engine.feature_engineering:create_sequences - Created 180 sequences.
-2025-11-11 07:43:15 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 200 data points.
-2025-11-11 07:43:15 | INFO     | ai_engine.feature_engineering:create_sequences - Created 180 sequences.
-2025-11-11 07:43:15 | INFO     | signal_generator.signal_generator:generate_signal - Analysis result for PainX 800: Signal=BUY, Confidence=84.72%
-2025-11-11 07:43:15 | WARNING  | signal_generator.signal_generator:_validate_signal_direction - PainX 800: ❌ PainX index - Only SELL signals allowed (spikes are downward). Blocking BUY signal.
-2025-11-11 07:43:15 | INFO     | main_mt5:_analyze_and_execute - Analysis for PainX 800 complete. No signal generated (HOLD).
-2025-11-11 07:43:15 | INFO     | main_mt5:_analyze_and_execute - Analyzing GainX 800...
-2025-11-11 07:43:16 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 200 data points.
-2025-11-11 07:43:16 | INFO     | ai_engine.feature_engineering:create_sequences - Created 180 sequences.
-2025-11-11 07:43:16 | INFO     | signal_generator.signal_generator:generate_signal - Analysis result for GainX 800: Signal=HOLD, Confidence=60.00%
-2025-11-11 07:43:16 | INFO     | signal_generator.signal_generator:generate_signal - GainX 800: ⏸️  Primary signal is HOLD, skipping signal generation
-2025-11-11 07:43:16 | INFO     | main_mt5:_analyze_and_execute - Analysis for GainX 800 complete. No signal generated (HOLD).
-2025-11-11 07:43:16 | INFO     | main_mt5:_analyze_and_execute - Analyzing PainX 999...
-2025-11-11 07:43:16 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 200 data points.
-2025-11-11 07:43:16 | INFO     | ai_engine.feature_engineering:create_sequences - Created 180 sequences.
-2025-11-11 07:43:17 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 200 data points.
-2025-11-11 07:43:17 | INFO     | ai_engine.feature_engineering:create_sequences - Created 180 sequences.
-2025-11-11 07:43:17 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 200 data points.
-2025-11-11 07:43:17 | INFO     | ai_engine.feature_engineering:create_sequences - Created 180 sequences.
-2025-11-11 07:43:18 | INFO     | signal_generator.signal_generator:generate_signal - Analysis result for PainX 999: Signal=BUY, Confidence=85.69%
-2025-11-11 07:43:18 | WARNING  | signal_generator.signal_generator:_validate_signal_direction - PainX 999: ❌ PainX index - Only SELL signals allowed (spikes are downward). Blocking BUY signal.
-2025-11-11 07:43:18 | INFO     | main_mt5:_analyze_and_execute - Analysis for PainX 999 complete. No signal generated (HOLD).
-2025-11-11 07:43:18 | INFO     | main_mt5:_analyze_and_execute - Analyzing GainX 999...
-2025-11-11 07:43:18 | INFO     | signal_generator.signal_generator:generate_signal - Analysis result for GainX 999: Signal=HOLD, Confidence=60.00%
-2025-11-11 07:43:18 | INFO     | signal_generator.signal_generator:generate_signal - GainX 999: ⏸️  Primary signal is HOLD, skipping signal generation
-2025-11-11 07:43:18 | INFO     | main_mt5:_analyze_and_execute - Analysis for GainX 999 complete. No signal generated (HOLD).
-2025-11-11 07:43:19 | INFO     | main_mt5:_analyze_and_execute - Analyzing PainX 1200...
-2025-11-11 07:43:19 | INFO     | signal_generator.signal_generator:generate_signal - Analysis result for PainX 1200: Signal=HOLD, Confidence=60.00%
-2025-11-11 07:43:19 | INFO     | signal_generator.signal_generator:generate_signal - PainX 1200: ⏸️  Primary signal is HOLD, skipping signal generation
-2025-11-11 07:43:19 | INFO     | main_mt5:_analyze_and_execute - Analysis for PainX 1200 complete. No signal generated (HOLD).
-2025-11-11 07:43:19 | INFO     | main_mt5:_analyze_and_execute - Analyzing GainX 1200...
-2025-11-11 07:43:20 | INFO     | signal_generator.signal_generator:generate_signal - Analysis result for GainX 1200: Signal=HOLD, Confidence=60.00%
-2025-11-11 07:43:20 | INFO     | signal_generator.signal_generator:generate_signal - GainX 1200: ⏸️  Primary signal is HOLD, skipping signal generation
-2025-11-11 07:43:20 | INFO     | main_mt5:_analyze_and_execute - Analysis for GainX 1200 complete. No signal generated (HOLD).
-2025-11-11 07:43:20 | INFO     | main_mt5:_run_main_loop - ============================== Analysis Cycle Completed ================================
-2025-11-11 07:43:20 | INFO     | main_mt5:_run_main_loop - Waiting for 60 seconds until next cycle...
+2025-11-13 19:10:26 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_1200\GainX_1200_H1\lstm.keras and models\GainX_1200\GainX_1200_H1\lstm_scaler.pkl
+2025-11-13 19:10:26 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:26 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:26 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 1200 [H1] cargado exitosamente con clave 'GainX 1200_H1'.
+2025-11-13 19:10:26 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:26 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_1200\GainX_1200_H4\feature_info.pkl
+2025-11-13 19:10:26 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_1200\GainX_1200_H4\random_forest.pkl
+2025-11-13 19:10:26 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:26 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_1200\GainX_1200_H4\gradient_boosting.pkl
+2025-11-13 19:10:26 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:26 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_1200\GainX_1200_H4\lstm.keras and models\GainX_1200\GainX_1200_H4\lstm_scaler.pkl
+2025-11-13 19:10:26 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:26 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:26 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 1200 [H4] cargado exitosamente con clave 'GainX 1200_H4'.
+2025-11-13 19:10:26 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:27 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_1200\GainX_1200_M1\feature_info.pkl
+2025-11-13 19:10:27 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_1200\GainX_1200_M1\random_forest.pkl
+2025-11-13 19:10:27 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:27 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_1200\GainX_1200_M1\gradient_boosting.pkl
+2025-11-13 19:10:27 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:27 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_1200\GainX_1200_M1\lstm.keras and models\GainX_1200\GainX_1200_M1\lstm_scaler.pkl
+2025-11-13 19:10:27 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:27 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:27 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 1200 [M1] cargado exitosamente con clave 'GainX 1200_M1'.
+2025-11-13 19:10:27 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:27 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_1200\GainX_1200_M15\feature_info.pkl
+2025-11-13 19:10:27 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_1200\GainX_1200_M15\random_forest.pkl
+2025-11-13 19:10:27 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:27 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_1200\GainX_1200_M15\gradient_boosting.pkl
+2025-11-13 19:10:27 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:27 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_1200\GainX_1200_M15\lstm.keras and models\GainX_1200\GainX_1200_M15\lstm_scaler.pkl
+2025-11-13 19:10:27 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:27 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:27 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 1200 [M15] cargado exitosamente con clave 'GainX 1200_M15'.
+2025-11-13 19:10:27 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:28 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_1200\GainX_1200_M5\feature_info.pkl
+2025-11-13 19:10:28 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_1200\GainX_1200_M5\random_forest.pkl
+2025-11-13 19:10:28 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:28 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_1200\GainX_1200_M5\gradient_boosting.pkl
+2025-11-13 19:10:28 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:28 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_1200\GainX_1200_M5\lstm.keras and models\GainX_1200\GainX_1200_M5\lstm_scaler.pkl
+2025-11-13 19:10:28 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:28 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:28 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 1200 [M5] cargado exitosamente con clave 'GainX 1200_M5'.
+2025-11-13 19:10:28 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:28 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_400\GainX_400_H1\feature_info.pkl
+2025-11-13 19:10:28 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_400\GainX_400_H1\random_forest.pkl
+2025-11-13 19:10:28 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:28 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_400\GainX_400_H1\gradient_boosting.pkl
+2025-11-13 19:10:28 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:28 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_400\GainX_400_H1\lstm.keras and models\GainX_400\GainX_400_H1\lstm_scaler.pkl
+2025-11-13 19:10:28 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:29 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:29 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 400 [H1] cargado exitosamente con clave 'GainX 400_H1'.
+2025-11-13 19:10:29 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:29 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_400\GainX_400_H4\feature_info.pkl
+2025-11-13 19:10:29 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_400\GainX_400_H4\random_forest.pkl
+2025-11-13 19:10:29 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:29 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_400\GainX_400_H4\gradient_boosting.pkl
+2025-11-13 19:10:29 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:31 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_400\GainX_400_H4\lstm.keras and models\GainX_400\GainX_400_H4\lstm_scaler.pkl
+2025-11-13 19:10:31 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:31 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:31 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 400 [H4] cargado exitosamente con clave 'GainX 400_H4'.
+2025-11-13 19:10:31 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:31 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_400\GainX_400_M1\feature_info.pkl
+2025-11-13 19:10:32 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_400\GainX_400_M1\random_forest.pkl
+2025-11-13 19:10:32 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:32 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_400\GainX_400_M1\gradient_boosting.pkl
+2025-11-13 19:10:32 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:32 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_400\GainX_400_M1\lstm.keras and models\GainX_400\GainX_400_M1\lstm_scaler.pkl
+2025-11-13 19:10:32 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:32 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:32 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 400 [M1] cargado exitosamente con clave 'GainX 400_M1'.
+2025-11-13 19:10:32 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:32 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_400\GainX_400_M15\feature_info.pkl
+2025-11-13 19:10:32 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_400\GainX_400_M15\random_forest.pkl
+2025-11-13 19:10:32 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:32 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_400\GainX_400_M15\gradient_boosting.pkl
+2025-11-13 19:10:32 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:32 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_400\GainX_400_M15\lstm.keras and models\GainX_400\GainX_400_M15\lstm_scaler.pkl
+2025-11-13 19:10:32 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:32 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:32 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 400 [M15] cargado exitosamente con clave 'GainX 400_M15'.
+2025-11-13 19:10:32 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:32 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_400\GainX_400_M5\feature_info.pkl
+2025-11-13 19:10:32 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_400\GainX_400_M5\random_forest.pkl
+2025-11-13 19:10:32 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:32 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_400\GainX_400_M5\gradient_boosting.pkl
+2025-11-13 19:10:32 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:33 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_400\GainX_400_M5\lstm.keras and models\GainX_400\GainX_400_M5\lstm_scaler.pkl
+2025-11-13 19:10:33 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:33 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:33 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 400 [M5] cargado exitosamente con clave 'GainX 400_M5'.
+2025-11-13 19:10:33 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:33 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_600\GainX_600_H1\feature_info.pkl
+2025-11-13 19:10:33 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_600\GainX_600_H1\random_forest.pkl
+2025-11-13 19:10:33 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:33 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_600\GainX_600_H1\gradient_boosting.pkl
+2025-11-13 19:10:33 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:33 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_600\GainX_600_H1\lstm.keras and models\GainX_600\GainX_600_H1\lstm_scaler.pkl
+2025-11-13 19:10:33 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:33 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:33 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 600 [H1] cargado exitosamente con clave 'GainX 600_H1'.
+2025-11-13 19:10:33 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:33 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_600\GainX_600_H4\feature_info.pkl
+2025-11-13 19:10:33 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_600\GainX_600_H4\random_forest.pkl
+2025-11-13 19:10:33 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:33 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_600\GainX_600_H4\gradient_boosting.pkl
+2025-11-13 19:10:33 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:33 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_600\GainX_600_H4\lstm.keras and models\GainX_600\GainX_600_H4\lstm_scaler.pkl
+2025-11-13 19:10:33 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:33 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:33 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 600 [H4] cargado exitosamente con clave 'GainX 600_H4'.
+2025-11-13 19:10:33 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:33 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_600\GainX_600_M1\feature_info.pkl
+2025-11-13 19:10:34 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_600\GainX_600_M1\random_forest.pkl
+2025-11-13 19:10:34 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:34 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_600\GainX_600_M1\gradient_boosting.pkl
+2025-11-13 19:10:34 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:34 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_600\GainX_600_M1\lstm.keras and models\GainX_600\GainX_600_M1\lstm_scaler.pkl
+2025-11-13 19:10:34 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:34 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:34 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 600 [M1] cargado exitosamente con clave 'GainX 600_M1'.
+2025-11-13 19:10:34 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:34 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_600\GainX_600_M15\feature_info.pkl
+2025-11-13 19:10:34 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_600\GainX_600_M15\random_forest.pkl
+2025-11-13 19:10:34 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:34 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_600\GainX_600_M15\gradient_boosting.pkl
+2025-11-13 19:10:34 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:34 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_600\GainX_600_M15\lstm.keras and models\GainX_600\GainX_600_M15\lstm_scaler.pkl
+2025-11-13 19:10:34 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:34 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:34 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 600 [M15] cargado exitosamente con clave 'GainX 600_M15'.
+2025-11-13 19:10:34 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:34 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_600\GainX_600_M5\feature_info.pkl
+2025-11-13 19:10:34 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_600\GainX_600_M5\random_forest.pkl
+2025-11-13 19:10:34 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:34 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_600\GainX_600_M5\gradient_boosting.pkl
+2025-11-13 19:10:34 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_600\GainX_600_M5\lstm.keras and models\GainX_600\GainX_600_M5\lstm_scaler.pkl
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:35 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 600 [M5] cargado exitosamente con clave 'GainX 600_M5'.
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_800\GainX_800_H1\feature_info.pkl
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_800\GainX_800_H1\random_forest.pkl
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_800\GainX_800_H1\gradient_boosting.pkl
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_800\GainX_800_H1\lstm.keras and models\GainX_800\GainX_800_H1\lstm_scaler.pkl
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:35 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 800 [H1] cargado exitosamente con clave 'GainX 800_H1'.
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_800\GainX_800_H4\feature_info.pkl
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_800\GainX_800_H4\random_forest.pkl
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_800\GainX_800_H4\gradient_boosting.pkl
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_800\GainX_800_H4\lstm.keras and models\GainX_800\GainX_800_H4\lstm_scaler.pkl
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:35 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 800 [H4] cargado exitosamente con clave 'GainX 800_H4'.
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_800\GainX_800_M1\feature_info.pkl
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_800\GainX_800_M1\random_forest.pkl
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_800\GainX_800_M1\gradient_boosting.pkl
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_800\GainX_800_M1\lstm.keras and models\GainX_800\GainX_800_M1\lstm_scaler.pkl
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:35 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 800 [M1] cargado exitosamente con clave 'GainX 800_M1'.
+2025-11-13 19:10:35 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:36 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_800\GainX_800_M15\feature_info.pkl
+2025-11-13 19:10:36 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_800\GainX_800_M15\random_forest.pkl
+2025-11-13 19:10:36 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:36 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_800\GainX_800_M15\gradient_boosting.pkl
+2025-11-13 19:10:36 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:36 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_800\GainX_800_M15\lstm.keras and models\GainX_800\GainX_800_M15\lstm_scaler.pkl
+2025-11-13 19:10:36 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:36 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:36 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 800 [M15] cargado exitosamente con clave 'GainX 800_M15'.
+2025-11-13 19:10:36 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:36 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_800\GainX_800_M5\feature_info.pkl
+2025-11-13 19:10:36 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_800\GainX_800_M5\random_forest.pkl
+2025-11-13 19:10:36 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:36 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_800\GainX_800_M5\gradient_boosting.pkl
+2025-11-13 19:10:36 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:36 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_800\GainX_800_M5\lstm.keras and models\GainX_800\GainX_800_M5\lstm_scaler.pkl
+2025-11-13 19:10:36 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:36 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:36 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 800 [M5] cargado exitosamente con clave 'GainX 800_M5'.
+2025-11-13 19:10:36 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:36 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_999\GainX_999_H1\feature_info.pkl
+2025-11-13 19:10:36 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_999\GainX_999_H1\random_forest.pkl
+2025-11-13 19:10:36 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:36 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_999\GainX_999_H1\gradient_boosting.pkl
+2025-11-13 19:10:36 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:37 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_999\GainX_999_H1\lstm.keras and models\GainX_999\GainX_999_H1\lstm_scaler.pkl
+2025-11-13 19:10:41 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:41 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:41 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 999 [H1] cargado exitosamente con clave 'GainX 999_H1'.
+2025-11-13 19:10:41 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:41 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_999\GainX_999_H4\feature_info.pkl
+2025-11-13 19:10:41 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_999\GainX_999_H4\random_forest.pkl
+2025-11-13 19:10:41 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:41 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_999\GainX_999_H4\gradient_boosting.pkl
+2025-11-13 19:10:41 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:42 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_999\GainX_999_H4\lstm.keras and models\GainX_999\GainX_999_H4\lstm_scaler.pkl
+2025-11-13 19:10:42 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:42 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:42 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 999 [H4] cargado exitosamente con clave 'GainX 999_H4'.
+2025-11-13 19:10:42 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:42 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_999\GainX_999_M1\feature_info.pkl
+2025-11-13 19:10:42 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_999\GainX_999_M1\random_forest.pkl
+2025-11-13 19:10:42 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:42 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_999\GainX_999_M1\gradient_boosting.pkl
+2025-11-13 19:10:42 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:42 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_999\GainX_999_M1\lstm.keras and models\GainX_999\GainX_999_M1\lstm_scaler.pkl
+2025-11-13 19:10:42 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:42 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:42 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 999 [M1] cargado exitosamente con clave 'GainX 999_M1'.
+2025-11-13 19:10:42 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:42 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_999\GainX_999_M15\feature_info.pkl
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_999\GainX_999_M15\random_forest.pkl
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_999\GainX_999_M15\gradient_boosting.pkl
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_999\GainX_999_M15\lstm.keras and models\GainX_999\GainX_999_M15\lstm_scaler.pkl
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:43 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 999 [M15] cargado exitosamente con clave 'GainX 999_M15'.
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\GainX_999\GainX_999_M5\feature_info.pkl
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\GainX_999\GainX_999_M5\random_forest.pkl
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\GainX_999\GainX_999_M5\gradient_boosting.pkl
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\GainX_999\GainX_999_M5\lstm.keras and models\GainX_999\GainX_999_M5\lstm_scaler.pkl
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:43 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para GainX 999 [M5] cargado exitosamente con clave 'GainX 999_M5'.
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_1200\PainX_1200_H1\feature_info.pkl
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_1200\PainX_1200_H1\random_forest.pkl
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_1200\PainX_1200_H1\gradient_boosting.pkl
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_1200\PainX_1200_H1\lstm.keras and models\PainX_1200\PainX_1200_H1\lstm_scaler.pkl
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:43 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 1200 [H1] cargado exitosamente con clave 'PainX 1200_H1'.
+2025-11-13 19:10:43 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:44 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_1200\PainX_1200_H4\feature_info.pkl
+2025-11-13 19:10:44 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_1200\PainX_1200_H4\random_forest.pkl
+2025-11-13 19:10:44 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:44 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_1200\PainX_1200_H4\gradient_boosting.pkl
+2025-11-13 19:10:44 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:44 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_1200\PainX_1200_H4\lstm.keras and models\PainX_1200\PainX_1200_H4\lstm_scaler.pkl
+2025-11-13 19:10:44 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:44 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:44 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 1200 [H4] cargado exitosamente con clave 'PainX 1200_H4'.
+2025-11-13 19:10:44 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:44 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_1200\PainX_1200_M1\feature_info.pkl
+2025-11-13 19:10:44 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_1200\PainX_1200_M1\random_forest.pkl
+2025-11-13 19:10:44 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:44 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_1200\PainX_1200_M1\gradient_boosting.pkl
+2025-11-13 19:10:44 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:44 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_1200\PainX_1200_M1\lstm.keras and models\PainX_1200\PainX_1200_M1\lstm_scaler.pkl
+2025-11-13 19:10:44 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:44 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:44 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 1200 [M1] cargado exitosamente con clave 'PainX 1200_M1'.
+2025-11-13 19:10:44 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:44 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_1200\PainX_1200_M15\feature_info.pkl
+2025-11-13 19:10:45 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_1200\PainX_1200_M15\random_forest.pkl
+2025-11-13 19:10:45 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:45 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_1200\PainX_1200_M15\gradient_boosting.pkl
+2025-11-13 19:10:45 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:45 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_1200\PainX_1200_M15\lstm.keras and models\PainX_1200\PainX_1200_M15\lstm_scaler.pkl
+2025-11-13 19:10:45 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:45 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:45 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 1200 [M15] cargado exitosamente con clave 'PainX 1200_M15'.
+2025-11-13 19:10:45 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:45 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_1200\PainX_1200_M5\feature_info.pkl
+2025-11-13 19:10:45 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_1200\PainX_1200_M5\random_forest.pkl
+2025-11-13 19:10:45 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:45 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_1200\PainX_1200_M5\gradient_boosting.pkl
+2025-11-13 19:10:45 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:45 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_1200\PainX_1200_M5\lstm.keras and models\PainX_1200\PainX_1200_M5\lstm_scaler.pkl
+2025-11-13 19:10:45 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:45 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:45 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 1200 [M5] cargado exitosamente con clave 'PainX 1200_M5'.
+2025-11-13 19:10:45 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:45 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_400\PainX_400_H1\feature_info.pkl
+2025-11-13 19:10:45 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_400\PainX_400_H1\random_forest.pkl
+2025-11-13 19:10:45 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:45 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_400\PainX_400_H1\gradient_boosting.pkl
+2025-11-13 19:10:45 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_400\PainX_400_H1\lstm.keras and models\PainX_400\PainX_400_H1\lstm_scaler.pkl
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:46 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 400 [H1] cargado exitosamente con clave 'PainX 400_H1'.
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_400\PainX_400_H4\feature_info.pkl
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_400\PainX_400_H4\random_forest.pkl
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_400\PainX_400_H4\gradient_boosting.pkl
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_400\PainX_400_H4\lstm.keras and models\PainX_400\PainX_400_H4\lstm_scaler.pkl
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:46 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 400 [H4] cargado exitosamente con clave 'PainX 400_H4'.
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_400\PainX_400_M1\feature_info.pkl
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_400\PainX_400_M1\random_forest.pkl
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_400\PainX_400_M1\gradient_boosting.pkl
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_400\PainX_400_M1\lstm.keras and models\PainX_400\PainX_400_M1\lstm_scaler.pkl
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:46 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 400 [M1] cargado exitosamente con clave 'PainX 400_M1'.
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_400\PainX_400_M15\feature_info.pkl
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_400\PainX_400_M15\random_forest.pkl
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_400\PainX_400_M15\gradient_boosting.pkl
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_400\PainX_400_M15\lstm.keras and models\PainX_400\PainX_400_M15\lstm_scaler.pkl
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:46 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 400 [M15] cargado exitosamente con clave 'PainX 400_M15'.
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:46 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_400\PainX_400_M5\feature_info.pkl
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_400\PainX_400_M5\random_forest.pkl
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_400\PainX_400_M5\gradient_boosting.pkl
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_400\PainX_400_M5\lstm.keras and models\PainX_400\PainX_400_M5\lstm_scaler.pkl
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:47 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 400 [M5] cargado exitosamente con clave 'PainX 400_M5'.
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_600\PainX_600_H1\feature_info.pkl
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_600\PainX_600_H1\random_forest.pkl
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_600\PainX_600_H1\gradient_boosting.pkl
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_600\PainX_600_H1\lstm.keras and models\PainX_600\PainX_600_H1\lstm_scaler.pkl
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:47 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 600 [H1] cargado exitosamente con clave 'PainX 600_H1'.
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_600\PainX_600_H4\feature_info.pkl
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_600\PainX_600_H4\random_forest.pkl
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_600\PainX_600_H4\gradient_boosting.pkl
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_600\PainX_600_H4\lstm.keras and models\PainX_600\PainX_600_H4\lstm_scaler.pkl
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:47 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 600 [H4] cargado exitosamente con clave 'PainX 600_H4'.
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:47 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_600\PainX_600_M1\feature_info.pkl
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_600\PainX_600_M1\random_forest.pkl
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_600\PainX_600_M1\gradient_boosting.pkl
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_600\PainX_600_M1\lstm.keras and models\PainX_600\PainX_600_M1\lstm_scaler.pkl
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:48 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 600 [M1] cargado exitosamente con clave 'PainX 600_M1'.
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_600\PainX_600_M15\feature_info.pkl
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_600\PainX_600_M15\random_forest.pkl
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_600\PainX_600_M15\gradient_boosting.pkl
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_600\PainX_600_M15\lstm.keras and models\PainX_600\PainX_600_M15\lstm_scaler.pkl
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:48 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 600 [M15] cargado exitosamente con clave 'PainX 600_M15'.
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_600\PainX_600_M5\feature_info.pkl
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_600\PainX_600_M5\random_forest.pkl
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_600\PainX_600_M5\gradient_boosting.pkl
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_600\PainX_600_M5\lstm.keras and models\PainX_600\PainX_600_M5\lstm_scaler.pkl
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:48 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 600 [M5] cargado exitosamente con clave 'PainX 600_M5'.
+2025-11-13 19:10:48 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_800\PainX_800_H1\feature_info.pkl
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_800\PainX_800_H1\random_forest.pkl
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_800\PainX_800_H1\gradient_boosting.pkl
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_800\PainX_800_H1\lstm.keras and models\PainX_800\PainX_800_H1\lstm_scaler.pkl
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:49 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 800 [H1] cargado exitosamente con clave 'PainX 800_H1'.
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_800\PainX_800_H4\feature_info.pkl
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_800\PainX_800_H4\random_forest.pkl
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_800\PainX_800_H4\gradient_boosting.pkl
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_800\PainX_800_H4\lstm.keras and models\PainX_800\PainX_800_H4\lstm_scaler.pkl
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:49 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 800 [H4] cargado exitosamente con clave 'PainX 800_H4'.
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_800\PainX_800_M1\feature_info.pkl
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_800\PainX_800_M1\random_forest.pkl
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_800\PainX_800_M1\gradient_boosting.pkl
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_800\PainX_800_M1\lstm.keras and models\PainX_800\PainX_800_M1\lstm_scaler.pkl
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:49 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 800 [M1] cargado exitosamente con clave 'PainX 800_M1'.
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:49 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_800\PainX_800_M15\feature_info.pkl
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_800\PainX_800_M15\random_forest.pkl
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_800\PainX_800_M15\gradient_boosting.pkl
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_800\PainX_800_M15\lstm.keras and models\PainX_800\PainX_800_M15\lstm_scaler.pkl
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:50 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 800 [M15] cargado exitosamente con clave 'PainX 800_M15'.
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_800\PainX_800_M5\feature_info.pkl
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_800\PainX_800_M5\random_forest.pkl
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_800\PainX_800_M5\gradient_boosting.pkl
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_800\PainX_800_M5\lstm.keras and models\PainX_800\PainX_800_M5\lstm_scaler.pkl
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:50 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 800 [M5] cargado exitosamente con clave 'PainX 800_M5'.
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_999\PainX_999_H1\feature_info.pkl
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_999\PainX_999_H1\random_forest.pkl
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_999\PainX_999_H1\gradient_boosting.pkl
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_999\PainX_999_H1\lstm.keras and models\PainX_999\PainX_999_H1\lstm_scaler.pkl
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:50 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 999 [H1] cargado exitosamente con clave 'PainX 999_H1'.
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:50 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_999\PainX_999_H4\feature_info.pkl
+2025-11-13 19:10:51 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_999\PainX_999_H4\random_forest.pkl
+2025-11-13 19:10:51 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:51 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_999\PainX_999_H4\gradient_boosting.pkl
+2025-11-13 19:10:51 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:51 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_999\PainX_999_H4\lstm.keras and models\PainX_999\PainX_999_H4\lstm_scaler.pkl
+2025-11-13 19:10:51 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:51 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:51 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 999 [H4] cargado exitosamente con clave 'PainX 999_H4'.
+2025-11-13 19:10:51 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:51 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_999\PainX_999_M1\feature_info.pkl
+2025-11-13 19:10:52 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_999\PainX_999_M1\random_forest.pkl
+2025-11-13 19:10:52 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:52 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_999\PainX_999_M1\gradient_boosting.pkl
+2025-11-13 19:10:52 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:52 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_999\PainX_999_M1\lstm.keras and models\PainX_999\PainX_999_M1\lstm_scaler.pkl
+2025-11-13 19:10:52 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:52 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:52 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 999 [M1] cargado exitosamente con clave 'PainX 999_M1'.
+2025-11-13 19:10:52 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:52 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_999\PainX_999_M15\feature_info.pkl
+2025-11-13 19:10:52 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_999\PainX_999_M15\random_forest.pkl
+2025-11-13 19:10:52 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:52 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_999\PainX_999_M15\gradient_boosting.pkl
+2025-11-13 19:10:52 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:52 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_999\PainX_999_M15\lstm.keras and models\PainX_999\PainX_999_M15\lstm_scaler.pkl
+2025-11-13 19:10:52 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:52 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:52 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 999 [M15] cargado exitosamente con clave 'PainX 999_M15'.
+2025-11-13 19:10:52 | INFO     | ai_engine.ai_models:__init__ - Initialized Stacking Ensemble.
+2025-11-13 19:10:52 | INFO     | ai_engine.ai_models:load_all - Loaded feature information from models\PainX_999\PainX_999_M5\feature_info.pkl
+2025-11-13 19:10:52 | INFO     | ai_engine.ai_models:load - Model RandomForest loaded and validated from models\PainX_999\PainX_999_M5\random_forest.pkl
+2025-11-13 19:10:52 | INFO     | ai_engine.ai_models:load_all - Model random_forest expects 75 features
+2025-11-13 19:10:52 | INFO     | ai_engine.ai_models:load - Model GradientBoosting loaded and validated from models\PainX_999\PainX_999_M5\gradient_boosting.pkl
+2025-11-13 19:10:52 | INFO     | ai_engine.ai_models:load_all - Model gradient_boosting expects 75 features
+2025-11-13 19:10:52 | INFO     | ai_engine.ai_models:load - LSTM model loaded from models\PainX_999\PainX_999_M5\lstm.keras and models\PainX_999\PainX_999_M5\lstm_scaler.pkl
+2025-11-13 19:10:52 | INFO     | ai_engine.ai_models:load_all - Model lstm expects 75 features
+2025-11-13 19:10:53 | INFO     | ai_engine.ai_models:load_all - Ensemble model loaded successfully
+2025-11-13 19:10:53 | SUCCESS  | ai_engine.market_analyzer:load_models - Modelo para PainX 999 [M5] cargado exitosamente con clave 'PainX 999_M5'.
+2025-11-13 19:10:53 | INFO     | ai_engine.market_analyzer:load_models - Carga completa. Se cargaron un total de 50 modelos especializados.
+2025-11-13 19:10:53 | INFO     | main_mt5:_initialize_components - Loaded pre-trained models
+2025-11-13 19:10:53 | INFO     | main_mt5:_initialize_components - Initializing signal generator...
+2025-11-13 19:10:53 | INFO     | signal_generator.signal_filter:__init__ - Signal Filter initialized
+2025-11-13 19:10:53 | INFO     | signal_generator.risk_manager:__init__ - Risk Manager inicializado con gestión de riesgo FIJA.
+2025-11-13 19:10:53 | INFO     | signal_generator.risk_manager:__init__ - SL Fijo=9000.0 puntos, TP1 Fijo=9000.0 puntos, TP2 Fijo=18000.0 puntos
+2025-11-13 19:10:53 | INFO     | signal_generator.risk_manager:__init__ - Lotaje DINÁMICO activado: Min=0.1, Max=1.0
+2025-11-13 19:10:53 | INFO     | signal_generator.signal_tracker:__init__ - Signal Tracker initialized - Min time: 30m, Max distance: 0.5%, Max age: 120m
+2025-11-13 19:10:53 | INFO     | signal_generator.signal_generator:__init__ - Signal Generator initialized
+2025-11-13 19:10:53 | INFO     | main_mt5:_initialize_components - Initializing Telegram bot...
+2025-11-13 19:10:54 | INFO     | telegram_bot.telegram_bot:_initialize_bot - Telegram bot initialized
+2025-11-13 19:10:54 | INFO     | main_mt5:_initialize_components - Initializing trade tracker...
+2025-11-13 19:10:54 | INFO     | src.trade_tracker:__init__ - Trade Tracker initialized
+2025-11-13 19:10:54 | INFO     | src.trade_tracker:load_active_trades - Loaded 9 active trades from database
+2025-11-13 19:10:54 | INFO     | main_mt5:_initialize_components - All components initialized successfully
+2025-11-13 19:10:54 | INFO     | main_mt5:start - Starting web interface...
+2025-11-13 19:10:54 | INFO     | web_interface.app:run_flask_app - Starting Flask web interface on http://0.0.0.0:5000
+2025-11-13 19:10:54 | SUCCESS  | main_mt5:start - 🌐 Web interface started at http://localhost:5000
+ * Serving Flask app 'web_interface.app'
+ * Debug mode: off
+2025-11-13 19:10:54 | SUCCESS  | src.bot_controller:start - 🚀 Bot STARTED
+2025-11-13 19:10:54 | SUCCESS  | main_mt5:start - ✅ Bot controller started - Status: RUNNING
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.2.0.2:5000
+Press CTRL+C to quit
+2025-11-13 19:10:55 | INFO     | telegram_bot.telegram_bot:test_connection - Connected to Telegram as @Willer_AI_Bot
+2025-11-13 19:10:56 | INFO     | main_mt5:start - Starting market data collection...
+2025-11-13 19:10:56 | INFO     | data_collector.mt5_market_data_manager:start - Starting MT5 Market Data Manager...
+2025-11-13 19:10:56 | INFO     | data_collector.mt5_market_data_manager:_fetch_initial_data - Loading initial historical data from local files...
+2025-11-13 19:10:56 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for PainX 400 [1m] from historical_data/PainX 400/PainX 400_M1.csv
+2025-11-13 19:10:56 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for PainX 400 [5m] from historical_data/PainX 400/PainX 400_M5.csv
+2025-11-13 19:10:56 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for PainX 400 [15m] from historical_data/PainX 400/PainX 400_M15.csv
+2025-11-13 19:10:56 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 16351 records for PainX 400 [1h] from historical_data/PainX 400/PainX 400_H1.csv
+2025-11-13 19:10:56 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 4091 records for PainX 400 [4h] from historical_data/PainX 400/PainX 400_H4.csv
+2025-11-13 19:10:56 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for GainX 400 [1m] from historical_data/GainX 400/GainX 400_M1.csv
+2025-11-13 19:10:56 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for GainX 400 [5m] from historical_data/GainX 400/GainX 400_M5.csv
+2025-11-13 19:10:56 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for GainX 400 [15m] from historical_data/GainX 400/GainX 400_M15.csv
+2025-11-13 19:10:57 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 16351 records for GainX 400 [1h] from historical_data/GainX 400/GainX 400_H1.csv
+2025-11-13 19:10:57 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 4091 records for GainX 400 [4h] from historical_data/GainX 400/GainX 400_H4.csv
+2025-11-13 19:10:57 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for PainX 600 [1m] from historical_data/PainX 600/PainX 600_M1.csv
+2025-11-13 19:10:57 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for PainX 600 [5m] from historical_data/PainX 600/PainX 600_M5.csv
+2025-11-13 19:10:57 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for PainX 600 [15m] from historical_data/PainX 600/PainX 600_M15.csv
+2025-11-13 19:10:57 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 11986 records for PainX 600 [1h] from historical_data/PainX 600/PainX 600_H1.csv
+2025-11-13 19:10:57 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 2999 records for PainX 600 [4h] from historical_data/PainX 600/PainX 600_H4.csv
+2025-11-13 19:10:57 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for GainX 600 [1m] from historical_data/GainX 600/GainX 600_M1.csv
+2025-11-13 19:10:57 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for GainX 600 [5m] from historical_data/GainX 600/GainX 600_M5.csv
+2025-11-13 19:10:57 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for GainX 600 [15m] from historical_data/GainX 600/GainX 600_M15.csv
+2025-11-13 19:10:57 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 11987 records for GainX 600 [1h] from historical_data/GainX 600/GainX 600_H1.csv
+2025-11-13 19:10:57 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 2999 records for GainX 600 [4h] from historical_data/GainX 600/GainX 600_H4.csv
+2025-11-13 19:10:57 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for PainX 800 [1m] from historical_data/PainX 800/PainX 800_M1.csv
+2025-11-13 19:10:58 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for PainX 800 [5m] from historical_data/PainX 800/PainX 800_M5.csv
+2025-11-13 19:10:58 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for PainX 800 [15m] from historical_data/PainX 800/PainX 800_M15.csv
+2025-11-13 19:10:58 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 16352 records for PainX 800 [1h] from historical_data/PainX 800/PainX 800_H1.csv
+2025-11-13 19:10:58 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 4091 records for PainX 800 [4h] from historical_data/PainX 800/PainX 800_H4.csv
+2025-11-13 19:10:58 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for GainX 800 [1m] from historical_data/GainX 800/GainX 800_M1.csv
+2025-11-13 19:10:58 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for GainX 800 [5m] from historical_data/GainX 800/GainX 800_M5.csv
+2025-11-13 19:10:58 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for GainX 800 [15m] from historical_data/GainX 800/GainX 800_M15.csv
+2025-11-13 19:10:58 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 16353 records for GainX 800 [1h] from historical_data/GainX 800/GainX 800_H1.csv
+2025-11-13 19:10:58 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 4092 records for GainX 800 [4h] from historical_data/GainX 800/GainX 800_H4.csv
+2025-11-13 19:10:58 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for PainX 999 [1m] from historical_data/PainX 999/PainX 999_M1.csv
+2025-11-13 19:10:58 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for PainX 999 [5m] from historical_data/PainX 999/PainX 999_M5.csv
+2025-11-13 19:10:58 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for PainX 999 [15m] from historical_data/PainX 999/PainX 999_M15.csv
+2025-11-13 19:10:58 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 11988 records for PainX 999 [1h] from historical_data/PainX 999/PainX 999_H1.csv
+2025-11-13 19:10:58 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 3000 records for PainX 999 [4h] from historical_data/PainX 999/PainX 999_H4.csv
+2025-11-13 19:10:59 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for GainX 999 [1m] from historical_data/GainX 999/GainX 999_M1.csv
+2025-11-13 19:10:59 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for GainX 999 [5m] from historical_data/GainX 999/GainX 999_M5.csv
+2025-11-13 19:10:59 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for GainX 999 [15m] from historical_data/GainX 999/GainX 999_M15.csv
+2025-11-13 19:10:59 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 11989 records for GainX 999 [1h] from historical_data/GainX 999/GainX 999_H1.csv
+2025-11-13 19:10:59 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 3000 records for GainX 999 [4h] from historical_data/GainX 999/GainX 999_H4.csv
+2025-11-13 19:10:59 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for PainX 1200 [1m] from historical_data/PainX 1200/PainX 1200_M1.csv
+2025-11-13 19:10:59 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for PainX 1200 [5m] from historical_data/PainX 1200/PainX 1200_M5.csv
+2025-11-13 19:10:59 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for PainX 1200 [15m] from historical_data/PainX 1200/PainX 1200_M15.csv
+2025-11-13 19:10:59 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 16354 records for PainX 1200 [1h] from historical_data/PainX 1200/PainX 1200_H1.csv
+2025-11-13 19:10:59 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 4092 records for PainX 1200 [4h] from historical_data/PainX 1200/PainX 1200_H4.csv
+2025-11-13 19:10:59 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for GainX 1200 [1m] from historical_data/GainX 1200/GainX 1200_M1.csv
+2025-11-13 19:10:59 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for GainX 1200 [5m] from historical_data/GainX 1200/GainX 1200_M5.csv
+2025-11-13 19:11:00 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 20000 records for GainX 1200 [15m] from historical_data/GainX 1200/GainX 1200_M15.csv
+2025-11-13 19:11:00 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 16354 records for GainX 1200 [1h] from historical_data/GainX 1200/GainX 1200_H1.csv
+2025-11-13 19:11:00 | SUCCESS  | data_collector.mt5_market_data_manager:_fetch_initial_data - Loaded 4092 records for GainX 1200 [4h] from historical_data/GainX 1200/GainX 1200_H4.csv
+2025-11-13 19:11:00 | INFO     | data_collector.mt5_market_data_manager:_fetch_initial_data - Initial data loading process completed.
+2025-11-13 19:11:00 | INFO     | data_collector.mt5_market_data_manager:start - MT5 Market Data Manager started for 10 symbols
+2025-11-13 19:11:00 | INFO     | main_mt5:start - Waiting for initial data collection...
+2025-11-13 19:11:30 | INFO     | main_mt5:start - Starting analysis loop...
+2025-11-13 19:11:30 | INFO     | main_mt5:_run_main_loop - Main loop started
+2025-11-13 19:11:30 | INFO     | main_mt5:_run_main_loop - ============================== Starting New Analysis Cycle ==============================
+2025-11-13 19:11:31 | INFO     | main_mt5:_analyze_and_execute - Analyzing PainX 400...
+2025-11-13 19:11:31 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:31 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:32 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:32 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:33 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:33 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:34 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:34 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:34 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:34 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:35 | INFO     | signal_generator.signal_generator:generate_signal - PainX 400: Using configured primary timeframe: 1m
+2025-11-13 19:11:35 | INFO     | signal_generator.signal_generator:generate_signal - Analysis result for PainX 400: Signal=SELL, Confidence=96.33%
+2025-11-13 19:11:35 | WARNING  | signal_generator.signal_tracker:should_send_signal - PainX 400: MT5 connector does not have get_open_positions method, using cache only
+2025-11-13 19:11:35 | INFO     | signal_generator.signal_tracker:should_send_signal - PainX 400: No previous signals, OK to send
+2025-11-13 19:11:35 | INFO     | signal_generator.signal_generator:generate_signal - PainX 400: ✅ Passed confidence threshold (Confidence: 96.33% >= 80.00%)
+2025-11-13 19:11:35 | WARNING  | signal_generator.signal_filter:should_notify - PainX 400: ❌ Insufficient timeframe confluence (20.0% < 60%)
+2025-11-13 19:11:35 | WARNING  | signal_generator.signal_generator:generate_signal - PainX 400: ❌ Signal filtered out by quality filters
+2025-11-13 19:11:35 | INFO     | main_mt5:_analyze_and_execute - Analysis for PainX 400 complete. No signal generated (HOLD).
+2025-11-13 19:11:36 | INFO     | main_mt5:_analyze_and_execute - Analyzing GainX 400...
+2025-11-13 19:11:36 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:36 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:37 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:37 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:37 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:37 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:38 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:38 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:39 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:39 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:39 | INFO     | signal_generator.signal_generator:generate_signal - GainX 400: Using configured primary timeframe: 1m
+2025-11-13 19:11:39 | INFO     | signal_generator.signal_generator:generate_signal - Analysis result for GainX 400: Signal=BUY, Confidence=69.22%
+2025-11-13 19:11:39 | WARNING  | signal_generator.signal_tracker:should_send_signal - GainX 400: MT5 connector does not have get_open_positions method, using cache only
+2025-11-13 19:11:39 | INFO     | signal_generator.signal_tracker:should_send_signal - GainX 400: No previous signals, OK to send
+2025-11-13 19:11:39 | WARNING  | signal_generator.signal_generator:generate_signal - GainX 400: ❌ Confidence 69.22% below threshold 80.00%
+2025-11-13 19:11:39 | INFO     | main_mt5:_analyze_and_execute - Analysis for GainX 400 complete. No signal generated (HOLD).
+2025-11-13 19:11:40 | INFO     | main_mt5:_analyze_and_execute - Analyzing PainX 600...
+2025-11-13 19:11:40 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:40 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:41 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:41 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:42 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:42 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:43 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:43 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:44 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:44 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:44 | INFO     | signal_generator.signal_generator:generate_signal - PainX 600: Using configured primary timeframe: 1m
+2025-11-13 19:11:44 | INFO     | signal_generator.signal_generator:generate_signal - Analysis result for PainX 600: Signal=BUY, Confidence=70.31%
+2025-11-13 19:11:44 | WARNING  | signal_generator.signal_tracker:should_send_signal - PainX 600: MT5 connector does not have get_open_positions method, using cache only
+2025-11-13 19:11:44 | INFO     | signal_generator.signal_tracker:should_send_signal - PainX 600: No previous signals, OK to send
+2025-11-13 19:11:44 | WARNING  | signal_generator.signal_generator:generate_signal - PainX 600: ❌ Confidence 70.31% below threshold 80.00%
+2025-11-13 19:11:44 | INFO     | main_mt5:_analyze_and_execute - Analysis for PainX 600 complete. No signal generated (HOLD).
+2025-11-13 19:11:45 | INFO     | main_mt5:_analyze_and_execute - Analyzing GainX 600...
+2025-11-13 19:11:45 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:45 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:46 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:46 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:47 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:47 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:47 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:47 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:48 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:48 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:49 | INFO     | signal_generator.signal_generator:generate_signal - GainX 600: Using configured primary timeframe: 1m
+2025-11-13 19:11:49 | INFO     | signal_generator.signal_generator:generate_signal - Analysis result for GainX 600: Signal=SELL, Confidence=77.23%
+2025-11-13 19:11:49 | WARNING  | signal_generator.signal_tracker:should_send_signal - GainX 600: MT5 connector does not have get_open_positions method, using cache only
+2025-11-13 19:11:49 | INFO     | signal_generator.signal_tracker:should_send_signal - GainX 600: No previous signals, OK to send
+2025-11-13 19:11:49 | WARNING  | signal_generator.signal_generator:generate_signal - GainX 600: ❌ Confidence 77.23% below threshold 80.00%
+2025-11-13 19:11:49 | INFO     | main_mt5:_analyze_and_execute - Analysis for GainX 600 complete. No signal generated (HOLD).
+2025-11-13 19:11:50 | INFO     | main_mt5:_analyze_and_execute - Analyzing PainX 800...
+2025-11-13 19:11:50 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:50 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:51 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:51 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:51 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:51 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:52 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:52 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:53 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:53 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:53 | INFO     | signal_generator.signal_generator:generate_signal - PainX 800: Using configured primary timeframe: 1m
+2025-11-13 19:11:53 | INFO     | signal_generator.signal_generator:generate_signal - Analysis result for PainX 800: Signal=SELL, Confidence=83.37%
+2025-11-13 19:11:53 | WARNING  | signal_generator.signal_tracker:should_send_signal - PainX 800: MT5 connector does not have get_open_positions method, using cache only
+2025-11-13 19:11:53 | INFO     | signal_generator.signal_tracker:should_send_signal - PainX 800: No previous signals, OK to send
+2025-11-13 19:11:53 | INFO     | signal_generator.signal_generator:generate_signal - PainX 800: ✅ Passed confidence threshold (Confidence: 83.37% >= 80.00%)
+2025-11-13 19:11:53 | INFO     | signal_generator.signal_filter:should_notify - PainX 800: ✅ Timeframe confluence passed (80.0% >= 60%)
+2025-11-13 19:11:53 | INFO     | signal_generator.signal_filter:should_notify - PainX 800: ✅ Trend strength passed (ADX 66.9 >= 25)
+2025-11-13 19:11:53 | INFO     | signal_generator.signal_filter:should_notify - PainX 800: ✅ Market regime aligned
+2025-11-13 19:11:53 | INFO     | signal_generator.signal_filter:should_notify - PainX 800: ✅ Trend alignment passed
+2025-11-13 19:11:53 | INFO     | signal_generator.signal_filter:should_notify - PainX 800: ✅ Volatility check passed
+2025-11-13 19:11:53 | INFO     | signal_generator.signal_filter:should_notify - PainX 800: ✅ No conflicting signals
+2025-11-13 19:11:53 | INFO     | signal_generator.signal_filter:should_notify - PainX 800: ✅✅✅ ALL QUALITY FILTERS PASSED - Signal will be sent to Telegram!
+2025-11-13 19:11:53 | INFO     | signal_generator.signal_generator:generate_signal - PainX 800: ✅ Passed quality filters - Signal will be generated
+2025-11-13 19:11:53 | INFO     | signal_generator.risk_manager:_calculate_fixed_risk_parameters - Parámetros de riesgo FIJOS para PainX 800 (SELL):
+2025-11-13 19:11:53 | INFO     | signal_generator.risk_manager:_calculate_fixed_risk_parameters - Lotaje: 0.25 (Dinámico)
+2025-11-13 19:11:53 | INFO     | signal_generator.risk_manager:_calculate_fixed_risk_parameters - SL=121177.92000, TP1=103177.92000, TP2=94177.92000, RR1=1.00
+2025-11-13 19:11:53 | INFO     | signal_generator.signal_tracker:track_signal - PainX 800: Tracking SELL signal (ID: PainX 800_SELL_20251113231153, Entry: 112177.92)
+2025-11-13 19:11:53 | INFO     | signal_generator.signal_generator:generate_signal - Generated SELL signal for PainX 800 (confidence: 83.37%)
+2025-11-13 19:11:53 | INFO     | signal_generator.signal_filter:should_execute - PainX 800: ✅ EXECUTION APPROVED - Within limits!
+2025-11-13 19:11:53 | SUCCESS  | main_mt5:_analyze_and_execute - Signal for PainX 800 passed filters. Executing and notifying.
+2025-11-13 19:11:53 | INFO     | main_mt5:_execute_signal - Executing signal: SELL PainX 800
+2025-11-13 19:11:53 | INFO     | main_mt5:_execute_signal - Using dynamic lot size: 0.25
+2025-11-13 19:11:53 | INFO     | main_mt5:_execute_signal - Using TP1: 103177.92
+2025-11-13 19:11:53 | INFO     | data_collector.mt5_connector:execute_market_order - Order executed: SELL 0.25 lots PainX 800 at 112177.92, ticket: 184742566
+2025-11-13 19:11:53 | INFO     | main_mt5:_execute_signal - ✅ ORDER EXECUTED - Ticket: 184742566, Symbol: PainX 800, Type: SELL, Volume: 0.25 lots, Entry: 112177.92, SL: 121177.92, TP: 103177.92, Time: 2025-11-13 19:11:53
+2025-11-13 19:11:54 | SUCCESS  | src.trade_tracker:register_trade_opened - Trade registered: PainX 800_SELL_20251113231153 - PainX 800 SELL @ 112177.92
+2025-11-13 19:11:54 | SUCCESS  | main_mt5:_execute_signal - Trade PainX 800_SELL_20251113231153 registered in TradeTracker
+2025-11-13 19:11:54 | INFO     | main_mt5:_analyze_and_execute - Sending successful execution of PainX 800 to Telegram.
+2025-11-13 19:11:54 | INFO     | telegram_bot.telegram_bot:send_signal - Sent SELL signal for PainX 800 to Telegram
+2025-11-13 19:11:55 | INFO     | main_mt5:_analyze_and_execute - Analyzing GainX 800...
+2025-11-13 19:11:56 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:56 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:56 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:56 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:57 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:57 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:58 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:58 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:59 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:11:59 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:11:59 | INFO     | signal_generator.signal_generator:generate_signal - GainX 800: Using configured primary timeframe: 1m
+2025-11-13 19:11:59 | INFO     | signal_generator.signal_generator:generate_signal - Analysis result for GainX 800: Signal=BUY, Confidence=73.95%
+2025-11-13 19:11:59 | WARNING  | signal_generator.signal_tracker:should_send_signal - GainX 800: MT5 connector does not have get_open_positions method, using cache only
+2025-11-13 19:11:59 | INFO     | signal_generator.signal_tracker:should_send_signal - GainX 800: No previous signals, OK to send
+2025-11-13 19:11:59 | WARNING  | signal_generator.signal_generator:generate_signal - GainX 800: ❌ Confidence 73.95% below threshold 80.00%
+2025-11-13 19:11:59 | INFO     | main_mt5:_analyze_and_execute - Analysis for GainX 800 complete. No signal generated (HOLD).
+2025-11-13 19:12:00 | INFO     | main_mt5:_analyze_and_execute - Analyzing PainX 999...
+2025-11-13 19:12:00 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:12:00 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:12:01 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:12:01 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:12:02 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:12:02 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:12:02 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:12:03 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:12:03 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:12:03 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:12:04 | INFO     | signal_generator.signal_generator:generate_signal - PainX 999: Using configured primary timeframe: 1m
+2025-11-13 19:12:04 | INFO     | signal_generator.signal_generator:generate_signal - Analysis result for PainX 999: Signal=BUY, Confidence=60.52%
+2025-11-13 19:12:04 | WARNING  | signal_generator.signal_tracker:should_send_signal - PainX 999: MT5 connector does not have get_open_positions method, using cache only
+2025-11-13 19:12:04 | INFO     | signal_generator.signal_tracker:should_send_signal - PainX 999: No previous signals, OK to send
+2025-11-13 19:12:04 | WARNING  | signal_generator.signal_generator:generate_signal - PainX 999: ❌ Confidence 60.52% below threshold 80.00%
+2025-11-13 19:12:04 | INFO     | main_mt5:_analyze_and_execute - Analysis for PainX 999 complete. No signal generated (HOLD).
+2025-11-13 19:12:05 | INFO     | main_mt5:_analyze_and_execute - Analyzing GainX 999...
+2025-11-13 19:12:05 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:12:05 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:12:06 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:12:06 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:12:06 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:12:06 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:12:07 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:12:07 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:12:08 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:12:08 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:12:08 | INFO     | signal_generator.signal_generator:generate_signal - GainX 999: Using configured primary timeframe: 1m
+2025-11-13 19:12:08 | INFO     | signal_generator.signal_generator:generate_signal - Analysis result for GainX 999: Signal=BUY, Confidence=74.66%
+2025-11-13 19:12:08 | WARNING  | signal_generator.signal_tracker:should_send_signal - GainX 999: MT5 connector does not have get_open_positions method, using cache only
+2025-11-13 19:12:08 | INFO     | signal_generator.signal_tracker:should_send_signal - GainX 999: No previous signals, OK to send
+2025-11-13 19:12:08 | WARNING  | signal_generator.signal_generator:generate_signal - GainX 999: ❌ Confidence 74.66% below threshold 80.00%
+2025-11-13 19:12:08 | INFO     | main_mt5:_analyze_and_execute - Analysis for GainX 999 complete. No signal generated (HOLD).
+2025-11-13 19:12:09 | INFO     | main_mt5:_analyze_and_execute - Analyzing PainX 1200...
+2025-11-13 19:12:10 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:12:10 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:12:10 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:12:10 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:12:11 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:12:11 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:12:12 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:12:12 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:12:12 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:12:12 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:12:13 | INFO     | signal_generator.signal_generator:generate_signal - PainX 1200: Using configured primary timeframe: 1m
+2025-11-13 19:12:13 | INFO     | signal_generator.signal_generator:generate_signal - Analysis result for PainX 1200: Signal=BUY, Confidence=4.98%
+2025-11-13 19:12:13 | WARNING  | signal_generator.signal_tracker:should_send_signal - PainX 1200: MT5 connector does not have get_open_positions method, using cache only
+2025-11-13 19:12:13 | INFO     | signal_generator.signal_tracker:should_send_signal - PainX 1200: No previous signals, OK to send
+2025-11-13 19:12:13 | WARNING  | signal_generator.signal_generator:generate_signal - PainX 1200: ❌ Confidence 4.98% below threshold 80.00%
+2025-11-13 19:12:13 | INFO     | main_mt5:_analyze_and_execute - Analysis for PainX 1200 complete. No signal generated (HOLD).
+2025-11-13 19:12:14 | INFO     | main_mt5:_analyze_and_execute - Analyzing GainX 1200...
+2025-11-13 19:12:14 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:12:14 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:12:15 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:12:15 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:12:15 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:12:15 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:12:16 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:12:16 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:12:17 | INFO     | ai_engine.feature_engineering:create_sequences - Creating sequences with length 20 from 1000 data points.
+2025-11-13 19:12:17 | INFO     | ai_engine.feature_engineering:create_sequences - Created 980 sequences.
+2025-11-13 19:12:17 | INFO     | signal_generator.signal_generator:generate_signal - GainX 1200: Using configured primary timeframe: 1m
+2025-11-13 19:12:17 | INFO     | signal_generator.signal_generator:generate_signal - Analysis result for GainX 1200: Signal=BUY, Confidence=75.82%
+2025-11-13 19:12:17 | WARNING  | signal_generator.signal_tracker:should_send_signal - GainX 1200: MT5 connector does not have get_open_positions method, using cache only
+2025-11-13 19:12:17 | INFO     | signal_generator.signal_tracker:should_send_signal - GainX 1200: No previous signals, OK to send
+2025-11-13 19:12:17 | WARNING  | signal_generator.signal_generator:generate_signal - GainX 1200: ❌ Confidence 75.82% below threshold 80.00%
+2025-11-13 19:12:17 | INFO     | main_mt5:_analyze_and_execute - Analysis for GainX 1200 complete. No signal generated (HOLD).
+2025-11-13 19:12:17 | INFO     | main_mt5:_run_main_loop - ============================== Analysis Cycle Completed ================================
+2025-11-13 19:12:17 | INFO     | main_mt5:_run_main_loop - Waiting for 60 seconds until next cycle...
