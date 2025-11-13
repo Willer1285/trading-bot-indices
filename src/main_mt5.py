@@ -591,7 +591,9 @@ class MT5TradingBot:
             # Execute order
             # Se ha acortado el comentario para asegurar que el ATR siempre se guarde correctamente.
             # Formato: AI|{atr_value}
-            comment = f"AI|{signal.atr_at_signal:.5f}"
+            # Si atr_at_signal es None (modo fijo), usar 0.0
+            atr_value = signal.atr_at_signal if signal.atr_at_signal is not None else 0.0
+            comment = f"AI|{atr_value:.5f}"
 
             # Seleccionar el Take Profit según configuración (TP1 o TP2)
             if signal.take_profit_levels:
