@@ -60,6 +60,16 @@ class RiskManager:
         """
         Calcula el stop loss y take profit usando valores fijos en puntos.
 
+        IMPORTANTE - CÁLCULO DE PUNTOS PARA ÍNDICES SINTÉTICOS:
+        ========================================================
+        Para índices sintéticos (PainX, GainX):
+        - 1 punto = 1.0 en el precio
+        - Ejemplo: Si entry = 112000 y FIXED_STOP_LOSS_POINTS = 9000
+          → SL SELL = 112000 + 9000 = 121000 (9000 puntos de distancia)
+          → TP SELL = 112000 - 9000 = 103000 (9000 puntos de distancia)
+
+        NO confundir con pips de Forex donde 1 punto ≠ 1.0 en precio
+
         Args:
             symbol: Par de trading.
             signal_type: BUY o SELL.
@@ -71,11 +81,18 @@ class RiskManager:
         """
         try:
             # Para índices sintéticos: 1 punto = 1.0 en el precio
+            # NO multiplicar por point_size de MT5 (que es 0.01)
             point_value = 1.0
 
+            # Calcular distancias en puntos (sin multiplicación adicional)
             sl_distance = config.fixed_stop_loss_points * point_value
             tp1_distance = config.fixed_take_profit_1_points * point_value
             tp2_distance = config.fixed_take_profit_2_points * point_value
+
+            logger.debug(
+                f"{symbol}: Calculando riesgo FIJO - "
+                f"SL distance={sl_distance:.1f}, TP1 distance={tp1_distance:.1f}, TP2 distance={tp2_distance:.1f}"
+            )
 
             if signal_type == 'BUY':
                 stop_loss = entry_price - sl_distance
@@ -100,7 +117,13 @@ class RiskManager:
             logger.info(f"Parámetros de riesgo FIJOS para {symbol} ({signal_type}):")
             lot_size = self.calculate_dynamic_lot_size(confidence)
             logger.info(f"Lotaje: {lot_size} {'(Dinámico)' if config.enable_dynamic_lot_size else '(Fijo)'}")
-            logger.info(f"SL={stop_loss:.5f}, TP1={take_profit_1:.5f}, TP2={take_profit_2:.5f}, RR1={risk_reward_ratio_1:.2f}")
+            logger.info(
+                f"Entry={entry_price:.2f} | "
+                f"SL={stop_loss:.2f} (dist={abs(entry_price-stop_loss):.0f}pts) | "
+                f"TP1={take_profit_1:.2f} (dist={abs(take_profit_1-entry_price):.0f}pts) | "
+                f"TP2={take_profit_2:.2f} (dist={abs(take_profit_2-entry_price):.0f}pts) | "
+                f"RR={risk_reward_ratio_1:.2f}"
+            )
 
             return {
                 'entry_price': float(entry_price),

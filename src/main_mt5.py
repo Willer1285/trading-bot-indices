@@ -766,7 +766,9 @@ class MT5TradingBot:
 
                 else:
                     # --- MODO FIJO: Usar valores en PUNTOS ---
-                    point_value = 1.0  # Para índices sintéticos: 1 punto = 1.0 en el precio
+                    # IMPORTANTE: Para índices sintéticos, 1 punto = 1.0 en el precio
+                    # NO multiplicar por point_size de MT5 (que es 0.01)
+                    point_value = 1.0
 
                     # --- Break Even Fijo (valores en puntos) ---
                     if config.enable_break_even and ticket not in self.break_even_activated:
@@ -780,7 +782,11 @@ class MT5TradingBot:
 
                             if (order_type == 'BUY' and new_sl > current_sl) or \
                                (order_type == 'SELL' and new_sl < current_sl):
-                                logger.info(f"Activando Break Even FIJO para #{ticket} en {symbol}. Nuevo SL: {new_sl:.5f} (Trigger: {config.fixed_break_even_trigger_points} pts)")
+                                logger.info(
+                                    f"✅ Break Even FIJO activado para #{ticket} ({symbol}): "
+                                    f"Entry={open_price:.2f} → New SL={new_sl:.2f} "
+                                    f"(Trigger={config.fixed_break_even_trigger_points:.0f}pts, Lock={config.fixed_break_even_profit_lock_points:.0f}pts)"
+                                )
                                 modified = self.order_executor.modify_order(ticket, stop_loss=new_sl)
                                 if modified:
                                     self.break_even_activated[ticket] = True
@@ -806,7 +812,11 @@ class MT5TradingBot:
 
                             if (order_type == 'BUY' and new_sl > current_sl) or \
                                (order_type == 'SELL' and new_sl < current_sl):
-                                logger.info(f"Actualizando Trailing Stop FIJO para #{ticket} en {symbol} a {new_sl:.5f} (Distance: {config.fixed_trailing_stop_distance_points} pts)")
+                                logger.info(
+                                    f"✅ Trailing Stop FIJO actualizado para #{ticket} ({symbol}): "
+                                    f"Current={current_price:.2f} → New SL={new_sl:.2f} "
+                                    f"(Trigger={config.fixed_trailing_stop_trigger_points:.0f}pts, Distance={config.fixed_trailing_stop_distance_points:.0f}pts)"
+                                )
                                 modified = self.order_executor.modify_order(ticket, stop_loss=new_sl)
                                 if modified:
                                     await self.telegram_bot.send_trailing_stop_notification(position, new_sl)

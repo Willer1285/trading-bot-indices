@@ -208,8 +208,11 @@ class MT5MarketDataManager:
                     combined = combined[~combined.index.duplicated(keep='last')]
                     combined = combined.sort_index()
 
-                    # Keep only recent data (e.g., last 1000 candles)
-                    self.market_data[symbol][timeframe] = combined.tail(1000)
+                    # Keep only recent data based on config (default: 2000 candles for better analysis context)
+                    # Use 2x the market_analysis_candles to ensure we have enough data after feature engineering
+                    from src.config import Config
+                    max_candles = Config().market_analysis_candles * 2
+                    self.market_data[symbol][timeframe] = combined.tail(max_candles)
 
                 logger.debug(f"Updated {symbol} {timeframe}: {len(self.market_data[symbol][timeframe])} candles")
 
