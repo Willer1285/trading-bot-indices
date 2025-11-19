@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from loguru import logger
 
 from ai_engine.market_analyzer import MarketAnalysis
+from config import config
 
 
 class SignalFilter:
@@ -47,14 +48,42 @@ class SignalFilter:
         # Formato: {symbol: [{'result': 'SL'/'TP', 'timestamp': datetime}, ...]}
         self.closed_trades: Dict[str, List[Dict]] = {}
 
-        # Parámetros para filtros avanzados
-        self.max_consecutive_losses = 2  # Máximo 2 pérdidas consecutivas
-        self.cooldown_hours = 2  # Horas de enfriamiento después de pérdidas consecutivas
-        self.min_adx_for_trend = 25  # ADX mínimo para considerar tendencia fuerte
-        self.max_momentum_percent = 2.0  # Máximo % de cambio de precio en últimas 5 velas
-        self.sr_proximity_percent = 0.5  # % de proximidad requerida a S/R
+        # ========== PARÁMETROS CONFIGURABLES DESDE .env ==========
 
-        logger.info("Signal Filter initialized")
+        # Activación de filtros
+        self.enable_divergence_filter = config.enable_divergence_filter
+        self.enable_consecutive_losses_filter = config.enable_consecutive_losses_filter
+        self.enable_enhanced_trend_filter = config.enable_enhanced_trend_filter
+        self.enable_momentum_filter = config.enable_momentum_filter
+        self.enable_sr_proximity_filter = config.enable_sr_proximity_filter
+
+        # Parámetros del filtro de pérdidas consecutivas
+        self.max_consecutive_losses = config.max_consecutive_losses
+        self.cooldown_hours = config.cooldown_hours
+
+        # Parámetros del filtro de tendencia
+        self.min_adx_for_trend = config.min_adx_for_trend
+        self.ema_alignment_required = config.ema_alignment_required
+        self.max_percent_from_sma50 = config.max_percent_from_sma50
+
+        # Parámetros del filtro de momentum
+        self.max_momentum_percent = config.max_momentum_percent
+
+        # Parámetros del filtro de soporte/resistencia
+        self.sr_proximity_percent = config.sr_proximity_percent
+        self.sr_max_distance_percent = config.sr_max_distance_percent
+
+        # Parámetros del filtro de divergencias
+        self.divergence_rsi_overbought = config.divergence_rsi_overbought
+        self.divergence_rsi_oversold = config.divergence_rsi_oversold
+        self.divergence_momentum_threshold = config.divergence_momentum_threshold
+
+        logger.info("Signal Filter initialized with configurable parameters")
+        logger.info(f"  Divergence filter: {'✅ ENABLED' if self.enable_divergence_filter else '❌ DISABLED'}")
+        logger.info(f"  Consecutive losses filter: {'✅ ENABLED' if self.enable_consecutive_losses_filter else '❌ DISABLED'}")
+        logger.info(f"  Enhanced trend filter: {'✅ ENABLED' if self.enable_enhanced_trend_filter else '❌ DISABLED'}")
+        logger.info(f"  Momentum filter: {'✅ ENABLED' if self.enable_momentum_filter else '❌ DISABLED'}")
+        logger.info(f"  S/R proximity filter: {'✅ ENABLED' if self.enable_sr_proximity_filter else '❌ DISABLED'}")
 
     def should_notify(
         self,
@@ -94,35 +123,47 @@ class SignalFilter:
             return False
         logger.info(f"{symbol}: ✅ Volatility check passed")
 
-        # ========== NUEVOS FILTROS AVANZADOS ==========
+        # ========== NUEVOS FILTROS AVANZADOS (CONFIGURABLES) ==========
 
         # Filtro 1: Divergencias RSI/MACD
-        divergence_result, divergence_reason = self._check_divergence(analyses, signal_type)
-        if not divergence_result:
-            logger.warning(f"{symbol}: ❌ Divergence filter - {divergence_reason}")
-            return False
-        logger.info(f"{symbol}: ✅ Divergence check passed - {divergence_reason}")
+        if self.enable_divergence_filter:
+            divergence_result, divergence_reason = self._check_divergence(analyses, signal_type)
+            if not divergence_result:
+                logger.warning(f"{symbol}: ❌ Divergence filter - {divergence_reason}")
+                return False
+            logger.info(f"{symbol}: ✅ Divergence check passed - {divergence_reason}")
+        else:
+            logger.debug(f"{symbol}: ⏭️  Divergence filter DISABLED - skipping")
 
         # Filtro 2: Límite de pérdidas consecutivas
-        consecutive_result, consecutive_reason = self._check_consecutive_losses(symbol)
-        if not consecutive_result:
-            logger.warning(f"{symbol}: ❌ Consecutive losses filter - {consecutive_reason}")
-            return False
-        logger.info(f"{symbol}: ✅ Consecutive losses check passed - {consecutive_reason}")
+        if self.enable_consecutive_losses_filter:
+            consecutive_result, consecutive_reason = self._check_consecutive_losses(symbol)
+            if not consecutive_result:
+                logger.warning(f"{symbol}: ❌ Consecutive losses filter - {consecutive_reason}")
+                return False
+            logger.info(f"{symbol}: ✅ Consecutive losses check passed - {consecutive_reason}")
+        else:
+            logger.debug(f"{symbol}: ⏭️  Consecutive losses filter DISABLED - skipping")
 
-        # Filtro 5: Momentum/Velocidad del precio
-        momentum_result, momentum_reason = self._check_momentum_filter(analyses, signal_type)
-        if not momentum_result:
-            logger.warning(f"{symbol}: ❌ Momentum filter - {momentum_reason}")
-            return False
-        logger.info(f"{symbol}: ✅ Momentum check passed - {momentum_reason}")
+        # Filtro 3: Momentum/Velocidad del precio
+        if self.enable_momentum_filter:
+            momentum_result, momentum_reason = self._check_momentum_filter(analyses, signal_type)
+            if not momentum_result:
+                logger.warning(f"{symbol}: ❌ Momentum filter - {momentum_reason}")
+                return False
+            logger.info(f"{symbol}: ✅ Momentum check passed - {momentum_reason}")
+        else:
+            logger.debug(f"{symbol}: ⏭️  Momentum filter DISABLED - skipping")
 
-        # Filtro 6: Proximidad a Soporte/Resistencia
-        sr_result, sr_reason = self._check_support_resistance_proximity(analyses, signal_type)
-        if not sr_result:
-            logger.warning(f"{symbol}: ❌ Support/Resistance filter - {sr_reason}")
-            return False
-        logger.info(f"{symbol}: ✅ S/R proximity check passed - {sr_reason}")
+        # Filtro 4: Proximidad a Soporte/Resistencia
+        if self.enable_sr_proximity_filter:
+            sr_result, sr_reason = self._check_support_resistance_proximity(analyses, signal_type)
+            if not sr_result:
+                logger.warning(f"{symbol}: ❌ Support/Resistance filter - {sr_reason}")
+                return False
+            logger.info(f"{symbol}: ✅ S/R proximity check passed - {sr_reason}")
+        else:
+            logger.debug(f"{symbol}: ⏭️  S/R proximity filter DISABLED - skipping")
 
         # ==============================================
 
@@ -222,9 +263,9 @@ class SignalFilter:
     ) -> tuple[bool, str]:
         """
         Verifica alineación con tendencia superior usando:
-        - ADX para fuerza de tendencia
-        - Alineación de EMAs (9, 21, 50)
-        - Precio vs SMA50
+        - ADX para fuerza de tendencia (configurable)
+        - Alineación de EMAs (9, 21, 50) (opcional)
+        - Precio vs SMA50 (configurable)
         """
         # Get higher timeframe analysis (4h, 1h, 1d)
         higher_tf_analysis = None
@@ -248,45 +289,54 @@ class SignalFilter:
         ema_50 = indicators.get('ema_50', 0)
         adx = indicators.get('adx', 0)
 
-        # Verificar ADX para fuerza de tendencia
-        if adx > 0 and adx < self.min_adx_for_trend:
+        # Verificar ADX para fuerza de tendencia (si está habilitado el filtro mejorado)
+        if self.enable_enhanced_trend_filter and adx > 0 and adx < self.min_adx_for_trend:
             return False, f"⚠️ Tendencia débil en {selected_tf}: ADX={adx:.1f} < {self.min_adx_for_trend} (mercado lateral, evitar)"
 
         # Para señales de COMPRA
         if signal_type == 'BUY':
-            # Verificar alineación alcista de EMAs: EMA9 > EMA21 > EMA50
-            ema_aligned = False
-            if ema_9 > 0 and ema_21 > 0 and ema_50 > 0:
-                ema_aligned = (ema_9 > ema_21 > ema_50)
-                if not ema_aligned:
-                    return False, f"⚠️ EMAs no alineadas para BUY en {selected_tf}: EMA9={ema_9:.5f}, EMA21={ema_21:.5f}, EMA50={ema_50:.5f}"
+            # Verificar alineación alcista de EMAs: EMA9 > EMA21 > EMA50 (si está configurado)
+            if self.enable_enhanced_trend_filter and self.ema_alignment_required:
+                ema_aligned = False
+                if ema_9 > 0 and ema_21 > 0 and ema_50 > 0:
+                    ema_aligned = (ema_9 > ema_21 > ema_50)
+                    if not ema_aligned:
+                        return False, f"⚠️ EMAs no alineadas para BUY en {selected_tf}: EMA9={ema_9:.5f}, EMA21={ema_21:.5f}, EMA50={ema_50:.5f}"
 
             # Verificar que el precio esté en tendencia alcista
             if sma_50 > 0:
                 percent_from_sma = ((price - sma_50) / sma_50) * 100
-                # Permitir BUY solo si precio está cerca o arriba de SMA50
-                if price < sma_50 * 0.97:  # Más del 3% debajo de SMA50
+                # Usar el porcentaje configurado
+                max_percent_below = -self.max_percent_from_sma50  # Negativo porque está debajo
+                if percent_from_sma < max_percent_below:
                     return False, f"⚠️ Precio muy debajo de SMA50 en {selected_tf}: {percent_from_sma:+.2f}% (contra-tendencia bajista)"
 
-                return True, f"✅ Tendencia alcista en {selected_tf}: ADX={adx:.1f}, EMAs alineadas, Precio {percent_from_sma:+.2f}% de SMA50"
+                if self.enable_enhanced_trend_filter:
+                    return True, f"✅ Tendencia alcista en {selected_tf}: ADX={adx:.1f}, EMAs alineadas, Precio {percent_from_sma:+.2f}% de SMA50"
+                else:
+                    return True, f"✅ Precio {percent_from_sma:+.2f}% de SMA50 en {selected_tf}"
 
         # Para señales de VENTA
         else:  # SELL
-            # Verificar alineación bajista de EMAs: EMA9 < EMA21 < EMA50
-            ema_aligned = False
-            if ema_9 > 0 and ema_21 > 0 and ema_50 > 0:
-                ema_aligned = (ema_9 < ema_21 < ema_50)
-                if not ema_aligned:
-                    return False, f"⚠️ EMAs no alineadas para SELL en {selected_tf}: EMA9={ema_9:.5f}, EMA21={ema_21:.5f}, EMA50={ema_50:.5f}"
+            # Verificar alineación bajista de EMAs: EMA9 < EMA21 < EMA50 (si está configurado)
+            if self.enable_enhanced_trend_filter and self.ema_alignment_required:
+                ema_aligned = False
+                if ema_9 > 0 and ema_21 > 0 and ema_50 > 0:
+                    ema_aligned = (ema_9 < ema_21 < ema_50)
+                    if not ema_aligned:
+                        return False, f"⚠️ EMAs no alineadas para SELL en {selected_tf}: EMA9={ema_9:.5f}, EMA21={ema_21:.5f}, EMA50={ema_50:.5f}"
 
             # Verificar que el precio esté en tendencia bajista
             if sma_50 > 0:
                 percent_from_sma = ((price - sma_50) / sma_50) * 100
-                # Permitir SELL solo si precio está cerca o debajo de SMA50
-                if price > sma_50 * 1.03:  # Más del 3% arriba de SMA50
+                # Usar el porcentaje configurado
+                if percent_from_sma > self.max_percent_from_sma50:
                     return False, f"⚠️ Precio muy arriba de SMA50 en {selected_tf}: {percent_from_sma:+.2f}% (contra-tendencia alcista)"
 
-                return True, f"✅ Tendencia bajista en {selected_tf}: ADX={adx:.1f}, EMAs alineadas, Precio {percent_from_sma:+.2f}% de SMA50"
+                if self.enable_enhanced_trend_filter:
+                    return True, f"✅ Tendencia bajista en {selected_tf}: ADX={adx:.1f}, EMAs alineadas, Precio {percent_from_sma:+.2f}% de SMA50"
+                else:
+                    return True, f"✅ Precio {percent_from_sma:+.2f}% de SMA50 en {selected_tf}"
 
         return True, "Trend alignment check passed"
 
@@ -386,27 +436,29 @@ class SignalFilter:
 
         # Para señales de VENTA
         if signal_type == 'SELL':
-            # Verificar si RSI está en sobrecompra (>70)
-            if rsi_14 > 70:
+            # Verificar si RSI está en sobrecompra (configurable)
+            if rsi_14 > self.divergence_rsi_overbought:
                 # Verificar momentum del precio (usando ROC o momentum_5)
                 momentum_5 = indicators.get('momentum_5', 0)
 
-                # Si el precio tiene momentum ALCISTA fuerte (>1.5%) mientras RSI >70
+                # Si el precio tiene momentum ALCISTA fuerte mientras RSI está alto
                 # es probable que haya divergencia alcista → NO VENDER aún
-                if momentum_5 > 0.015:  # 1.5% de subida
-                    return False, f"⚠️ Divergencia alcista detectada: RSI={rsi_14:.1f} (sobrecompra) pero precio sube {momentum_5*100:.2f}% - Probable continuación alcista"
+                momentum_threshold = self.divergence_momentum_threshold / 100  # Convertir a decimal
+                if momentum_5 > momentum_threshold:
+                    return False, f"⚠️ Divergencia alcista detectada: RSI={rsi_14:.1f} (>{self.divergence_rsi_overbought}) pero precio sube {momentum_5*100:.2f}% - Probable continuación alcista"
 
         # Para señales de COMPRA
         elif signal_type == 'BUY':
-            # Verificar si RSI está en sobreventa (<30)
-            if rsi_14 < 30:
+            # Verificar si RSI está en sobreventa (configurable)
+            if rsi_14 < self.divergence_rsi_oversold:
                 # Verificar momentum del precio
                 momentum_5 = indicators.get('momentum_5', 0)
 
-                # Si el precio tiene momentum BAJISTA fuerte (<-1.5%) mientras RSI <30
+                # Si el precio tiene momentum BAJISTA fuerte mientras RSI está bajo
                 # es probable que haya divergencia bajista → NO COMPRAR aún
-                if momentum_5 < -0.015:  # -1.5% de caída
-                    return False, f"⚠️ Divergencia bajista detectada: RSI={rsi_14:.1f} (sobreventa) pero precio cae {momentum_5*100:.2f}% - Probable continuación bajista"
+                momentum_threshold = self.divergence_momentum_threshold / 100  # Convertir a decimal
+                if momentum_5 < -momentum_threshold:
+                    return False, f"⚠️ Divergencia bajista detectada: RSI={rsi_14:.1f} (<{self.divergence_rsi_oversold}) pero precio cae {momentum_5*100:.2f}% - Probable continuación bajista"
 
         return True, f"No hay divergencias peligrosas (RSI={rsi_14:.1f})"
 
@@ -556,23 +608,23 @@ class SignalFilter:
 
         # Para señales de VENTA
         if signal_type == 'SELL':
-            # Debe estar cerca de resistencia (dentro del 0.5%)
+            # Debe estar cerca de resistencia (configurable)
             if distance_to_resistance <= self.sr_proximity_percent:
                 return True, f"✅ Cerca de resistencia: {distance_to_resistance:.2f}% (R={resistance:.5f})"
             else:
-                # Si está muy lejos de resistencia, rechazar
-                if distance_to_resistance > 1.5:  # Más del 1.5% lejos
-                    return False, f"⚠️ Muy lejos de resistencia: {distance_to_resistance:.2f}% (operar solo cerca de niveles clave)"
+                # Si está muy lejos de resistencia, rechazar (umbral configurable)
+                if distance_to_resistance > self.sr_max_distance_percent:
+                    return False, f"⚠️ Muy lejos de resistencia: {distance_to_resistance:.2f}% > {self.sr_max_distance_percent}% (operar solo cerca de niveles clave)"
 
         # Para señales de COMPRA
         elif signal_type == 'BUY':
-            # Debe estar cerca de soporte (dentro del 0.5%)
+            # Debe estar cerca de soporte (configurable)
             if distance_to_support <= self.sr_proximity_percent:
                 return True, f"✅ Cerca de soporte: {distance_to_support:.2f}% (S={support:.5f})"
             else:
-                # Si está muy lejos de soporte, rechazar
-                if distance_to_support > 1.5:  # Más del 1.5% lejos
-                    return False, f"⚠️ Muy lejos de soporte: {distance_to_support:.2f}% (operar solo cerca de niveles clave)"
+                # Si está muy lejos de soporte, rechazar (umbral configurable)
+                if distance_to_support > self.sr_max_distance_percent:
+                    return False, f"⚠️ Muy lejos de soporte: {distance_to_support:.2f}% > {self.sr_max_distance_percent}% (operar solo cerca de niveles clave)"
 
         return True, "Proximidad S/R aceptable"
 
