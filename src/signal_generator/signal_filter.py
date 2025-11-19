@@ -523,6 +523,7 @@ class SignalFilter:
     ) -> tuple[bool, str]:
         """
         Filtra señales cuando hay momentum muy fuerte en dirección opuesta (configurable)
+        Usa RSI y MACD como proxies del momentum del mercado
         """
         # Usar timeframe principal
         primary_analysis = None
@@ -534,8 +535,29 @@ class SignalFilter:
         if not primary_analysis:
             return True, "No hay datos para verificar momentum"
 
-        # Por ahora retornamos True ya que necesitamos agregar indicadores de momentum personalizados
-        return True, "Momentum check passed (placeholder)"
+        indicators = primary_analysis.indicators
+        rsi = indicators.get('rsi_14', 50)  # Default neutral
+        macd = indicators.get('macd', 0)
+        macd_signal = indicators.get('macd_signal', 0)
+
+        # Detectar momentum fuerte usando RSI y MACD
+        # Momentum alcista fuerte: RSI > 80 + MACD por encima de señal
+        # Momentum bajista fuerte: RSI < 20 + MACD por debajo de señal
+
+        strong_bullish_momentum = (rsi > 80) or (macd > macd_signal and macd > 0 and abs(macd - macd_signal) > abs(macd) * 0.1)
+        strong_bearish_momentum = (rsi < 20) or (macd < macd_signal and macd < 0 and abs(macd - macd_signal) > abs(macd) * 0.1)
+
+        if signal_type == 'SELL':
+            # Si queremos vender pero hay momentum alcista fuerte, bloquear
+            if strong_bullish_momentum:
+                return False, f"Momentum alcista fuerte detectado (RSI={rsi:.1f}, MACD={macd:.5f})"
+            return True, f"No hay momentum alcista opuesto (RSI={rsi:.1f})"
+
+        else:  # BUY
+            # Si queremos comprar pero hay momentum bajista fuerte, bloquear
+            if strong_bearish_momentum:
+                return False, f"Momentum bajista fuerte detectado (RSI={rsi:.1f}, MACD={macd:.5f})"
+            return True, f"No hay momentum bajista opuesto (RSI={rsi:.1f})"
 
     def _check_support_resistance_proximity(
         self,
