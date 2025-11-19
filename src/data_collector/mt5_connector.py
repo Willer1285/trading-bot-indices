@@ -597,6 +597,49 @@ class MT5OrderExecutor:
             logger.error(f"Error getting positions: {e}")
             return []
 
+    def get_closed_positions_today(self, symbol: Optional[str] = None) -> List[Dict]:
+        """
+        Get closed positions from today for tracking consecutive losses
+
+        Args:
+            symbol: Filter by symbol (optional)
+
+        Returns:
+            List of closed positions with profit/loss info
+        """
+        try:
+            # Get deals from today
+            date_from = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+            date_to = datetime.now()
+
+            if symbol:
+                deals = mt5.history_deals_get(date_from, date_to, group=symbol)
+            else:
+                deals = mt5.history_deals_get(date_from, date_to)
+
+            if deals is None:
+                return []
+
+            closed_positions = []
+            for deal in deals:
+                # Only include OUT deals (exit positions) with our magic number
+                if deal.entry == mt5.DEAL_ENTRY_OUT and deal.magic == self.magic_number:
+                    # Determine if it was TP or SL based on profit
+                    result = 'TP' if deal.profit > 0 else 'SL'
+                    closed_positions.append({
+                        'ticket': deal.ticket,
+                        'symbol': deal.symbol,
+                        'profit': deal.profit,
+                        'result': result,
+                        'time': datetime.fromtimestamp(deal.time)
+                    })
+
+            return closed_positions
+
+        except Exception as e:
+            logger.error(f"Error getting closed positions: {e}")
+            return []
+
     def calculate_lot_size(
         self,
         symbol: str,
