@@ -62,6 +62,10 @@ class MT5TradingBot:
         self.max_open_positions = config.mt5_max_open_positions
         self.break_even_activated = {} # Rastrea las operaciones con BE activado
 
+        # Tracking de operaciones para filtro de pérdidas consecutivas
+        self.tracked_open_tickets = set()  # Tickets de operaciones abiertas que estamos rastreando
+        self.last_checked_closed_time = datetime.utcnow()
+
         # Initialize all components
         self._initialize_components()
 
@@ -240,6 +244,9 @@ class MT5TradingBot:
                     )
                     await asyncio.sleep(10)
                     continue
+
+                # Verificar y registrar operaciones cerradas (para filtro de pérdidas consecutivas)
+                await self._check_and_record_closed_positions()
 
                 # Gestionar posiciones abiertas (BE y TS)
                 await self._manage_open_positions()
@@ -439,6 +446,45 @@ class MT5TradingBot:
             logger.error(f"Error executing signal: {e}")
             self.performance.record_error("signal_execution", str(e), signal.symbol)
             return False
+
+    async def _check_and_record_closed_positions(self):
+        """
+        Verifica si hay operaciones cerradas y las registra en el SignalFilter
+        para el tracking de pérdidas consecutivas
+        """
+        try:
+            # Obtener posiciones actualmente abiertas
+            open_positions = self.order_executor.get_open_positions()
+            current_open_tickets = {pos['ticket'] for pos in open_positions}
+
+            # Detectar tickets que ya no están abiertos (se cerraron)
+            closed_tickets = self.tracked_open_tickets - current_open_tickets
+
+            if closed_tickets:
+                # Obtener deals cerrados del día para verificar el resultado
+                closed_positions = self.order_executor.get_closed_positions_today()
+
+                for closed_pos in closed_positions:
+                    ticket = closed_pos['ticket']
+                    if ticket in closed_tickets:
+                        symbol = closed_pos['symbol']
+                        result = closed_pos['result']  # 'SL' o 'TP'
+
+                        # Registrar en el SignalFilter
+                        self.signal_generator.signal_filter.record_closed_trade(symbol, result)
+
+                        logger.info(f"✅ Operación cerrada registrada: {symbol} ticket #{ticket} -> {result} (Profit: {closed_pos['profit']:.2f})")
+
+                        # Remover del tracking
+                        self.tracked_open_tickets.discard(ticket)
+
+            # Agregar nuevas posiciones abiertas al tracking
+            for ticket in current_open_tickets:
+                if ticket not in self.tracked_open_tickets:
+                    self.tracked_open_tickets.add(ticket)
+
+        except Exception as e:
+            logger.error(f"Error verificando operaciones cerradas: {e}")
 
     async def _manage_open_positions(self):
         """Gestiona las posiciones abiertas para aplicar Break Even y Trailing Stop."""

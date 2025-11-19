@@ -171,8 +171,10 @@ class MarketAnalyzer:
         latest = df.iloc[-1]
         summary = {'price': float(latest['close'])}
         indicators_to_extract = [
-            'rsi_14', 'macd', 'macd_signal', 'adx', 'sma_25', 'sma_50',
-            'ema_21', 'ema_50', 'bb_high', 'bb_low', 'atr', 'obv'
+            'rsi_14', 'rsi_6', 'rsi_21', 'macd', 'macd_signal', 'adx',
+            'sma_25', 'sma_50', 'ema_9', 'ema_21', 'ema_50',
+            'bb_high', 'bb_low', 'atr', 'obv', 'roc',
+            'momentum_1', 'momentum_3', 'momentum_5', 'momentum_10'
         ]
         for indicator in indicators_to_extract:
             if indicator in df.columns:

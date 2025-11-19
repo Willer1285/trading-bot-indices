@@ -536,6 +536,58 @@ class MT5OrderExecutor:
             logger.error(f"Error closing position: {e}")
             return False
 
+    def get_closed_positions_today(self, symbol: Optional[str] = None) -> List[Dict]:
+        """
+        Get closed positions from today
+
+        Args:
+            symbol: Filter by symbol (optional)
+
+        Returns:
+            List of closed positions with their results (SL/TP)
+        """
+        try:
+            # Get deals from today
+            date_from = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+            date_to = datetime.now()
+
+            if symbol:
+                deals = mt5.history_deals_get(date_from, date_to, group=symbol)
+            else:
+                deals = mt5.history_deals_get(date_from, date_to)
+
+            if deals is None or len(deals) == 0:
+                return []
+
+            closed_positions = []
+
+            # Process deals to identify closed positions
+            for deal in deals:
+                # Skip entry deals (opening positions)
+                if deal.entry == mt5.DEAL_ENTRY_IN:
+                    continue
+
+                # Only process exit deals (closing positions) from this bot
+                if deal.entry == mt5.DEAL_ENTRY_OUT and deal.magic == self.magic_number:
+                    # Determine if it closed at SL or TP
+                    result = 'TP' if deal.profit > 0 else 'SL'
+
+                    closed_positions.append({
+                        'ticket': deal.ticket,
+                        'symbol': deal.symbol,
+                        'profit': deal.profit,
+                        'result': result,
+                        'time': datetime.fromtimestamp(deal.time),
+                        'volume': deal.volume,
+                        'price': deal.price
+                    })
+
+            return closed_positions
+
+        except Exception as e:
+            logger.error(f"Error getting closed positions: {e}")
+            return []
+
     def get_open_positions(self, symbol: Optional[str] = None) -> List[Dict]:
         """
         Get open positions
