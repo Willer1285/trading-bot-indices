@@ -128,9 +128,13 @@ class MT5Connector:
 
             date_from = date_to - timedelta(days=days_to_request)
 
-            rates = await asyncio.get_event_loop().run_in_executor(
-                None,
-                lambda: mt5.copy_rates_range(symbol, mt5_timeframe, date_from, date_to)
+            # Agregar timeout de 30 segundos para evitar bloqueos
+            rates = await asyncio.wait_for(
+                asyncio.get_event_loop().run_in_executor(
+                    None,
+                    lambda: mt5.copy_rates_range(symbol, mt5_timeframe, date_from, date_to)
+                ),
+                timeout=30.0
             )
 
             if rates is None or len(rates) == 0:
@@ -174,6 +178,9 @@ class MT5Connector:
 
             return df
 
+        except asyncio.TimeoutError:
+            logger.error(f"Timeout fetching OHLCV for {symbol} {timeframe} (>30s)")
+            return pd.DataFrame()
         except Exception as e:
             logger.error(f"Error fetching OHLCV for {symbol} {timeframe}: {e}")
             return pd.DataFrame()

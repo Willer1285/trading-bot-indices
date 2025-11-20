@@ -20,6 +20,7 @@ from config import config
 from utils.logger import setup_logger
 from utils.performance_tracker import PerformanceTracker
 from utils.cleanup_manager import CleanupManager
+from utils.watchdog import BotWatchdog, HeartbeatLogger
 
 from data_collector.mt5_connector import MT5Connector, MT5OrderExecutor
 from data_collector.mt5_market_data_manager import MT5MarketDataManager
@@ -72,6 +73,17 @@ class MT5TradingBot:
             memory_threshold_percent=80.0, # Cleanup if memory > 80%
             cleanup_interval_hours=6       # Run cleanup every 6 hours
         )
+
+        # Watchdog para detectar y recuperar bloqueos
+        self.watchdog = BotWatchdog(
+            timeout_seconds=180,  # 3 minutos sin heartbeat = alerta
+            check_interval=30,    # Verificar cada 30 segundos
+            alert_callback=self._on_freeze_detected,
+            recovery_callback=self._on_freeze_recovery
+        )
+
+        # Heartbeat logger para logs periódicos
+        self.heartbeat_logger = HeartbeatLogger(log_interval=60)
 
         # Initialize components
         self.mt5_connector = None
@@ -327,6 +339,10 @@ class MT5TradingBot:
             self.bot_controller.start()
             logger.success("✅ Bot controller started - Status: RUNNING")
 
+            # Start watchdog
+            self.watchdog.start()
+            logger.success("✅ Watchdog started - Monitoring for freezes")
+
             # Test Telegram connection
             if self.telegram_bot:
                 telegram_ok = await self.telegram_bot.test_connection()
@@ -374,6 +390,11 @@ class MT5TradingBot:
 
         self.is_running = False
 
+        # Stop watchdog
+        if self.watchdog:
+            self.watchdog.stop()
+            logger.info("Watchdog stopped")
+
         # Stop bot controller
         if self.bot_controller:
             self.bot_controller.stop()
@@ -406,6 +427,15 @@ class MT5TradingBot:
 
         while self.is_running:
             try:
+                # Registrar heartbeat para watchdog
+                self.watchdog.heartbeat()
+
+                # Log heartbeat periódico
+                watchdog_stats = self.watchdog.get_statistics()
+                self.heartbeat_logger.maybe_log_heartbeat(
+                    f"Health: {self.watchdog.get_health_status()}, Checks: {watchdog_stats['total_checks']}"
+                )
+
                 logger.info("=" * 30 + " Starting New Analysis Cycle " + "=" * 30)
 
                 # Check MT5 connection
@@ -875,6 +905,84 @@ class MT5TradingBot:
         except Exception as e:
             logger.error(f"Error al gestionar las posiciones abiertas: {e}")
 
+
+    def _on_freeze_detected(self, time_since_heartbeat: float):
+        """
+        Callback llamado cuando el watchdog detecta un bloqueo del bot.
+
+        Args:
+            time_since_heartbeat: Tiempo en segundos desde el último heartbeat
+        """
+        try:
+            logger.critical(
+                f"🚨 BOT FREEZE ALERT! No heartbeat for {time_since_heartbeat:.1f}s\n"
+                f"This indicates the main loop is blocked or not responding.\n"
+                f"Check MT5 connection, network issues, or resource constraints."
+            )
+
+            # Intentar enviar alerta por Telegram (asíncrono, usar asyncio.run_coroutine_threadsafe si es necesario)
+            if self.telegram_bot:
+                try:
+                    # Crear un nuevo event loop para ejecutar la coroutine desde el thread del watchdog
+                    import threading
+                    if isinstance(threading.current_thread(), threading._MainThread):
+                        asyncio.create_task(
+                            self.telegram_bot.send_message(
+                                f"🚨 **CRITICAL: Bot Freeze Detected!**\n\n"
+                                f"⏱️ **Time since last heartbeat:** {time_since_heartbeat:.1f}s\n"
+                                f"⚠️ **Status:** Main loop is not responding\n\n"
+                                f"**Possible causes:**\n"
+                                f"• MT5 connection blocked\n"
+                                f"• Network issues\n"
+                                f"• Resource constraints (CPU/Memory)\n"
+                                f"• Model inference timeout\n\n"
+                                f"**Action:** Monitoring for auto-recovery..."
+                            )
+                        )
+                    else:
+                        # Si estamos en un thread secundario, no podemos crear tasks directamente
+                        logger.warning("Cannot send Telegram alert from watchdog thread")
+                except Exception as e:
+                    logger.error(f"Failed to send Telegram freeze alert: {e}")
+
+        except Exception as e:
+            logger.error(f"Error in freeze detection callback: {e}")
+
+    def _on_freeze_recovery(self):
+        """
+        Callback llamado para intentar recuperación automática cuando se detecta un bloqueo.
+
+        IMPORTANTE: Este callback se ejecuta desde el thread del watchdog,
+        por lo que debe ser thread-safe y no bloquear.
+        """
+        try:
+            logger.warning("🔄 Attempting automatic recovery from freeze...")
+
+            # Log estado actual del sistema
+            try:
+                import psutil
+                process = psutil.Process()
+                mem_info = process.memory_info()
+                cpu_percent = process.cpu_percent(interval=0.1)
+
+                logger.info(
+                    f"System status - CPU: {cpu_percent:.1f}%, "
+                    f"Memory: {mem_info.rss / 1024 / 1024:.1f} MB"
+                )
+            except:
+                pass
+
+            # Verificar conexión MT5
+            if self.mt5_connector and not self.mt5_connector.check_connection():
+                logger.error("MT5 connection is down - this may be causing the freeze")
+
+            # NOTA: No intentamos reiniciar componentes aquí porque puede causar race conditions
+            # El main loop debería recuperarse automáticamente si el problema se resuelve
+
+            logger.info("Recovery attempt logged. Waiting for main loop to resume...")
+
+        except Exception as e:
+            logger.error(f"Error in freeze recovery callback: {e}")
 
     async def _run_periodic_tasks(self):
         """Run periodic maintenance tasks"""
