@@ -89,7 +89,8 @@ class SignalFilter:
         self,
         symbol: str,
         signal_type: str,
-        analyses: Dict[str, Optional[MarketAnalysis]]
+        analyses: Dict[str, Optional[MarketAnalysis]],
+        market_data: Optional[Dict[str, 'pd.DataFrame']] = None
     ) -> bool:
         """
         Check if signal should be sent to Telegram (without execution limits)
@@ -98,6 +99,7 @@ class SignalFilter:
             symbol: Trading pair
             signal_type: BUY or SELL
             analyses: Multi-timeframe analyses
+            market_data: Optional dict of timeframe -> DataFrame for reaction detection
 
         Returns:
             True if signal passes quality filters (for notification)
@@ -169,9 +171,11 @@ class SignalFilter:
         else:
             logger.debug(f"{symbol}: ⏭️  Momentum filter DISABLED - skipping")
 
-        # Filtro 4: Proximidad a Soporte/Resistencia
+        # Filtro 4: Proximidad a Soporte/Resistencia + Reacción Confirmada
         if self.enable_sr_proximity_filter:
-            sr_result, sr_reason = self._check_support_resistance_proximity(analyses, signal_type)
+            sr_result, sr_reason = self._check_support_resistance_proximity(
+                analyses, signal_type, market_data
+            )
             if not sr_result:
                 logger.warning(f"{symbol}: ❌ Support/Resistance filter - {sr_reason}")
                 return False
@@ -228,7 +232,8 @@ class SignalFilter:
         self,
         symbol: str,
         signal_type: str,
-        analyses: Dict[str, Optional[MarketAnalysis]]
+        analyses: Dict[str, Optional[MarketAnalysis]],
+        market_data: Optional[Dict[str, 'pd.DataFrame']] = None
     ) -> bool:
         """
         Check if signal should be traded (legacy method - kept for compatibility)
@@ -240,12 +245,13 @@ class SignalFilter:
             symbol: Trading pair
             signal_type: BUY or SELL
             analyses: Multi-timeframe analyses
+            market_data: Optional dict of timeframe -> DataFrame for reaction detection
 
         Returns:
             True if signal passes all filters
         """
         # Check quality first
-        if not self.should_notify(symbol, signal_type, analyses):
+        if not self.should_notify(symbol, signal_type, analyses, market_data):
             return False
 
         # Then check execution limits
@@ -562,20 +568,29 @@ class SignalFilter:
     def _check_support_resistance_proximity(
         self,
         analyses: Dict[str, Optional[MarketAnalysis]],
-        signal_type: str
+        signal_type: str,
+        market_data: Optional[Dict[str, 'pd.DataFrame']] = None
     ) -> tuple[bool, str]:
         """
-        Verifica que las señales estén cerca de zonas de soporte/resistencia (configurable)
+        Verifica que las señales estén cerca de zonas de soporte/resistencia
+        Y QUE HAYA REACCIÓN CONFIRMADA en esos niveles (configurable)
 
-        - SELL solo cerca de resistencias
-        - BUY solo cerca de soportes
-        - Evitar operar "en medio de la nada"
+        Criterios mejorados:
+        - SELL solo si hay reacción bajista confirmada en resistencia
+        - BUY solo si hay reacción alcista confirmada en soporte
+        - Evitar operar "en medio de la nada" sin reacción
+
+        NUEVA ESTRATEGIA: El precio debe PRIMERO reaccionar a S/R antes de operar
         """
+        from ai_engine.technical_indicators import TechnicalIndicators
+
         # Usar timeframe mediano para S/R
         primary_analysis = None
+        selected_tf = None
         for tf in ['1h', '4h', config.primary_timeframe]:
             if tf in analyses and analyses[tf]:
                 primary_analysis = analyses[tf]
+                selected_tf = tf
                 break
 
         if not primary_analysis:
@@ -597,25 +612,86 @@ class SignalFilter:
         distance_to_support = abs((current_price - support) / support) * 100
         distance_to_resistance = abs((current_price - resistance) / resistance) * 100
 
-        # Para señales de VENTA
-        if signal_type == 'SELL':
-            # Debe estar cerca de resistencia (configurable)
-            if distance_to_resistance <= self.sr_proximity_percent:
-                return True, f"✅ Cerca de resistencia: {distance_to_resistance:.2f}% (R={resistance:.5f})"
-            else:
-                # Si está muy lejos de resistencia, rechazar (umbral configurable)
-                if distance_to_resistance > self.sr_max_distance_percent:
-                    return False, f"⚠️ Muy lejos de resistencia: {distance_to_resistance:.2f}% > {self.sr_max_distance_percent}%"
+        # ========== NUEVA LÓGICA: DETECTAR REACCIÓN EN S/R ==========
 
-        # Para señales de COMPRA
-        elif signal_type == 'BUY':
-            # Debe estar cerca de soporte (configurable)
-            if distance_to_support <= self.sr_proximity_percent:
-                return True, f"✅ Cerca de soporte: {distance_to_support:.2f}% (S={support:.5f})"
+        # Obtener el dataframe para detectar reacciones
+        df_for_reaction = None
+        if market_data and selected_tf in market_data:
+            df_for_reaction = market_data[selected_tf]
+
+        # Para señales de VENTA - verificar reacción en RESISTENCIA
+        if signal_type == 'SELL':
+            # 1. Verificar proximidad básica
+            if distance_to_resistance > self.sr_max_distance_percent:
+                return False, f"⚠️ Muy lejos de resistencia: {distance_to_resistance:.2f}% > {self.sr_max_distance_percent}%"
+
+            # 2. REQUERIR REACCIÓN CONFIRMADA (nuevo criterio crítico)
+            if df_for_reaction is not None and not df_for_reaction.empty:
+                reaction = TechnicalIndicators.detect_price_reaction_at_level(
+                    df=df_for_reaction,
+                    level=resistance,
+                    level_type='resistance',
+                    tolerance_percent=self.sr_proximity_percent
+                )
+
+                if reaction['has_reaction']:
+                    # ✅ HAY REACCIÓN CONFIRMADA - Señal de alta calidad
+                    confidence_msg = f"conf={reaction['confidence']:.2f}"
+                    return True, (
+                        f"🎯 REACCIÓN CONFIRMADA en resistencia R={resistance:.5f} | "
+                        f"Patrón: {reaction['pattern']} ({reaction['candles_ago']} velas) | "
+                        f"{confidence_msg} | Dist={distance_to_resistance:.2f}%"
+                    )
+                else:
+                    # ❌ NO HAY REACCIÓN - Rechazar la señal
+                    return False, (
+                        f"❌ SIN REACCIÓN en resistencia R={resistance:.5f} | "
+                        f"Razón: {reaction['reason']} | "
+                        f"Dist={distance_to_resistance:.2f}%"
+                    )
             else:
-                # Si está muy lejos de soporte, rechazar (umbral configurable)
-                if distance_to_support > self.sr_max_distance_percent:
-                    return False, f"⚠️ Muy lejos de soporte: {distance_to_support:.2f}% > {self.sr_max_distance_percent}%"
+                # Fallback: Solo verificar proximidad (modo legacy)
+                if distance_to_resistance <= self.sr_proximity_percent:
+                    return True, f"⚠️ Cerca de resistencia (sin verificar reacción): {distance_to_resistance:.2f}%"
+                else:
+                    return False, f"⚠️ No suficientemente cerca de resistencia: {distance_to_resistance:.2f}%"
+
+        # Para señales de COMPRA - verificar reacción en SOPORTE
+        elif signal_type == 'BUY':
+            # 1. Verificar proximidad básica
+            if distance_to_support > self.sr_max_distance_percent:
+                return False, f"⚠️ Muy lejos de soporte: {distance_to_support:.2f}% > {self.sr_max_distance_percent}%"
+
+            # 2. REQUERIR REACCIÓN CONFIRMADA (nuevo criterio crítico)
+            if df_for_reaction is not None and not df_for_reaction.empty:
+                reaction = TechnicalIndicators.detect_price_reaction_at_level(
+                    df=df_for_reaction,
+                    level=support,
+                    level_type='support',
+                    tolerance_percent=self.sr_proximity_percent
+                )
+
+                if reaction['has_reaction']:
+                    # ✅ HAY REACCIÓN CONFIRMADA - Señal de alta calidad
+                    confidence_msg = f"conf={reaction['confidence']:.2f}"
+                    return True, (
+                        f"🎯 REACCIÓN CONFIRMADA en soporte S={support:.5f} | "
+                        f"Patrón: {reaction['pattern']} ({reaction['candles_ago']} velas) | "
+                        f"{confidence_msg} | Dist={distance_to_support:.2f}%"
+                    )
+                else:
+                    # ❌ NO HAY REACCIÓN - Rechazar la señal
+                    return False, (
+                        f"❌ SIN REACCIÓN en soporte S={support:.5f} | "
+                        f"Razón: {reaction['reason']} | "
+                        f"Dist={distance_to_support:.2f}%"
+                    )
+            else:
+                # Fallback: Solo verificar proximidad (modo legacy)
+                if distance_to_support <= self.sr_proximity_percent:
+                    return True, f"⚠️ Cerca de soporte (sin verificar reacción): {distance_to_support:.2f}%"
+                else:
+                    return False, f"⚠️ No suficientemente cerca de soporte: {distance_to_support:.2f}%"
 
         return True, "Proximidad S/R aceptable"
 
