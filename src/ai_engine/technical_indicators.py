@@ -406,11 +406,11 @@ class TechnicalIndicators:
             if level_type == 'support':
                 # Patrones alcistas (rechazo de soporte)
 
-                # Hammer: mecha inferior >= 2x cuerpo, mecha superior pequeña
+                # Hammer: mecha inferior >= 1.5x cuerpo, mecha superior pequeña (OPCIÓN 2: más flexible)
                 lower_wick = min(current['open'], current['close']) - current['low']
                 upper_wick = current['high'] - max(current['open'], current['close'])
 
-                if lower_wick >= body * 2 and upper_wick < body * 0.5:
+                if lower_wick >= body * 1.5 and upper_wick < body * 0.5:
                     # Verificar confirmación con siguiente vela alcista
                     confirmation = next_candle['close'] > next_candle['open']
                     confidence = 0.85 if confirmation else 0.65
@@ -431,8 +431,8 @@ class TechnicalIndicators:
                         'pattern_name': 'Bullish Engulfing'
                     }
 
-                # Vela alcista fuerte (cuerpo > 60% del rango)
-                if current['close'] > current['open'] and body / range_val > 0.6:
+                # Vela alcista fuerte (cuerpo > 50% del rango) (OPCIÓN 2: más flexible)
+                if current['close'] > current['open'] and body / range_val > 0.5:
                     return {
                         'has_pattern': True,
                         'confidence': 0.60,
@@ -442,11 +442,11 @@ class TechnicalIndicators:
             elif level_type == 'resistance':
                 # Patrones bajistas (rechazo de resistencia)
 
-                # Shooting Star: mecha superior >= 2x cuerpo, mecha inferior pequeña
+                # Shooting Star: mecha superior >= 1.5x cuerpo, mecha inferior pequeña (OPCIÓN 2: más flexible)
                 upper_wick = current['high'] - max(current['open'], current['close'])
                 lower_wick = min(current['open'], current['close']) - current['low']
 
-                if upper_wick >= body * 2 and lower_wick < body * 0.5:
+                if upper_wick >= body * 1.5 and lower_wick < body * 0.5:
                     # Verificar confirmación con siguiente vela bajista
                     confirmation = next_candle['close'] < next_candle['open']
                     confidence = 0.85 if confirmation else 0.65
@@ -467,8 +467,8 @@ class TechnicalIndicators:
                         'pattern_name': 'Bearish Engulfing'
                     }
 
-                # Vela bajista fuerte (cuerpo > 60% del rango)
-                if current['close'] < current['open'] and body / range_val > 0.6:
+                # Vela bajista fuerte (cuerpo > 50% del rango) (OPCIÓN 2: más flexible)
+                if current['close'] < current['open'] and body / range_val > 0.5:
                     return {
                         'has_pattern': True,
                         'confidence': 0.60,
@@ -508,8 +508,8 @@ class TechnicalIndicators:
                 price_movement = latest_candle['close'] - reaction_candle['low']
                 price_movement_percent = (price_movement / level) * 100
 
-                # Confirmar si el precio se movió al menos 0.2% hacia arriba
-                if price_movement_percent >= 0.2:
+                # Confirmar si el precio se movió al menos 0.15% hacia arriba (OPCIÓN 2: más flexible)
+                if price_movement_percent >= 0.15:
                     # Strength basado en qué tan fuerte fue el movimiento
                     strength = min(1.0, price_movement_percent / 1.0)  # Max 1.0 at 1%
                     return {'confirmed': True, 'strength': strength}
@@ -519,8 +519,8 @@ class TechnicalIndicators:
                 price_movement = reaction_candle['high'] - latest_candle['close']
                 price_movement_percent = (price_movement / level) * 100
 
-                # Confirmar si el precio se movió al menos 0.2% hacia abajo
-                if price_movement_percent >= 0.2:
+                # Confirmar si el precio se movió al menos 0.15% hacia abajo (OPCIÓN 2: más flexible)
+                if price_movement_percent >= 0.15:
                     # Strength basado en qué tan fuerte fue el movimiento
                     strength = min(1.0, price_movement_percent / 1.0)  # Max 1.0 at 1%
                     return {'confirmed': True, 'strength': strength}
