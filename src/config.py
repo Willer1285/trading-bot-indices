@@ -3,7 +3,9 @@ from typing import List
 from dotenv import load_dotenv
 
 # Cargar variables de entorno desde el archivo .env
-load_dotenv()
+# Usar ruta absoluta para que funcione sin importar desde dónde se ejecute
+_env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
+load_dotenv(_env_path)
 
 class Config:
     """
@@ -18,7 +20,7 @@ class Config:
         self.telegram_include_charts: bool = os.getenv("TELEGRAM_INCLUDE_CHARTS", "true").lower() == "true"
 
         # Configuración de MT5
-        self.mt5_login: int = int(os.getenv("MT5_LOGIN"))
+        self.mt5_login: int = int(os.getenv("MT5_LOGIN", 0))
         self.mt5_password: str = os.getenv("MT5_PASSWORD")
         self.mt5_server: str = os.getenv("MT5_SERVER")
         self.mt5_path: str = os.getenv("MT5_PATH", "")
