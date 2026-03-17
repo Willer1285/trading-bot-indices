@@ -1,6 +1,97 @@
-# 📝 Registro de Cambios
+# 📝 Registro de Cambios (CHANGELOG)
 
-## v2.1.0 - Modo Canal de Señales
+> **IMPORTANTE:** Este archivo debe actualizarse **SIN EXCEPCIONES** cada vez que se realice un cambio en el bot.
+>
+> **Formato de versionado:** Seguimos [Semantic Versioning](https://semver.org/):
+> - **MAJOR** (X.0.0): Cambios incompatibles con versiones anteriores
+> - **MINOR** (0.X.0): Nuevas funcionalidades compatibles con versiones anteriores
+> - **PATCH** (0.0.X): Correcciones de bugs y pequeñas mejoras
+
+---
+
+## 📌 Instrucciones de Uso
+
+### Cómo registrar un cambio:
+
+1. **Crear una nueva sección de versión** en la parte superior (justo debajo de esta sección)
+2. **Formato de la sección:**
+   ```markdown
+   ## v[MAJOR].[MINOR].[PATCH] - [Título descriptivo] (YYYY-MM-DD)
+
+   ### 🎯 Resumen
+   Descripción breve del cambio principal
+
+   ### ✅ Cambios Implementados
+   - ✅ Cambio 1: Descripción detallada
+   - ✅ Cambio 2: Descripción detallada
+
+   ### 🐛 Bugs Corregidos (opcional)
+   - 🐛 Bug 1: Descripción
+
+   ### ⚠️ Breaking Changes (opcional, solo para MAJOR)
+   - ⚠️ Cambio incompatible: Descripción
+
+   ### 📝 Notas Adicionales (opcional)
+   Información relevante para el usuario
+   ```
+
+3. **Usar emojis consistentes:**
+   - ✅ Cambio completado
+   - 🐛 Bug corregido
+   - ⚠️ Cambio incompatible (breaking change)
+   - 🔧 Configuración
+   - 📊 Mejora de rendimiento
+   - 🎨 Mejora de UI/UX
+   - 📝 Documentación
+   - 🚀 Nueva funcionalidad
+   - 🔒 Seguridad
+
+4. **Actualizar "Versión Actual" al final del archivo**
+
+---
+
+## 🚀 Historial de Versiones
+
+## v2.2.0 - Documentación Completa de Estrategia y Funcionamiento (2026-03-17)
+
+### 🎯 Resumen
+Creación de documentación exhaustiva del funcionamiento interno del bot, incluyendo estrategia de trading, modelos de IA, indicadores técnicos y flujos de operación.
+
+### ✅ Cambios Implementados
+
+**Nuevos Archivos:**
+- ✅ **ESTRATEGIA_BOT.md**: Documento completo (10,000+ palabras) que detalla:
+  - Arquitectura completa del sistema con diagramas
+  - Estrategia de trading detallada (señales BUY/SELL/HOLD)
+  - Descripción de los 4 modelos de IA (Random Forest, Gradient Boosting, LSTM, Pattern Model)
+  - Funcionamiento del Ensemble Stacking
+  - Listado completo de 116 features/indicadores técnicos
+  - Explicación de los 8 filtros de calidad de señales
+  - Gestión de riesgo dinámica (SL, TP, Break Even, Trailing Stop, Lotaje)
+  - Reglas especiales para índices sintéticos (GainX/PainX)
+  - Flujo completo de operación (paso a paso)
+  - Todos los parámetros configurables con ejemplos
+
+**Mejoras en CHANGELOG.md:**
+- ✅ Instrucciones claras de cómo mantener el changelog actualizado
+- ✅ Formato estandarizado con Semantic Versioning
+- ✅ Plantilla para registrar futuros cambios
+- ✅ Uso consistente de emojis
+
+### 📝 Notas Adicionales
+
+Este cambio facilita:
+1. **Onboarding de nuevos desarrolladores**: Pueden entender rápidamente cómo funciona el bot
+2. **Debugging**: Documentación de referencia para entender el flujo
+3. **Optimización**: Identificar áreas de mejora con claridad
+4. **Transparencia**: Usuarios pueden entender completamente la estrategia
+5. **Mantenimiento**: Registro histórico de todos los cambios realizados
+
+**Archivo creado:** `ESTRATEGIA_BOT.md` (ubicación raíz del proyecto)
+
+---
+
+## v2.1.0 - Modo Canal de Señales (2025-10-26)
 
 ### ✅ Cambios Implementados
 
@@ -159,5 +250,23 @@ grep "ORDER EXECUTED" logs/trading_bot.log
 
 ---
 
-**Fecha:** 26 de Octubre, 2025
-**Versión Actual:** 2.1.0
+## 📊 Información del Proyecto
+
+**Última actualización:** 17 de Marzo, 2026
+**Versión Actual:** v2.2.0
+**Repositorio:** https://github.com/Willer1285/trading-bot-indices
+
+---
+
+## ⚠️ Recordatorio para Desarrolladores
+
+**ESTE ARCHIVO DEBE ACTUALIZARSE EN CADA CAMBIO SIN EXCEPCIONES.**
+
+Antes de hacer commit:
+1. ✅ Actualizar CHANGELOG.md con los cambios realizados
+2. ✅ Seguir el formato estandarizado arriba
+3. ✅ Usar emojis consistentes
+4. ✅ Actualizar "Versión Actual" al final
+5. ✅ Incluir fecha en formato YYYY-MM-DD
+
+**Si los cambios afectan la estrategia o funcionamiento del bot, también actualizar `ESTRATEGIA_BOT.md`**
