@@ -80,7 +80,13 @@ class Config:
         self.fixed_trailing_stop_trigger_points: float = float(os.getenv("FIXED_TRAILING_STOP_TRIGGER_POINTS", 30.0))
         self.fixed_trailing_stop_distance_points: float = float(os.getenv("FIXED_TRAILING_STOP_DISTANCE_POINTS", 22.5))
 
+        # Gestión de Riesgo por Porcentaje de Capital
+        # Si está activado, sobrescribe el lotaje dinámico por confianza
+        self.enable_risk_percent: bool = os.getenv("ENABLE_RISK_PERCENT", "false").lower() == "true"
+        self.risk_percent_per_trade: float = float(os.getenv("RISK_PERCENT_PER_TRADE", 2.0))
+
         # Configuración de Lotaje Dinámico (basado en confianza del modelo)
+        # NOTA: Se ignora si ENABLE_RISK_PERCENT=true
         self.enable_dynamic_lot_size: bool = os.getenv("ENABLE_DYNAMIC_LOT_SIZE", "true").lower() == "true"
         self.min_lot_size: float = float(os.getenv("MIN_LOT_SIZE", 0.10))
         self.max_lot_size: float = float(os.getenv("MAX_LOT_SIZE", 1.00))
