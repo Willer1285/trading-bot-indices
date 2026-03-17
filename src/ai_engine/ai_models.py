@@ -329,7 +329,10 @@ class EnsembleModel:
             'random_forest': RandomForestModel(),
             'gradient_boosting': GradientBoostingModel(),
             'pattern_based': SimplePatternModel(),
-            'lstm': None
+            'lstm': None,
+            'tft': None,
+            'rl_agent': None,
+            'llm_sentiment': None
         }
         self.meta_model = LogisticRegression()
         self.is_fitted = False
@@ -379,6 +382,9 @@ class EnsembleModel:
         X_clean = X.copy().replace([np.inf, -np.inf], np.nan).fillna(0)
 
         for name, model in self.base_models.items():
+            if model is None:
+                logger.warning(f"Model {name} is not available, skipping training.")
+                continue
             try:
                 logger.info(f"Training {name}...")
                 if name == 'lstm':
@@ -679,8 +685,12 @@ class LSTMModel(BaseModel):
         logger.info(f"Balanced total samples: {total_samples_balanced}")
         logger.info(f"Class weights: {class_weights}")
 
-        # Early stopping con patience aumentado para permitir más exploración
-        early_stopping = EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True)
+        # Early stopping con patience alto para permitir exploración completa
+        early_stopping = EarlyStopping(monitor='val_loss', patience=40, restore_best_weights=True)
+        # Reducir learning rate cuando val_loss se estanca (antes de early stopping)
+        reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(
+            monitor='val_loss', factor=0.5, patience=10, min_lr=1e-6, verbose=1
+        )
 
         n_samples, n_timesteps, n_features = X.shape
         X_reshaped = X.reshape((n_samples * n_timesteps, n_features))
@@ -693,7 +703,7 @@ class LSTMModel(BaseModel):
             epochs=100,  # Aumentado a 100 para dar más margen
             batch_size=32,
             validation_split=0.2,  # Aumentado de 0.1 a 0.2 para métricas más confiables
-            callbacks=[early_stopping],
+            callbacks=[early_stopping, reduce_lr],
             class_weight=class_weights,
             verbose=1
         )
