@@ -91,5 +91,39 @@ class Config:
         self.divergence_rsi_oversold: float = float(os.getenv("DIVERGENCE_RSI_OVERSOLD", 30.0))
         self.divergence_momentum_threshold: float = float(os.getenv("DIVERGENCE_MOMENTUM_THRESHOLD", 1.5))
 
+        # ========== HYBRID AI SYSTEM CONFIGURATION (TFT + RL + LLM) ==========
+
+        # General Hybrid Settings
+        self.enable_hybrid_ai: bool = os.getenv("ENABLE_HYBRID_AI", "false").lower() == "true"
+
+        # TFT (Temporal Fusion Transformer) Settings
+        self.tft_enabled: bool = os.getenv("TFT_ENABLED", "true").lower() == "true"
+        self.tft_encoder_length: int = int(os.getenv("TFT_ENCODER_LENGTH", 60))
+        self.tft_prediction_length: int = int(os.getenv("TFT_PREDICTION_LENGTH", 10))
+        self.tft_hidden_size: int = int(os.getenv("TFT_HIDDEN_SIZE", 64))
+        self.tft_lstm_layers: int = int(os.getenv("TFT_LSTM_LAYERS", 2))
+        self.tft_attention_heads: int = int(os.getenv("TFT_ATTENTION_HEADS", 4))
+        self.tft_dropout: float = float(os.getenv("TFT_DROPOUT", 0.1))
+
+        # RL (Reinforcement Learning) Settings
+        self.rl_enabled: bool = os.getenv("RL_ENABLED", "true").lower() == "true"
+        self.rl_algorithm: str = os.getenv("RL_ALGORITHM", "DQN")  # DQN, PPO, or A2C
+        self.rl_learning_rate: float = float(os.getenv("RL_LEARNING_RATE", 0.0001))
+        self.rl_buffer_size: int = int(os.getenv("RL_BUFFER_SIZE", 100000))
+        self.rl_batch_size: int = int(os.getenv("RL_BATCH_SIZE", 32))
+        self.rl_gamma: float = float(os.getenv("RL_GAMMA", 0.99))
+        self.rl_training_timesteps: int = int(os.getenv("RL_TRAINING_TIMESTEPS", 50000))
+
+        # LLM Sentiment Analysis Settings
+        self.llm_enabled: bool = os.getenv("LLM_ENABLED", "true").lower() == "true"
+        self.llm_model_name: str = os.getenv("LLM_MODEL_NAME", "ProsusAI/finbert")
+        self.news_api_key: str = os.getenv("NEWS_API_KEY", "")
+        self.llm_sentiment_cache_hours: int = int(os.getenv("LLM_SENTIMENT_CACHE_HOURS", 1))
+        self.llm_news_max_articles: int = int(os.getenv("LLM_NEWS_MAX_ARTICLES", 20))
+        self.llm_sentiment_weight: float = float(os.getenv("LLM_SENTIMENT_WEIGHT", 0.3))
+
+        # Hybrid Model Paths
+        self.hybrid_model_path: str = os.getenv("HYBRID_MODEL_PATH", "models/hybrid")
+
 # Crear una instancia única de la configuración para ser importada en otros módulos
 config = Config()

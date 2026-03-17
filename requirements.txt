@@ -59,3 +59,31 @@ supervisor>=4.2.5          # Process manager
 
 # Windows Support (for MT5)
 pytz>=2024.2               # Zona horaria
+
+# ============================================================================
+# HYBRID AI SYSTEM: TFT + RL + LLM
+# ============================================================================
+
+# PyTorch & Deep Learning
+torch>=2.5.0               # PyTorch para TFT y RL - Python 3.13 compatible
+torchvision>=0.20.0        # Visión computacional
+pytorch-lightning>=2.4.0   # Framework para entrenamiento
+
+# Temporal Fusion Transformer
+pytorch-forecasting>=1.1.0 # TFT para predicción de series temporales
+
+# Reinforcement Learning
+stable-baselines3>=2.3.0   # RL algorithms (DQN, PPO, A2C)
+gymnasium>=1.0.0           # RL environment (fork de OpenAI Gym)
+tensorboard>=2.18.0        # Visualización de entrenamiento RL
+
+# LLM & NLP
+transformers>=4.47.0       # Hugging Face transformers - Python 3.13 compatible
+sentencepiece>=0.2.0       # Tokenizer para LLMs
+accelerate>=1.2.0          # Optimización de LLMs
+safetensors>=0.4.0         # Carga segura de modelos
+
+# Financial News & Sentiment
+newsapi-python>=0.2.7      # API de noticias financieras
+yfinance>=0.2.50           # Yahoo Finance API
+finnhub-python>=2.4.20     # Finnhub API para noticias y sentimiento

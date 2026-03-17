@@ -327,16 +327,24 @@ class SimplePatternModel(BaseModel):
 class EnsembleModel:
     """Stacking ensemble of multiple models."""
 
-    def __init__(self):
+    def __init__(self, use_hybrid: bool = False):
         self.base_models = {
             'random_forest': RandomForestModel(),
             'gradient_boosting': GradientBoostingModel(),
             'pattern_based': SimplePatternModel(),
-            'lstm': None
+            'lstm': None,
+            'tft': None,  # Temporal Fusion Transformer
+            'rl_agent': None,  # Reinforcement Learning
+            'llm_sentiment': None  # LLM Sentiment Analysis
         }
         self.meta_model = LogisticRegression()
         self.is_fitted = False
-        logger.info("Initialized Stacking Ensemble.")
+        self.use_hybrid = use_hybrid
+
+        if use_hybrid:
+            logger.info("Initialized Hybrid Ensemble with TFT+RL+LLM.")
+        else:
+            logger.info("Initialized Standard Stacking Ensemble.")
 
     def _get_base_model_predictions(self, X: pd.DataFrame) -> pd.DataFrame:
         base_predictions = {}
@@ -352,7 +360,7 @@ class EnsembleModel:
                 if name == 'lstm':
                     dummy_y = pd.Series(np.zeros(len(X)), index=X.index)
                     X_seq, _ = feature_engineer.create_sequences(X, dummy_y, default_sequence_length=model.sequence_length)
-                    
+
                     if X_seq.shape[0] > 0:
                         probas = model.predict_proba(X_seq)
                         pred_index = X.index[-len(probas):]
@@ -362,12 +370,40 @@ class EnsembleModel:
                         logger.warning(f"Not enough data for LSTM sequence. Using neutral placeholders.")
                         base_predictions[f"{name}_proba_0"] = 0.5
                         base_predictions[f"{name}_proba_1"] = 0.5
+
+                elif name == 'tft':
+                    # TFT requires special handling for time series
+                    if hasattr(model, 'is_fitted') and model.is_fitted:
+                        probas = model.predict_proba(X)
+                        for i in range(probas.shape[1]):
+                            base_predictions[f"{name}_proba_{i}"] = pd.Series(probas[:, i], index=X.index)
+                    else:
+                        logger.warning(f"TFT model not fitted, skipping.")
+
+                elif name == 'rl_agent':
+                    # RL agent predictions
+                    if hasattr(model, 'is_fitted') and model.is_fitted:
+                        probas = model.predict_proba(X)
+                        for i in range(probas.shape[1]):
+                            base_predictions[f"{name}_proba_{i}"] = pd.Series(probas[:, i], index=X.index)
+                    else:
+                        logger.warning(f"RL agent not fitted, skipping.")
+
+                elif name == 'llm_sentiment':
+                    # LLM sentiment is always "fitted" (uses pre-trained models)
+                    probas = model.predict_proba(X)
+                    for i in range(probas.shape[1]):
+                        base_predictions[f"{name}_proba_{i}"] = pd.Series(probas[:, i], index=X.index)
+
                 else:
                     probas = model.predict_proba(X)
                     for i in range(probas.shape[1]):
                         base_predictions[f"{name}_proba_{i}"] = pd.Series(probas[:, i], index=X.index)
             except ValueError as e:
                 logger.error(f"Could not get prediction from model {name}: {e}")
+                continue
+            except Exception as e:
+                logger.error(f"Unexpected error getting prediction from model {name}: {e}")
                 continue
 
         return pd.DataFrame(base_predictions, index=X.index)
@@ -378,22 +414,87 @@ class EnsembleModel:
             input_dim = X_seq.shape[2]
             self.base_models['lstm'] = LSTMModel(input_dim=input_dim)
 
+        # Initialize hybrid models if enabled
+        if self.use_hybrid:
+            logger.info("Initializing hybrid models (TFT, RL, LLM)...")
+
+            # TFT initialization
+            if self.base_models['tft'] is None:
+                try:
+                    from .tft_model import TFTModel
+                    self.base_models['tft'] = TFTModel(
+                        max_encoder_length=60,
+                        max_prediction_length=10
+                    )
+                    logger.info("TFT model initialized")
+                except ImportError:
+                    logger.warning("TFT model not available, skipping")
+                    self.base_models['tft'] = None
+
+            # RL Agent initialization
+            if self.base_models['rl_agent'] is None:
+                try:
+                    from .rl_agent import RLTradingAgent
+                    self.base_models['rl_agent'] = RLTradingAgent(
+                        algorithm="DQN",
+                        learning_rate=0.0001
+                    )
+                    logger.info("RL agent initialized")
+                except ImportError:
+                    logger.warning("RL agent not available, skipping")
+                    self.base_models['rl_agent'] = None
+
+            # LLM Sentiment initialization
+            if self.base_models['llm_sentiment'] is None:
+                try:
+                    from .llm_sentiment import LLMSentimentAnalyzer
+                    import os
+                    news_api_key = os.getenv('NEWS_API_KEY', None)
+                    self.base_models['llm_sentiment'] = LLMSentimentAnalyzer(
+                        model_name="ProsusAI/finbert",
+                        news_api_key=news_api_key
+                    )
+                    logger.info("LLM sentiment analyzer initialized")
+                except ImportError:
+                    logger.warning("LLM sentiment analyzer not available, skipping")
+                    self.base_models['llm_sentiment'] = None
+
         logger.info("Training base models...")
         X_clean = X.copy().replace([np.inf, -np.inf], np.nan).fillna(0)
 
         for name, model in self.base_models.items():
             try:
                 logger.info(f"Training {name}...")
+
                 if name == 'lstm':
                     model.fit(X_seq, y_seq)
+
+                elif name == 'tft' and model is not None:
+                    # TFT training with time series data
+                    df_for_tft = X_clean.copy()
+                    df_for_tft['target'] = y
+                    model.fit(df_for_tft, target_col='target', max_epochs=30, patience=5)
+
+                elif name == 'rl_agent' and model is not None:
+                    # RL agent training
+                    df_for_rl = X_clean.copy()
+                    df_for_rl['close'] = X.get('close', X_clean.iloc[:, 0])  # Need close prices
+                    model.fit(df_for_rl, total_timesteps=10000)
+
+                elif name == 'llm_sentiment' and model is not None:
+                    # LLM is pre-trained, just load the model
+                    model.load_model()
+                    logger.info("LLM sentiment model loaded (pre-trained)")
+
                 elif name != 'pattern_based':
                     model.fit(X_clean, y)
+
             except Exception as e:
                 logger.error(f"Error training {name}: {e}")
-        
+
         logger.info("Generating base model predictions for meta-model training...")
         meta_features = self._get_base_model_predictions(X)
-        
+
         combined_data = meta_features.join(y.rename('target')).dropna()
         clean_meta_features = combined_data.drop('target', axis=1)
         clean_y = combined_data['target']
@@ -434,7 +535,11 @@ class EnsembleModel:
 
         for name, model in self.base_models.items():
             if name != 'pattern_based' and model is not None:
-                model.save(str(path / f"{name}.pkl"))
+                try:
+                    model.save(str(path / f"{name}.pkl"))
+                    logger.info(f"Saved {name} model")
+                except Exception as e:
+                    logger.error(f"Failed to save {name}: {e}")
 
         # Guardar lista de features esperadas para validación posterior
         feature_info = {}
@@ -455,8 +560,24 @@ class EnsembleModel:
                 pickle.dump(self.meta_model, f)
             logger.info(f"Meta-model saved to {path / 'meta_model.pkl'}")
 
+        # Save hybrid flag
+        with open(path / "ensemble_config.pkl", 'wb') as f:
+            pickle.dump({'use_hybrid': self.use_hybrid}, f)
+        logger.info(f"Ensemble configuration saved")
+
     def load_all(self, directory: str):
         path = Path(directory)
+
+        # Load ensemble configuration
+        config_path = path / "ensemble_config.pkl"
+        if config_path.exists():
+            try:
+                with open(config_path, 'rb') as f:
+                    config = pickle.load(f)
+                self.use_hybrid = config.get('use_hybrid', False)
+                logger.info(f"Loaded ensemble configuration: hybrid={self.use_hybrid}")
+            except Exception as e:
+                logger.warning(f"Failed to load ensemble config: {e}")
 
         # Cargar información de features esperadas
         feature_info_path = path / "feature_info.pkl"
@@ -471,6 +592,29 @@ class EnsembleModel:
 
         if self.base_models['lstm'] is None:
             self.base_models['lstm'] = LSTMModel()
+
+        # Initialize hybrid models if needed
+        if self.use_hybrid:
+            if self.base_models['tft'] is None:
+                try:
+                    from .tft_model import TFTModel
+                    self.base_models['tft'] = TFTModel()
+                except ImportError:
+                    logger.warning("TFT model not available")
+
+            if self.base_models['rl_agent'] is None:
+                try:
+                    from .rl_agent import RLTradingAgent
+                    self.base_models['rl_agent'] = RLTradingAgent()
+                except ImportError:
+                    logger.warning("RL agent not available")
+
+            if self.base_models['llm_sentiment'] is None:
+                try:
+                    from .llm_sentiment import LLMSentimentAnalyzer
+                    self.base_models['llm_sentiment'] = LLMSentimentAnalyzer()
+                except ImportError:
+                    logger.warning("LLM sentiment not available")
 
         for name, model in self.base_models.items():
             if name != 'pattern_based':
@@ -491,6 +635,9 @@ class EnsembleModel:
                         logger.error(f"Failed to load {name}: {e}")
                 elif name == 'lstm':
                     self.base_models['lstm'] = None
+                elif name in ['tft', 'rl_agent', 'llm_sentiment']:
+                    # Hybrid models might not exist if not trained yet
+                    logger.info(f"{name} model not found, will skip")
 
         meta_model_path = path / "meta_model.pkl"
         if meta_model_path.exists():
