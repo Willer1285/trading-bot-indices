@@ -30,8 +30,8 @@ class Config:
         self.mt5_max_open_positions: int = int(os.getenv("MT5_MAX_OPEN_POSITIONS", 3))
 
         # Símbolos y Timeframes de Trading
-        self.trading_symbols: List[str] = [s.strip() for s in os.getenv("TRADING_SYMBOLS", "").split(',') if s.strip()]
-        self.timeframes: List[str] = [tf.strip() for tf in os.getenv("TIMEFRAMES", "1h").split(',') if tf.strip()]
+        self.trading_symbols: List[str] = [s.strip().strip('"') for s in os.getenv("TRADING_SYMBOLS", "").split(',') if s.strip()]
+        self.timeframes: List[str] = [tf.strip().strip('"') for tf in os.getenv("TIMEFRAMES", "1h").split(',') if tf.strip()]
         self.primary_timeframe: str = os.getenv("PRIMARY_TIMEFRAME", "1h").strip()
 
         # Configuración de IA y Señales
