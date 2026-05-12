@@ -3,7 +3,9 @@ from typing import List
 from dotenv import load_dotenv
 
 # Cargar variables de entorno desde el archivo .env
-load_dotenv()
+# Usar ruta absoluta para que funcione sin importar desde dónde se ejecute
+_env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
+load_dotenv(_env_path)
 
 class Config:
     """
@@ -18,7 +20,7 @@ class Config:
         self.telegram_include_charts: bool = os.getenv("TELEGRAM_INCLUDE_CHARTS", "true").lower() == "true"
 
         # Configuración de MT5
-        self.mt5_login: int = int(os.getenv("MT5_LOGIN"))
+        self.mt5_login: int = int(os.getenv("MT5_LOGIN", 0))
         self.mt5_password: str = os.getenv("MT5_PASSWORD")
         self.mt5_server: str = os.getenv("MT5_SERVER")
         self.mt5_path: str = os.getenv("MT5_PATH", "")
@@ -28,8 +30,8 @@ class Config:
         self.mt5_max_open_positions: int = int(os.getenv("MT5_MAX_OPEN_POSITIONS", 3))
 
         # Símbolos y Timeframes de Trading
-        self.trading_symbols: List[str] = [s.strip() for s in os.getenv("TRADING_SYMBOLS", "").split(',') if s.strip()]
-        self.timeframes: List[str] = [tf.strip() for tf in os.getenv("TIMEFRAMES", "1h").split(',') if tf.strip()]
+        self.trading_symbols: List[str] = [s.strip().strip('"') for s in os.getenv("TRADING_SYMBOLS", "").split(',') if s.strip()]
+        self.timeframes: List[str] = [tf.strip().strip('"') for tf in os.getenv("TIMEFRAMES", "1h").split(',') if tf.strip()]
         self.primary_timeframe: str = os.getenv("PRIMARY_TIMEFRAME", "1h").strip()
 
         # Configuración de IA y Señales
@@ -80,7 +82,13 @@ class Config:
         self.fixed_trailing_stop_trigger_points: float = float(os.getenv("FIXED_TRAILING_STOP_TRIGGER_POINTS", 30.0))
         self.fixed_trailing_stop_distance_points: float = float(os.getenv("FIXED_TRAILING_STOP_DISTANCE_POINTS", 22.5))
 
+        # Gestión de Riesgo por Porcentaje de Capital
+        # Si está activado, sobrescribe el lotaje dinámico por confianza
+        self.enable_risk_percent: bool = os.getenv("ENABLE_RISK_PERCENT", "false").lower() == "true"
+        self.risk_percent_per_trade: float = float(os.getenv("RISK_PERCENT_PER_TRADE", 2.0))
+
         # Configuración de Lotaje Dinámico (basado en confianza del modelo)
+        # NOTA: Se ignora si ENABLE_RISK_PERCENT=true
         self.enable_dynamic_lot_size: bool = os.getenv("ENABLE_DYNAMIC_LOT_SIZE", "true").lower() == "true"
         self.min_lot_size: float = float(os.getenv("MIN_LOT_SIZE", 0.10))
         self.max_lot_size: float = float(os.getenv("MAX_LOT_SIZE", 1.00))

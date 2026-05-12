@@ -623,9 +623,38 @@ class MT5TradingBot:
                 logger.error(f"Could not get symbol info for {signal.symbol}")
                 return
 
-            # Usar el tamaño de lote dinámico de la señal
-            lot_size = signal.lot_size
-            logger.info(f"Using dynamic lot size: {lot_size}")
+            # Calcular lotaje basado en % de riesgo del capital
+            if config.enable_risk_percent:
+                balance = account_info['balance']
+                risk_money = balance * (config.risk_percent_per_trade / 100.0)
+                sl_distance = abs(signal.entry_price - signal.stop_loss)
+                contract_size = symbol_info.get('trade_contract_size', 100000)
+
+                if sl_distance > 0 and contract_size > 0:
+                    lot_size = risk_money / (sl_distance * contract_size)
+
+                    # Ajustar al volume_step del símbolo
+                    vol_step = symbol_info.get('volume_step', 0.01)
+                    vol_min = symbol_info.get('volume_min', 0.01)
+                    vol_max = symbol_info.get('volume_max', 100.0)
+
+                    # Redondear al step más cercano hacia abajo
+                    lot_size = int(lot_size / vol_step) * vol_step
+                    lot_size = max(vol_min, min(lot_size, vol_max))
+                    lot_size = round(lot_size, 2)
+
+                    logger.info(
+                        f"Risk % lot sizing: {config.risk_percent_per_trade}% of ${balance:.2f} = "
+                        f"${risk_money:.2f} risk | SL distance={sl_distance:.5f} | "
+                        f"Contract size={contract_size} | Lot size={lot_size}"
+                    )
+                else:
+                    lot_size = signal.lot_size
+                    logger.warning(f"Invalid SL distance or contract size, falling back to signal lot size: {lot_size}")
+            else:
+                # Usar el tamaño de lote dinámico de la señal
+                lot_size = signal.lot_size
+                logger.info(f"Using dynamic lot size: {lot_size}")
 
             # Execute order
             # Se ha acortado el comentario para asegurar que el ATR siempre se guarde correctamente.

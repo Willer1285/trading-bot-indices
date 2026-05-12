@@ -508,6 +508,21 @@ async def train_from_local_files():
         logger.error("No historical data files found. Aborting.")
         return
 
+    # Filter files to only include symbols configured in .env
+    configured_symbols = [s.strip().strip('"') for s in config.trading_symbols]
+    if configured_symbols:
+        filtered_files = []
+        for fp in historical_files:
+            symbol_dir = Path(fp).parts[-2]
+            if symbol_dir in configured_symbols:
+                filtered_files.append(fp)
+        logger.info(f"Filtered to {len(filtered_files)} files matching configured symbols: {configured_symbols}")
+        historical_files = filtered_files
+
+    if not historical_files:
+        logger.error(f"No historical data files found for configured symbols: {configured_symbols}. Aborting.")
+        return
+
     trained_count = 0
     failed_count = 0
 
