@@ -225,7 +225,7 @@ class SignalGenerator:
 
             # Apply signal quality filters (for Telegram notification)
             # Note: Execution limits are checked separately in main_mt5.py before executing on MT5
-            if not self.signal_filter.should_notify(symbol, signal_type, multi_tf_analyses):
+            if not self.signal_filter.should_notify(symbol, signal_type, multi_tf_analyses, market_data):
                 logger.warning(f"{symbol}: ❌ Signal filtered out by quality filters")
                 return None
 

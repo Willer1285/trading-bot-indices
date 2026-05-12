@@ -128,9 +128,13 @@ class MT5Connector:
 
             date_from = date_to - timedelta(days=days_to_request)
 
-            rates = await asyncio.get_event_loop().run_in_executor(
-                None,
-                lambda: mt5.copy_rates_range(symbol, mt5_timeframe, date_from, date_to)
+            # Agregar timeout de 30 segundos para evitar bloqueos
+            rates = await asyncio.wait_for(
+                asyncio.get_event_loop().run_in_executor(
+                    None,
+                    lambda: mt5.copy_rates_range(symbol, mt5_timeframe, date_from, date_to)
+                ),
+                timeout=30.0
             )
 
             if rates is None or len(rates) == 0:
@@ -174,6 +178,9 @@ class MT5Connector:
 
             return df
 
+        except asyncio.TimeoutError:
+            logger.error(f"Timeout fetching OHLCV for {symbol} {timeframe} (>30s)")
+            return pd.DataFrame()
         except Exception as e:
             logger.error(f"Error fetching OHLCV for {symbol} {timeframe}: {e}")
             return pd.DataFrame()
@@ -595,6 +602,49 @@ class MT5OrderExecutor:
 
         except Exception as e:
             logger.error(f"Error getting positions: {e}")
+            return []
+
+    def get_closed_positions_today(self, symbol: Optional[str] = None) -> List[Dict]:
+        """
+        Get closed positions from today for tracking consecutive losses
+
+        Args:
+            symbol: Filter by symbol (optional)
+
+        Returns:
+            List of closed positions with profit/loss info
+        """
+        try:
+            # Get deals from today
+            date_from = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+            date_to = datetime.now()
+
+            if symbol:
+                deals = mt5.history_deals_get(date_from, date_to, group=symbol)
+            else:
+                deals = mt5.history_deals_get(date_from, date_to)
+
+            if deals is None:
+                return []
+
+            closed_positions = []
+            for deal in deals:
+                # Only include OUT deals (exit positions) with our magic number
+                if deal.entry == mt5.DEAL_ENTRY_OUT and deal.magic == self.magic_number:
+                    # Determine if it was TP or SL based on profit
+                    result = 'TP' if deal.profit > 0 else 'SL'
+                    closed_positions.append({
+                        'ticket': deal.ticket,
+                        'symbol': deal.symbol,
+                        'profit': deal.profit,
+                        'result': result,
+                        'time': datetime.fromtimestamp(deal.time)
+                    })
+
+            return closed_positions
+
+        except Exception as e:
+            logger.error(f"Error getting closed positions: {e}")
             return []
 
     def calculate_lot_size(

@@ -97,5 +97,35 @@ class Config:
         self.log_level: str = os.getenv("LOG_LEVEL", "INFO")
         self.log_file: str = os.getenv("LOG_FILE", "logs/trading_bot.log")
 
+        # ========== CONFIGURACIÓN DE FILTROS AVANZADOS ==========
+
+        # Activación de filtros individuales (true/false)
+        self.enable_divergence_filter: bool = os.getenv("ENABLE_DIVERGENCE_FILTER", "true").lower() == "true"
+        self.enable_consecutive_losses_filter: bool = os.getenv("ENABLE_CONSECUTIVE_LOSSES_FILTER", "true").lower() == "true"
+        self.enable_enhanced_trend_filter: bool = os.getenv("ENABLE_ENHANCED_TREND_FILTER", "true").lower() == "true"
+        self.enable_momentum_filter: bool = os.getenv("ENABLE_MOMENTUM_FILTER", "true").lower() == "true"
+        self.enable_sr_proximity_filter: bool = os.getenv("ENABLE_SR_PROXIMITY_FILTER", "true").lower() == "true"
+
+        # Parámetros del filtro de pérdidas consecutivas
+        self.max_consecutive_losses: int = int(os.getenv("MAX_CONSECUTIVE_LOSSES", 2))
+        self.cooldown_hours: float = float(os.getenv("COOLDOWN_HOURS", 2.0))
+
+        # Parámetros del filtro de tendencia mejorado
+        self.min_adx_for_trend: float = float(os.getenv("MIN_ADX_FOR_TREND", 25.0))
+        self.ema_alignment_required: bool = os.getenv("EMA_ALIGNMENT_REQUIRED", "true").lower() == "true"
+        self.max_percent_from_sma50: float = float(os.getenv("MAX_PERCENT_FROM_SMA50", 3.0))
+
+        # Parámetros del filtro de momentum
+        self.max_momentum_percent: float = float(os.getenv("MAX_MOMENTUM_PERCENT", 2.0))
+
+        # Parámetros del filtro de soporte/resistencia
+        self.sr_proximity_percent: float = float(os.getenv("SR_PROXIMITY_PERCENT", 0.5))
+        self.sr_max_distance_percent: float = float(os.getenv("SR_MAX_DISTANCE_PERCENT", 1.5))
+
+        # Parámetros del filtro de divergencias
+        self.divergence_rsi_overbought: float = float(os.getenv("DIVERGENCE_RSI_OVERBOUGHT", 70.0))
+        self.divergence_rsi_oversold: float = float(os.getenv("DIVERGENCE_RSI_OVERSOLD", 30.0))
+        self.divergence_momentum_threshold: float = float(os.getenv("DIVERGENCE_MOMENTUM_THRESHOLD", 1.5))
+
 # Crear una instancia única de la configuración para ser importada en otros módulos
 config = Config()

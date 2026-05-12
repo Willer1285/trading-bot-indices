@@ -20,6 +20,7 @@ from config import config
 from utils.logger import setup_logger
 from utils.performance_tracker import PerformanceTracker
 from utils.cleanup_manager import CleanupManager
+from utils.watchdog import BotWatchdog, HeartbeatLogger
 
 from data_collector.mt5_connector import MT5Connector, MT5OrderExecutor
 from data_collector.mt5_market_data_manager import MT5MarketDataManager
@@ -73,6 +74,17 @@ class MT5TradingBot:
             cleanup_interval_hours=6       # Run cleanup every 6 hours
         )
 
+        # Watchdog para detectar y recuperar bloqueos
+        self.watchdog = BotWatchdog(
+            timeout_seconds=180,  # 3 minutos sin heartbeat = alerta
+            check_interval=30,    # Verificar cada 30 segundos
+            alert_callback=self._on_freeze_detected,
+            recovery_callback=self._on_freeze_recovery
+        )
+
+        # Heartbeat logger para logs periódicos
+        self.heartbeat_logger = HeartbeatLogger(log_interval=60)
+
         # Initialize components
         self.mt5_connector = None
         self.order_executor = None
@@ -91,6 +103,10 @@ class MT5TradingBot:
         self.lot_size = config.mt5_lot_size
         self.max_open_positions = config.mt5_max_open_positions
         self.break_even_activated = {} # Rastrea las operaciones con BE activado
+
+        # Tracking de operaciones para filtro de pérdidas consecutivas
+        self.tracked_open_tickets = set()
+        self.last_checked_closed_time = datetime.utcnow()
 
         # Initialize all components - will be called in async initialize()
 
@@ -323,6 +339,10 @@ class MT5TradingBot:
             self.bot_controller.start()
             logger.success("✅ Bot controller started - Status: RUNNING")
 
+            # Start watchdog
+            self.watchdog.start()
+            logger.success("✅ Watchdog started - Monitoring for freezes")
+
             # Test Telegram connection
             if self.telegram_bot:
                 telegram_ok = await self.telegram_bot.test_connection()
@@ -370,6 +390,11 @@ class MT5TradingBot:
 
         self.is_running = False
 
+        # Stop watchdog
+        if self.watchdog:
+            self.watchdog.stop()
+            logger.info("Watchdog stopped")
+
         # Stop bot controller
         if self.bot_controller:
             self.bot_controller.stop()
@@ -402,6 +427,15 @@ class MT5TradingBot:
 
         while self.is_running:
             try:
+                # Registrar heartbeat para watchdog
+                self.watchdog.heartbeat()
+
+                # Log heartbeat periódico
+                watchdog_stats = self.watchdog.get_statistics()
+                self.heartbeat_logger.maybe_log_heartbeat(
+                    f"Health: {self.watchdog.get_health_status()}, Checks: {watchdog_stats['total_checks']}"
+                )
+
                 logger.info("=" * 30 + " Starting New Analysis Cycle " + "=" * 30)
 
                 # Check MT5 connection
@@ -416,7 +450,12 @@ class MT5TradingBot:
 
                 # Gestionar posiciones abiertas (BE y TS) - SIEMPRE se ejecuta si el bot está RUNNING o PAUSED
                 if self.bot_controller.can_monitor_trades():
+                    # Check and record closed positions for consecutive loss tracking
+                    await self._check_and_record_closed_positions()
+
+                    # Manage open positions (BE and TS)
                     await self._manage_open_positions()
+
                     # Actualizar monitoreo de trades activos
                     self.trade_tracker.update_trade_monitoring()
 
@@ -667,6 +706,42 @@ class MT5TradingBot:
             self.performance.record_error("signal_execution", str(e), signal.symbol)
             return False
 
+    async def _check_and_record_closed_positions(self):
+        """
+        Verifica si hay operaciones cerradas y las registra en el SignalFilter
+        para el tracking de pérdidas consecutivas
+        """
+        try:
+            # Get current open positions
+            open_positions = self.order_executor.get_open_positions()
+            current_open_tickets = {pos['ticket'] for pos in open_positions}
+
+            # Detect closed positions (tickets that were tracked but are no longer open)
+            closed_tickets = self.tracked_open_tickets - current_open_tickets
+
+            if closed_tickets:
+                # Get closed positions from today to determine if they hit SL or TP
+                closed_positions = self.order_executor.get_closed_positions_today()
+
+                for closed_pos in closed_positions:
+                    if closed_pos['ticket'] in closed_tickets:
+                        symbol = closed_pos['symbol']
+                        result = closed_pos['result']  # 'SL' or 'TP'
+
+                        # Record in signal filter for consecutive loss tracking
+                        self.signal_generator.signal_filter.record_closed_trade(symbol, result)
+
+                        logger.info(
+                            f"Recorded closed trade: {symbol} - {result} "
+                            f"(Ticket: {closed_pos['ticket']}, Profit: {closed_pos['profit']:.2f})"
+                        )
+
+            # Update tracked tickets
+            self.tracked_open_tickets = current_open_tickets
+
+        except Exception as e:
+            logger.error(f"Error checking and recording closed positions: {e}")
+
     async def _manage_open_positions(self):
         """Gestiona las posiciones abiertas para aplicar Break Even y Trailing Stop."""
         if not config.enable_break_even and not config.enable_trailing_stop:
@@ -830,6 +905,84 @@ class MT5TradingBot:
         except Exception as e:
             logger.error(f"Error al gestionar las posiciones abiertas: {e}")
 
+
+    def _on_freeze_detected(self, time_since_heartbeat: float):
+        """
+        Callback llamado cuando el watchdog detecta un bloqueo del bot.
+
+        Args:
+            time_since_heartbeat: Tiempo en segundos desde el último heartbeat
+        """
+        try:
+            logger.critical(
+                f"🚨 BOT FREEZE ALERT! No heartbeat for {time_since_heartbeat:.1f}s\n"
+                f"This indicates the main loop is blocked or not responding.\n"
+                f"Check MT5 connection, network issues, or resource constraints."
+            )
+
+            # Intentar enviar alerta por Telegram (asíncrono, usar asyncio.run_coroutine_threadsafe si es necesario)
+            if self.telegram_bot:
+                try:
+                    # Crear un nuevo event loop para ejecutar la coroutine desde el thread del watchdog
+                    import threading
+                    if isinstance(threading.current_thread(), threading._MainThread):
+                        asyncio.create_task(
+                            self.telegram_bot.send_message(
+                                f"🚨 **CRITICAL: Bot Freeze Detected!**\n\n"
+                                f"⏱️ **Time since last heartbeat:** {time_since_heartbeat:.1f}s\n"
+                                f"⚠️ **Status:** Main loop is not responding\n\n"
+                                f"**Possible causes:**\n"
+                                f"• MT5 connection blocked\n"
+                                f"• Network issues\n"
+                                f"• Resource constraints (CPU/Memory)\n"
+                                f"• Model inference timeout\n\n"
+                                f"**Action:** Monitoring for auto-recovery..."
+                            )
+                        )
+                    else:
+                        # Si estamos en un thread secundario, no podemos crear tasks directamente
+                        logger.warning("Cannot send Telegram alert from watchdog thread")
+                except Exception as e:
+                    logger.error(f"Failed to send Telegram freeze alert: {e}")
+
+        except Exception as e:
+            logger.error(f"Error in freeze detection callback: {e}")
+
+    def _on_freeze_recovery(self):
+        """
+        Callback llamado para intentar recuperación automática cuando se detecta un bloqueo.
+
+        IMPORTANTE: Este callback se ejecuta desde el thread del watchdog,
+        por lo que debe ser thread-safe y no bloquear.
+        """
+        try:
+            logger.warning("🔄 Attempting automatic recovery from freeze...")
+
+            # Log estado actual del sistema
+            try:
+                import psutil
+                process = psutil.Process()
+                mem_info = process.memory_info()
+                cpu_percent = process.cpu_percent(interval=0.1)
+
+                logger.info(
+                    f"System status - CPU: {cpu_percent:.1f}%, "
+                    f"Memory: {mem_info.rss / 1024 / 1024:.1f} MB"
+                )
+            except:
+                pass
+
+            # Verificar conexión MT5
+            if self.mt5_connector and not self.mt5_connector.check_connection():
+                logger.error("MT5 connection is down - this may be causing the freeze")
+
+            # NOTA: No intentamos reiniciar componentes aquí porque puede causar race conditions
+            # El main loop debería recuperarse automáticamente si el problema se resuelve
+
+            logger.info("Recovery attempt logged. Waiting for main loop to resume...")
+
+        except Exception as e:
+            logger.error(f"Error in freeze recovery callback: {e}")
 
     async def _run_periodic_tasks(self):
         """Run periodic maintenance tasks"""
