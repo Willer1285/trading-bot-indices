@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Bot Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .navbar { background-color: #212529; }
+        .status-running { color: #28a745; }
+        .status-paused { color: #ffc107; }
+        .status-stopped { color: #dc3545; }
+        .card { margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .stat-card { text-align: center; padding: 20px; }
+        .stat-value { font-size: 2.5rem; font-weight: bold; }
+        .stat-label { color: #6c757d; font-size: 0.9rem; }
+        .win { color: #28a745; }
+        .loss { color: #dc3545; }
+
+        /* Toast Notifications */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+        }
+
+        .toast-notification {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease-out;
+            border-left: 4px solid #6c757d;
+        }
+
+        .toast-notification.toast-success {
+            border-left-color: #28a745;
+        }
+
+        .toast-notification.toast-error {
+            border-left-color: #dc3545;
+        }
+
+        .toast-notification.toast-warning {
+            border-left-color: #ffc107;
+        }
+
+        .toast-notification.toast-info {
+            border-left-color: #17a2b8;
+        }
+
+        .toast-notification.hiding {
+            animation: slideOut 0.3s ease-in forwards;
+        }
+
+        .toast-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .toast-success .toast-icon { color: #28a745; }
+        .toast-error .toast-icon { color: #dc3545; }
+        .toast-warning .toast-icon { color: #ffc107; }
+        .toast-info .toast-icon { color: #17a2b8; }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #212529;
+        }
+
+        .toast-message {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #6c757d;
+            cursor: pointer;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .toast-close:hover {
+            color: #212529;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark navbar-expand-lg mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">🤖 Trading Bot</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="/">📊 Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/messages">✉️ Mensajes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/manual">📤 Envío Manual</a></li>
+                </ul>
+                <div class="ms-auto">
+                    <span class="navbar-text" id="botStatus">Estado: <span id="statusText">Cargando...</span></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        // Toast Notification System
+        function showToast(type, title, message, duration = 4000) {
+            const container = document.getElementById('toast-container');
+
+            const icons = {
+                success: '✓',
+                error: '✕',
+                warning: '⚠',
+                info: 'ℹ'
+            };
+
+            const toast = document.createElement('div');
+            toast.className = `toast-notification toast-${type}`;
+            toast.innerHTML = `
+                <div class="toast-icon">${icons[type] || icons.info}</div>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+            `;
+
+            container.appendChild(toast);
+
+            // Auto-dismiss after duration
+            setTimeout(() => {
+                toast.classList.add('hiding');
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        // Actualizar estado del bot cada 5 segundos
+        function updateBotStatus() {
+            fetch('/api/bot/status')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const status = data.data.status;
+                        const statusText = document.getElementById('statusText');
+                        statusText.textContent = status;
+                        statusText.className = 'status-' + status.toLowerCase();
+                    }
+                })
+                .catch(err => console.error('Error:', err));
+        }
+
+        updateBotStatus();
+        setInterval(updateBotStatus, 5000);
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

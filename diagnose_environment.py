@@ -221,16 +221,56 @@ print()
 
 # 6. Verificar modelos entrenados
 print("6. VERIFICACIÓN DE MODELOS ENTRENADOS")
-print("-" * 60)
+print("-" * 70)
 
 models_dir = Path('models')
 if models_dir.exists():
-    model_files = list(models_dir.glob('*.pkl')) + list(models_dir.glob('*.keras'))
+    # Buscar archivos de modelos recursivamente en todos los subdirectorios
+    model_files = list(models_dir.glob('**/*.pkl')) + list(models_dir.glob('**/*.keras'))
+
+    # Filtrar el archivo .gitkeep si existe
+    model_files = [f for f in model_files if f.name != '.gitkeep']
+
     if model_files:
         print(f"   ✅ Directorio de modelos existe")
-        print(f"   ✅ Modelos encontrados: {len(model_files)}")
+        print(f"   ✅ Archivos de modelos encontrados: {len(model_files)}")
+
+        # Agrupar por símbolo/timeframe
+        symbols_trained = set()
         for model in model_files:
-            print(f"      - {model.name}")
+            # Extraer símbolo y timeframe del path
+            # Ejemplo: models/GainX_1200/GainX 1200_H1/random_forest.pkl
+            parts = model.parts
+            if len(parts) >= 3:
+                symbol_timeframe = f"{parts[-3]}/{parts[-2]}"
+                symbols_trained.add(symbol_timeframe)
+
+        print(f"   ✅ Símbolos/Timeframes entrenados: {len(symbols_trained)}")
+
+        # Mostrar algunos símbolos entrenados (primeros 5)
+        for i, st in enumerate(sorted(symbols_trained)):
+            if i < 5:
+                print(f"      - {st}")
+            elif i == 5:
+                print(f"      - ... y {len(symbols_trained) - 5} más")
+                break
+
+        # Verificar tipos de modelos
+        model_types = {}
+        for model in model_files:
+            if 'random_forest' in model.name:
+                model_types['Random Forest'] = model_types.get('Random Forest', 0) + 1
+            elif 'gradient_boosting' in model.name:
+                model_types['Gradient Boosting'] = model_types.get('Gradient Boosting', 0) + 1
+            elif 'lstm' in model.name and model.suffix == '.keras':
+                model_types['LSTM (Keras)'] = model_types.get('LSTM (Keras)', 0) + 1
+            elif 'meta_model' in model.name:
+                model_types['Meta Model'] = model_types.get('Meta Model', 0) + 1
+
+        print()
+        print("   Tipos de modelos encontrados:")
+        for model_type, count in sorted(model_types.items()):
+            print(f"      - {model_type:20} {count:3} modelos")
     else:
         print(f"   ⚠️  Directorio de modelos existe pero está vacío")
         print(f"   SOLUCIÓN: Ejecutar 'python train_models.py' primero")

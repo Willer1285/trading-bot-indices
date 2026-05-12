@@ -94,12 +94,28 @@ class MT5MarketDataManager:
     async def _fetch_initial_data(self):
         """Load initial historical data from local files (.csv or .txt)."""
         logger.info("Loading initial historical data from local files...")
-        
+
+        # Mapeo de timeframes MT5 a nombres de archivos
+        timeframe_map = {
+            '1m': 'M1',
+            '5m': 'M5',
+            '15m': 'M15',
+            '30m': 'M30',
+            '1h': 'H1',
+            '4h': 'H4',
+            '1d': 'D1',
+            '1w': 'W1',
+            '1M': 'MN1'
+        }
+
         for symbol in self.symbols:
             for timeframe in self.timeframes:
-                # Check for both .txt and .csv extensions
-                txt_path = f"historical_data/{symbol}/{timeframe}.txt"
-                csv_path = f"historical_data/{symbol}/{timeframe}.csv"
+                # Convertir timeframe MT5 al formato de archivo (1m → M1, 1h → H1)
+                file_timeframe = timeframe_map.get(timeframe, timeframe.upper())
+
+                # Construir rutas con el formato correcto: {symbol}_{timeframe}.csv
+                txt_path = f"historical_data/{symbol}/{symbol}_{file_timeframe}.txt"
+                csv_path = f"historical_data/{symbol}/{symbol}_{file_timeframe}.csv"
                 file_path = None
 
                 if os.path.exists(txt_path):
@@ -112,28 +128,48 @@ class MT5MarketDataManager:
                         # Using the robust loading logic from train_models.py
                         with open(file_path, 'r', encoding='utf-8') as f:
                             content = f.read().replace('"', '')
-                        
-                        df = pd.read_csv(io.StringIO(content), sep='\t')
+
+                        # Detectar el separador (coma o tabulación)
+                        if ',' in content.split('\n')[0]:
+                            separator = ','
+                        else:
+                            separator = '\t'
+
+                        df = pd.read_csv(io.StringIO(content), sep=separator)
                         
                         df.columns = df.columns.str.replace(r'[<>]', '', regex=True).str.strip()
-                        
-                        if 'TIME' in df.columns and 'DATE' in df.columns:
+
+                        # Intentar leer timestamp de diferentes formatos
+                        if 'timestamp' in df.columns:
+                            # Formato nuevo: ya tiene columna timestamp
+                            df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')
+                        elif 'TIME' in df.columns and 'DATE' in df.columns:
+                            # Formato antiguo: DATE y TIME separados
                             df['timestamp'] = pd.to_datetime(df['DATE'] + ' ' + df['TIME'], errors='coerce')
                         elif 'DATE' in df.columns:
+                            # Solo DATE
                             df['timestamp'] = pd.to_datetime(df['DATE'], format='%Y.%m.%d', errors='coerce')
                         else:
-                            raise ValueError("Missing 'DATE' or 'TIME' columns.")
+                            raise ValueError("Missing 'timestamp', 'DATE' or 'TIME' columns.")
 
+                        # Renombrar columnas principales
+                        # Nota: Mantenemos VOL y SPREAD como features adicionales (esperadas por los modelos)
                         df.rename(columns={
                             'OPEN': 'open', 'HIGH': 'high', 'LOW': 'low',
-                            'CLOSE': 'close', 'VOL': 'volume'
+                            'CLOSE': 'close', 'TICKVOL': 'volume', 'VOLUME': 'volume'
                         }, inplace=True)
-                        
+
+                        # Asegurar que VOL y SPREAD existan (son features requeridas por los modelos)
+                        if 'VOL' not in df.columns:
+                            df['VOL'] = 0  # Si no existe, rellenar con 0
+                        if 'SPREAD' not in df.columns:
+                            df['SPREAD'] = 0  # Si no existe, rellenar con 0
+
                         df.set_index('timestamp', inplace=True)
                         df.sort_index(inplace=True)
-                        
-                        # Select necessary columns and drop rows with invalid data
-                        required_cols = ['open', 'high', 'low', 'close', 'volume']
+
+                        # Select necessary columns including VOL and SPREAD
+                        required_cols = ['open', 'high', 'low', 'close', 'volume', 'VOL', 'SPREAD']
                         df = df[required_cols]
                         df.dropna(inplace=True)
                         
@@ -172,8 +208,11 @@ class MT5MarketDataManager:
                     combined = combined[~combined.index.duplicated(keep='last')]
                     combined = combined.sort_index()
 
-                    # Keep only recent data (e.g., last 1000 candles)
-                    self.market_data[symbol][timeframe] = combined.tail(1000)
+                    # Keep only recent data based on config (default: 2000 candles for better analysis context)
+                    # Use 2x the market_analysis_candles to ensure we have enough data after feature engineering
+                    from src.config import Config
+                    max_candles = Config().market_analysis_candles * 2
+                    self.market_data[symbol][timeframe] = combined.tail(max_candles)
 
                 logger.debug(f"Updated {symbol} {timeframe}: {len(self.market_data[symbol][timeframe])} candles")
 

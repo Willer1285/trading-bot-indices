@@ -13,6 +13,28 @@ from .feature_engineering import FeatureEngineer
 from .technical_indicators import TechnicalIndicators
 from .ai_models import EnsembleModel
 
+# Mapeo de timeframes MT5 a nombres de modelos entrenados
+TIMEFRAME_MAPPING = {
+    '1m': 'M1',
+    '5m': 'M5',
+    '15m': 'M15',
+    '30m': 'M30',
+    '1h': 'H1',
+    '4h': 'H4',
+    '1d': 'D1',
+    '1w': 'W1',
+    '1M': 'MN1',
+    # También soportar nombres en mayúsculas
+    '1M': 'M1',
+    '5M': 'M5',
+    '15M': 'M15',
+    '30M': 'M30',
+    '1H': 'H1',
+    '4H': 'H4',
+    '1D': 'D1',
+    '1W': 'W1'
+}
+
 
 class MarketAnalysis:
     """Contenedor para los resultados del análisis de mercado."""
@@ -89,10 +111,17 @@ class MarketAnalyzer:
     ) -> Optional[MarketAnalysis]:
         """Realiza un análisis de mercado completo utilizando el modelo especializado correcto."""
         try:
+            # Convertir timeframe MT5 al formato del modelo
+            model_timeframe = TIMEFRAME_MAPPING.get(timeframe.lower(), timeframe.upper())
+
+            # Construir la clave del modelo: "Symbol Timeframe" (ej: "GainX 1200 M1")
+            model_key = f"{symbol}_{model_timeframe}"
+
             # Seleccionar el modelo correcto para el símbolo y timeframe
-            model = self.models.get(symbol, {}).get(timeframe)
+            model = self.models.get(symbol, {}).get(model_key)
             if not model or not model.is_fitted:
-                logger.warning(f"No se encontró o no está entrenado un modelo para {symbol} {timeframe}. Saltando análisis.")
+                logger.warning(f"No se encontró o no está entrenado un modelo para {symbol} [{timeframe} → {model_key}]. Saltando análisis.")
+                logger.debug(f"Modelos disponibles para {symbol}: {list(self.models.get(symbol, {}).keys())}")
                 return None
 
             if df.empty or len(df) < 100:
@@ -190,16 +219,31 @@ class MarketAnalyzer:
         for symbol_dir in os.listdir(base_directory):
             symbol_path = os.path.join(base_directory, symbol_dir)
             if os.path.isdir(symbol_path):
+                # Convertir nombre de directorio: "GainX_1200" → "GainX 1200"
                 symbol = symbol_dir.replace("_", " ")
                 self.models[symbol] = {}
+
                 for timeframe_dir in os.listdir(symbol_path):
                     timeframe_path = os.path.join(symbol_path, timeframe_dir)
                     if os.path.isdir(timeframe_path):
                         try:
                             model = EnsembleModel()
                             model.load_all(timeframe_path)
-                            self.models[symbol][timeframe_dir] = model
-                            logger.success(f"Modelo para {symbol} [{timeframe_dir}] cargado exitosamente.")
+
+                            # Extraer el timeframe del nombre del directorio
+                            # Formato esperado: "GainX 1200_M1" → extraer "M1"
+                            # Separar por espacio y luego por guión bajo
+                            parts = timeframe_dir.split('_')
+                            if len(parts) >= 2:
+                                timeframe_code = parts[-1]  # Último elemento: "M1", "H1", etc.
+                            else:
+                                timeframe_code = timeframe_dir  # Fallback al nombre completo
+
+                            # Guardar con la clave: "Symbol_Timeframe" (ej: "GainX 1200_M1")
+                            model_key = f"{symbol}_{timeframe_code}"
+                            self.models[symbol][model_key] = model
+
+                            logger.success(f"Modelo para {symbol} [{timeframe_code}] cargado exitosamente con clave '{model_key}'.")
                             model_count += 1
                         except Exception as e:
                             logger.error(f"Fallo al cargar el modelo para {symbol} [{timeframe_dir}]: {e}")
@@ -207,6 +251,11 @@ class MarketAnalyzer:
         if model_count > 0:
             self.is_trained = True
             logger.info(f"Carga completa. Se cargaron un total de {model_count} modelos especializados.")
+
+            # Log de las claves de modelos cargados para debugging
+            logger.debug("Resumen de modelos cargados:")
+            for symbol, models in self.models.items():
+                logger.debug(f"  {symbol}: {list(models.keys())}")
         else:
             logger.error("No se encontraron modelos entrenados. El bot no puede funcionar.")
             raise FileNotFoundError("No se encontraron modelos de IA entrenados.")

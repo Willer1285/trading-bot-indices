@@ -5,14 +5,21 @@ Trading Bot with AI-powered signal generation and automatic execution on MT5
 
 import asyncio
 import os
+import threading
 from typing import Dict, List
 from datetime import datetime
 from loguru import logger
 import signal as sys_signal
+import sys
+from pathlib import Path
+
+# Add parent directory to path for web_interface imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from config import config
 from utils.logger import setup_logger
 from utils.performance_tracker import PerformanceTracker
+from utils.cleanup_manager import CleanupManager
 
 from data_collector.mt5_connector import MT5Connector, MT5OrderExecutor
 from data_collector.mt5_market_data_manager import MT5MarketDataManager
@@ -24,6 +31,12 @@ from signal_generator.signal_filter import SignalFilter
 from signal_generator.risk_manager import RiskManager
 
 from telegram_bot.telegram_bot import TelegramBot
+
+# Web interface components
+from web_interface.app import run_flask_app, set_bot_instance
+from web_interface.database import init_database
+from src.trade_tracker import TradeTracker
+from src.bot_controller import get_bot_controller
 
 
 class MT5TradingBot:
@@ -41,8 +54,24 @@ class MT5TradingBot:
         logger.info("AI MT5 Trading Bot Starting...")
         logger.info("=" * 60)
 
+        # Initialize web interface database
+        logger.info("Initializing web interface database...")
+        init_database("trading_bot.db")
+
+        # Initialize bot controller
+        logger.info("Initializing bot controller...")
+        self.bot_controller = get_bot_controller()
+
         # Performance tracking
         self.performance = PerformanceTracker()
+
+        # Cleanup manager for VPS 24/7 optimization
+        self.cleanup_manager = CleanupManager(
+            log_retention_days=7,          # Keep logs for 7 days
+            max_log_size_mb=100,           # Rotate logs over 100MB
+            memory_threshold_percent=80.0, # Cleanup if memory > 80%
+            cleanup_interval_hours=6       # Run cleanup every 6 hours
+        )
 
         # Initialize components
         self.mt5_connector = None
@@ -51,6 +80,7 @@ class MT5TradingBot:
         self.analyzer = None
         self.signal_generator = None
         self.telegram_bot = None
+        self.trade_tracker = None  # Will be initialized after telegram_bot
 
         # Control flags
         self.is_running = False
@@ -62,10 +92,116 @@ class MT5TradingBot:
         self.max_open_positions = config.mt5_max_open_positions
         self.break_even_activated = {} # Rastrea las operaciones con BE activado
 
-        # Initialize all components
-        self._initialize_components()
+        # Initialize all components - will be called in async initialize()
 
-    def _initialize_components(self):
+    async def _check_and_retrain_models(self):
+        """Check model age and retrain automatically if needed."""
+        import json
+        from pathlib import Path
+        from datetime import datetime
+        import subprocess
+
+        if not config.enable_auto_retrain:
+            logger.info("Automatic retraining is disabled (ENABLE_AUTO_RETRAIN=false)")
+            return
+
+        logger.info("Checking model age for automatic retraining...")
+
+        models_dir = Path(config.models_directory)
+        needs_retrain = False
+
+        if not models_dir.exists():
+            logger.warning(f"Models directory '{models_dir}' does not exist. Will trigger retraining.")
+            needs_retrain = True
+        else:
+            # Check age of all models
+            oldest_model_age = 0
+
+            for symbol in config.trading_symbols:
+                symbol_safe = symbol.replace(" ", "_")
+                symbol_dir = models_dir / symbol_safe
+
+                if not symbol_dir.exists():
+                    logger.warning(f"No models found for {symbol}. Will trigger retraining.")
+                    needs_retrain = True
+                    break
+
+                # Check each timeframe
+                for timeframe in config.timeframes:
+                    tf_map = {
+                        '1m': 'M1', '5m': 'M5', '15m': 'M15', '30m': 'M30',
+                        '1h': 'H1', '4h': 'H4', '1d': 'D1', '1w': 'W1', '1M': 'MN1'
+                    }
+                    tf_code = tf_map.get(timeframe, timeframe.upper())
+                    model_dir = symbol_dir / f"{symbol_safe}_{tf_code}"
+
+                    metadata_file = model_dir / 'training_metadata.json'
+
+                    if not metadata_file.exists():
+                        logger.warning(f"No metadata found for {symbol} [{timeframe}]. Will trigger retraining.")
+                        needs_retrain = True
+                        break
+
+                    try:
+                        with open(metadata_file, 'r') as f:
+                            metadata = json.load(f)
+
+                        trained_at = datetime.fromisoformat(metadata['trained_at'])
+                        age_days = (datetime.now() - trained_at).days
+                        oldest_model_age = max(oldest_model_age, age_days)
+
+                        logger.info(f"Model for {symbol} [{timeframe}] is {age_days} days old")
+
+                    except Exception as e:
+                        logger.warning(f"Error reading metadata for {symbol} [{timeframe}]: {e}")
+                        needs_retrain = True
+                        break
+
+                if needs_retrain:
+                    break
+
+            if not needs_retrain and oldest_model_age >= config.auto_retrain_days:
+                logger.warning(f"Oldest model is {oldest_model_age} days old (threshold: {config.auto_retrain_days} days)")
+                needs_retrain = True
+
+        if needs_retrain:
+            logger.info("=" * 80)
+            logger.info("⚠️  AUTOMATIC RETRAINING TRIGGERED")
+            logger.info(f"Will download {config.retrain_candles} candles from MT5 for each symbol/timeframe")
+            logger.info(f"Symbols: {', '.join(config.trading_symbols)}")
+            logger.info(f"Timeframes: {', '.join(config.timeframes)}")
+            logger.info("This may take 15-30 minutes...")
+            logger.info("=" * 80)
+
+            try:
+                # Call train_models.py with MT5 source
+                result = subprocess.run(
+                    ['python', 'train_models.py', '--source', 'mt5'],
+                    cwd=Path(__file__).parent.parent,  # Root directory of project
+                    capture_output=True,
+                    text=True,
+                    timeout=3600  # 1 hour timeout
+                )
+
+                if result.returncode == 0:
+                    logger.success("✅ Automatic retraining completed successfully!")
+                    logger.info("Models have been updated with fresh data from MT5")
+                else:
+                    logger.error(f"Retraining failed with exit code {result.returncode}")
+                    logger.error(f"STDERR: {result.stderr}")
+                    raise Exception("Automatic retraining failed")
+
+            except subprocess.TimeoutExpired:
+                logger.error("Retraining timed out after 1 hour")
+                raise Exception("Automatic retraining timed out")
+            except Exception as e:
+                logger.error(f"Error during automatic retraining: {e}")
+                raise
+
+        else:
+            logger.success(f"✅ Models are up to date (oldest model: {oldest_model_age} days old)")
+
+    async def _initialize_components(self):
         """Initialize all bot components"""
         try:
             # MT5 connector
@@ -111,9 +247,12 @@ class MT5TradingBot:
             logger.info("Initializing AI analyzer...")
             self.analyzer = MarketAnalyzer(enable_training=False)
 
+            # Check model age and retrain if necessary
+            await self._check_and_retrain_models()
+
             # Try to load pre-trained models
             try:
-                self.analyzer.load_models('models')
+                self.analyzer.load_models(config.models_directory)
                 logger.info("Loaded pre-trained models")
             except Exception as e:
                 logger.critical(f"Could not load models: {e}. The bot cannot function without trained models.")
@@ -133,7 +272,8 @@ class MT5TradingBot:
                 analyzer=self.analyzer,
                 signal_filter=signal_filter,
                 risk_manager=risk_manager,
-                min_confidence=config.confidence_threshold
+                min_confidence=config.confidence_threshold,
+                mt5_connector=self.mt5_connector  # Pass MT5 connector for position verification
             )
 
             # Telegram bot
@@ -143,6 +283,14 @@ class MT5TradingBot:
                 channel_id=config.telegram_channel_id,
                 enable_charts=config.telegram_include_charts
             )
+
+            # Trade tracker (needs telegram_bot reference)
+            logger.info("Initializing trade tracker...")
+            self.trade_tracker = TradeTracker(telegram_bot=self.telegram_bot)
+            self.trade_tracker.load_active_trades()
+
+            # Pass bot and telegram references to web interface
+            set_bot_instance(self, self.telegram_bot)
 
             logger.info("All components initialized successfully")
 
@@ -156,6 +304,24 @@ class MT5TradingBot:
             self.is_running = True
 
             logger.info("Starting MT5 Trading Bot...")
+
+            # Initialize all components (async)
+            await self._initialize_components()
+
+            # Start web interface in separate thread
+            logger.info("Starting web interface...")
+            flask_thread = threading.Thread(
+                target=run_flask_app,
+                kwargs={'host': '0.0.0.0', 'port': 5000, 'debug': False},
+                daemon=True,
+                name="FlaskWebInterface"
+            )
+            flask_thread.start()
+            logger.success("🌐 Web interface started at http://localhost:5000")
+
+            # Start bot controller
+            self.bot_controller.start()
+            logger.success("✅ Bot controller started - Status: RUNNING")
 
             # Test Telegram connection
             if self.telegram_bot:
@@ -204,6 +370,11 @@ class MT5TradingBot:
 
         self.is_running = False
 
+        # Stop bot controller
+        if self.bot_controller:
+            self.bot_controller.stop()
+            logger.info("Bot controller stopped")
+
         # Stop market data collection
         if self.market_data_manager:
             await self.market_data_manager.stop()
@@ -219,7 +390,8 @@ class MT5TradingBot:
                 f"🛑 **AI MT5 Trading Bot Stopped**\n\n"
                 f"**Final Balance:** {account_info['balance'] if account_info else 'N/A'}\n"
                 f"**Total Signals:** {self.performance.signals_generated}\n"
-                f"**Uptime:** {self.performance.get_statistics()['uptime_hours']:.2f} hours"
+                f"**Uptime:** {self.performance.get_statistics()['uptime_hours']:.2f} hours\n"
+                f"**Web Interface:** Stopping..."
             )
 
         logger.info("MT5 Trading Bot stopped")
@@ -231,6 +403,7 @@ class MT5TradingBot:
         while self.is_running:
             try:
                 logger.info("=" * 30 + " Starting New Analysis Cycle " + "=" * 30)
+
                 # Check MT5 connection
                 if not self.mt5_connector.check_connection():
                     logger.error("MT5 connection lost!")
@@ -241,17 +414,38 @@ class MT5TradingBot:
                     await asyncio.sleep(10)
                     continue
 
-                # Gestionar posiciones abiertas (BE y TS)
-                await self._manage_open_positions()
+                # Gestionar posiciones abiertas (BE y TS) - SIEMPRE se ejecuta si el bot está RUNNING o PAUSED
+                if self.bot_controller.can_monitor_trades():
+                    await self._manage_open_positions()
+                    # Actualizar monitoreo de trades activos
+                    self.trade_tracker.update_trade_monitoring()
 
-                # Analizar todos los símbolos para nuevas señales
-                for symbol in config.trading_symbols:
-                    await self._analyze_and_execute(symbol)
+                # Analizar todos los símbolos para nuevas señales - SOLO si el bot está RUNNING
+                if self.bot_controller.can_generate_signals():
+                    for symbol in config.trading_symbols:
+                        try:
+                            # Timeout para evitar bloqueos (máx 30 segundos por símbolo)
+                            await asyncio.wait_for(
+                                self._analyze_and_execute(symbol),
+                                timeout=30.0
+                            )
+                        except asyncio.TimeoutError:
+                            logger.warning(f"{symbol}: Analysis timeout (>30s), skipping to next symbol")
+                        except Exception as e:
+                            logger.error(f"{symbol}: Error during analysis: {e}")
+                else:
+                    logger.info("Bot is paused - Skipping signal generation, monitoring trades only")
 
                 logger.info("=" * 30 + " Analysis Cycle Completed " + "=" * 32)
                 logger.info(f"Waiting for {self.analysis_interval} seconds until next cycle...")
                 # Wait before next iteration
                 await asyncio.sleep(self.analysis_interval)
+
+                # Automatic cleanup check (every 6 hours by default)
+                if self.cleanup_manager.should_run_cleanup():
+                    logger.info("🧹 Running automatic cleanup...")
+                    cleanup_stats = self.cleanup_manager.run_cleanup()
+                    logger.info(f"Cleanup stats: {cleanup_stats}")
 
                 # Periodic tasks (every hour)
                 if datetime.utcnow().minute == 0:
@@ -282,7 +476,8 @@ class MT5TradingBot:
             start_time = datetime.utcnow()
 
             # Get multi-timeframe data
-            mtf_data = self.market_data_manager.get_multi_timeframe_data(symbol, limit=200)
+            # Using configurable analysis window from MARKET_ANALYSIS_CANDLES (default: 2000)
+            mtf_data = self.market_data_manager.get_multi_timeframe_data(symbol, limit=config.market_analysis_candles)
 
             if not mtf_data or all(df.empty for df in mtf_data.values()):
                 logger.debug(f"{symbol}: No data available yet")
@@ -396,10 +591,23 @@ class MT5TradingBot:
             # Execute order
             # Se ha acortado el comentario para asegurar que el ATR siempre se guarde correctamente.
             # Formato: AI|{atr_value}
-            comment = f"AI|{signal.atr_at_signal:.5f}"
+            # Si atr_at_signal es None (modo fijo), usar 0.0
+            atr_value = signal.atr_at_signal if signal.atr_at_signal is not None else 0.0
+            comment = f"AI|{atr_value:.5f}"
 
-            # Para la ejecución interna, siempre usaremos el TP1 como objetivo inicial.
-            initial_tp = signal.take_profit_levels[0] if signal.take_profit_levels else None
+            # Seleccionar el Take Profit según configuración (TP1 o TP2)
+            if signal.take_profit_levels:
+                if config.use_take_profit == "TP1":
+                    initial_tp = signal.take_profit_levels[0]  # TP1
+                    logger.info(f"Using TP1: {initial_tp}")
+                elif config.use_take_profit == "TP2":
+                    initial_tp = signal.take_profit_levels[1] if len(signal.take_profit_levels) > 1 else signal.take_profit_levels[0]  # TP2 o TP1 si no hay TP2
+                    logger.info(f"Using TP2: {initial_tp}")
+                else:
+                    logger.warning(f"Invalid USE_TAKE_PROFIT value: {config.use_take_profit}. Using TP1 as default.")
+                    initial_tp = signal.take_profit_levels[0]
+            else:
+                initial_tp = None
 
             result = self.order_executor.execute_market_order(
                 symbol=signal.symbol,
@@ -423,6 +631,25 @@ class MT5TradingBot:
                     f"TP: {result['tp']}, "
                     f"Time: {result['time'].strftime('%Y-%m-%d %H:%M:%S')}"
                 )
+
+                # Register trade in TradeTracker for web interface
+                try:
+                    self.trade_tracker.register_trade_opened(
+                        signal_id=signal.signal_id,
+                        symbol=signal.symbol,
+                        signal_type=signal.signal_type,
+                        entry_price=result['price'],
+                        sl=result['sl'],
+                        tp1=signal.take_profit_levels[0],
+                        tp2=signal.take_profit_levels[1] if len(signal.take_profit_levels) > 1 else signal.take_profit_levels[0],
+                        lot_size=result['volume'],
+                        confidence=signal.confidence,
+                        timeframe=signal.timeframe,
+                        mt5_ticket=result['ticket']
+                    )
+                    logger.success(f"Trade {signal.signal_id} registered in TradeTracker")
+                except Exception as e:
+                    logger.error(f"Error registering trade in TradeTracker: {e}")
 
                 # Store execution info for internal tracking
                 self.performance.record_signal(signal.symbol, signal.signal_type)
@@ -471,57 +698,134 @@ class MT5TradingBot:
                 else: # SELL
                     profit_points = (open_price - current_price) / point_size
 
-                # Extraer ATR del comentario de la orden
-                comment = position.get('comment', '')
-                atr_at_signal = 0.0
-                if 'AI|' in comment:
-                    try:
-                        atr_at_signal = float(comment.split('|')[1])
-                    except (ValueError, IndexError):
-                        logger.warning(f"No se pudo extraer el ATR del comentario: '{comment}'")
+                # Determinar si usar modo dinámico o fijo
+                if config.enable_dynamic_risk:
+                    # --- MODO DINÁMICO: Extraer ATR del comentario ---
+                    comment = position.get('comment', '')
+                    atr_at_signal = 0.0
+                    if 'AI|' in comment:
+                        try:
+                            atr_at_signal = float(comment.split('|')[1])
+                        except (ValueError, IndexError):
+                            logger.warning(f"No se pudo extraer el ATR del comentario: '{comment}'")
 
-                if atr_at_signal <= 0:
-                    logger.warning(f"ATR inválido ({atr_at_signal}) para la operación #{ticket}. No se puede gestionar dinámicamente.")
-                    continue
+                    if atr_at_signal <= 0:
+                        logger.warning(f"ATR inválido ({atr_at_signal}) para la operación #{ticket}. No se puede gestionar dinámicamente.")
+                        continue
 
-                # --- Lógica de Break Even Dinámico ---
-                if config.enable_break_even and ticket not in self.break_even_activated:
-                    trigger_distance = atr_at_signal * config.break_even_trigger_atr_multiplier
-                    profit_lock_distance = atr_at_signal * config.break_even_profit_lock_atr_multiplier
-                    
-                    profit_in_currency = position.get('profit', 0.0)
+                    # --- Break Even Dinámico (basado en ATR) ---
+                    if config.enable_break_even and ticket not in self.break_even_activated:
+                        trigger_distance = atr_at_signal * config.break_even_trigger_atr_multiplier
+                        profit_lock_distance = atr_at_signal * config.break_even_profit_lock_atr_multiplier
 
-                    if (order_type == 'BUY' and current_price >= open_price + trigger_distance) or \
-                       (order_type == 'SELL' and current_price <= open_price - trigger_distance):
-                        
-                        new_sl = open_price + profit_lock_distance if order_type == 'BUY' else open_price - profit_lock_distance
+                        profit_in_currency = position.get('profit', 0.0)
 
-                        if (order_type == 'BUY' and new_sl > current_sl) or \
-                           (order_type == 'SELL' and new_sl < current_sl):
-                            logger.info(f"Activando Break Even para la operación #{ticket} en {symbol}. Nuevo SL: {new_sl:.5f}")
-                            modified = self.order_executor.modify_order(ticket, stop_loss=new_sl)
-                            if modified:
+                        if (order_type == 'BUY' and current_price >= open_price + trigger_distance) or \
+                           (order_type == 'SELL' and current_price <= open_price - trigger_distance):
+
+                            new_sl = open_price + profit_lock_distance if order_type == 'BUY' else open_price - profit_lock_distance
+
+                            if (order_type == 'BUY' and new_sl > current_sl) or \
+                               (order_type == 'SELL' and new_sl < current_sl):
+                                logger.info(f"Activando Break Even DINÁMICO para #{ticket} en {symbol}. Nuevo SL: {new_sl:.5f} (ATR: {atr_at_signal:.5f})")
+                                modified = self.order_executor.modify_order(ticket, stop_loss=new_sl)
+                                if modified:
+                                    self.break_even_activated[ticket] = True
+                                    await self.telegram_bot.send_break_even_notification(position, new_sl)
+                                    # Register in TradeTracker
+                                    try:
+                                        signal_id = f"{symbol}_{ticket}"
+                                        self.trade_tracker.register_break_even(signal_id, new_sl)
+                                    except Exception as e:
+                                        logger.error(f"Error registering BE in TradeTracker: {e}")
+                            else:
                                 self.break_even_activated[ticket] = True
-                                await self.telegram_bot.send_break_even_notification(position, new_sl)
-                        else:
-                            self.break_even_activated[ticket] = True
 
-                # --- Lógica de Trailing Stop Dinámico ---
-                if config.enable_trailing_stop:
-                    trigger_distance = atr_at_signal * config.trailing_stop_trigger_atr_multiplier
-                    trailing_distance = atr_at_signal * config.trailing_stop_distance_atr_multiplier
+                    # --- Trailing Stop Dinámico (basado en ATR) ---
+                    if config.enable_trailing_stop:
+                        trigger_distance = atr_at_signal * config.trailing_stop_trigger_atr_multiplier
+                        trailing_distance = atr_at_signal * config.trailing_stop_distance_atr_multiplier
 
-                    if (order_type == 'BUY' and current_price >= open_price + trigger_distance) or \
-                       (order_type == 'SELL' and current_price <= open_price - trigger_distance):
-                        
-                        new_sl = current_price - trailing_distance if order_type == 'BUY' else current_price + trailing_distance
+                        if (order_type == 'BUY' and current_price >= open_price + trigger_distance) or \
+                           (order_type == 'SELL' and current_price <= open_price - trigger_distance):
 
-                        if (order_type == 'BUY' and new_sl > current_sl) or \
-                           (order_type == 'SELL' and new_sl < current_sl):
-                            logger.info(f"Actualizando Trailing Stop para la operación #{ticket} en {symbol} a {new_sl:.5f}.")
-                            modified = self.order_executor.modify_order(ticket, stop_loss=new_sl)
-                            if modified:
-                                await self.telegram_bot.send_trailing_stop_notification(position, new_sl)
+                            new_sl = current_price - trailing_distance if order_type == 'BUY' else current_price + trailing_distance
+
+                            if (order_type == 'BUY' and new_sl > current_sl) or \
+                               (order_type == 'SELL' and new_sl < current_sl):
+                                logger.info(f"Actualizando Trailing Stop DINÁMICO para #{ticket} en {symbol} a {new_sl:.5f} (ATR: {atr_at_signal:.5f})")
+                                modified = self.order_executor.modify_order(ticket, stop_loss=new_sl)
+                                if modified:
+                                    await self.telegram_bot.send_trailing_stop_notification(position, new_sl)
+                                    # Register in TradeTracker
+                                    try:
+                                        signal_id = f"{symbol}_{ticket}"
+                                        self.trade_tracker.register_trailing_stop(signal_id, new_sl)
+                                    except Exception as e:
+                                        logger.error(f"Error registering TS in TradeTracker: {e}")
+
+                else:
+                    # --- MODO FIJO: Usar valores en PUNTOS ---
+                    # IMPORTANTE: Para índices sintéticos, 1 punto = 1.0 en el precio
+                    # NO multiplicar por point_size de MT5 (que es 0.01)
+                    point_value = 1.0
+
+                    # --- Break Even Fijo (valores en puntos) ---
+                    if config.enable_break_even and ticket not in self.break_even_activated:
+                        trigger_distance = config.fixed_break_even_trigger_points * point_value
+                        profit_lock_distance = config.fixed_break_even_profit_lock_points * point_value
+
+                        if (order_type == 'BUY' and current_price >= open_price + trigger_distance) or \
+                           (order_type == 'SELL' and current_price <= open_price - trigger_distance):
+
+                            new_sl = open_price + profit_lock_distance if order_type == 'BUY' else open_price - profit_lock_distance
+
+                            if (order_type == 'BUY' and new_sl > current_sl) or \
+                               (order_type == 'SELL' and new_sl < current_sl):
+                                logger.info(
+                                    f"✅ Break Even FIJO activado para #{ticket} ({symbol}): "
+                                    f"Entry={open_price:.2f} → New SL={new_sl:.2f} "
+                                    f"(Trigger={config.fixed_break_even_trigger_points:.0f}pts, Lock={config.fixed_break_even_profit_lock_points:.0f}pts)"
+                                )
+                                modified = self.order_executor.modify_order(ticket, stop_loss=new_sl)
+                                if modified:
+                                    self.break_even_activated[ticket] = True
+                                    await self.telegram_bot.send_break_even_notification(position, new_sl)
+                                    # Register in TradeTracker
+                                    try:
+                                        signal_id = f"{symbol}_{ticket}"
+                                        self.trade_tracker.register_break_even(signal_id, new_sl)
+                                    except Exception as e:
+                                        logger.error(f"Error registering BE in TradeTracker: {e}")
+                            else:
+                                self.break_even_activated[ticket] = True
+
+                    # --- Trailing Stop Fijo (valores en puntos) ---
+                    if config.enable_trailing_stop:
+                        trigger_distance = config.fixed_trailing_stop_trigger_points * point_value
+                        trailing_distance = config.fixed_trailing_stop_distance_points * point_value
+
+                        if (order_type == 'BUY' and current_price >= open_price + trigger_distance) or \
+                           (order_type == 'SELL' and current_price <= open_price - trigger_distance):
+
+                            new_sl = current_price - trailing_distance if order_type == 'BUY' else current_price + trailing_distance
+
+                            if (order_type == 'BUY' and new_sl > current_sl) or \
+                               (order_type == 'SELL' and new_sl < current_sl):
+                                logger.info(
+                                    f"✅ Trailing Stop FIJO actualizado para #{ticket} ({symbol}): "
+                                    f"Current={current_price:.2f} → New SL={new_sl:.2f} "
+                                    f"(Trigger={config.fixed_trailing_stop_trigger_points:.0f}pts, Distance={config.fixed_trailing_stop_distance_points:.0f}pts)"
+                                )
+                                modified = self.order_executor.modify_order(ticket, stop_loss=new_sl)
+                                if modified:
+                                    await self.telegram_bot.send_trailing_stop_notification(position, new_sl)
+                                    # Register in TradeTracker
+                                    try:
+                                        signal_id = f"{symbol}_{ticket}"
+                                        self.trade_tracker.register_trailing_stop(signal_id, new_sl)
+                                    except Exception as e:
+                                        logger.error(f"Error registering TS in TradeTracker: {e}")
 
         except Exception as e:
             logger.error(f"Error al gestionar las posiciones abiertas: {e}")
